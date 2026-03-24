@@ -34,3 +34,6 @@ Thumbs.db
 # Local app settings overrides
 appsettings.Development.json
 appsettings.Local.json
+
+matchmaking/appsettings.json
+appsettings.json
