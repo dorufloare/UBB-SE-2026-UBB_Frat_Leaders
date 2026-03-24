@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "matchmaking (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "matchmaking (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

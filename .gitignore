@@ -1,0 +1,36 @@
+# Build artifacts
+**/bin/
+**/obj/
+
+# Visual Studio / Rider / VS Code user files
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.cache
+
+# Test and coverage outputs
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Local app settings overrides
+appsettings.Development.json
+appsettings.Local.json

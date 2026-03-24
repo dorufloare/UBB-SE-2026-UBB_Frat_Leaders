@@ -1,0 +1,56 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using matchmaking.Domain.Entities;
+
+namespace matchmaking.Repositories;
+
+public class UserRepository
+{
+    private readonly List<User> _users =
+    [
+        new() { UserId = 1, Name = "Alice Pop", Location = "Cluj-Napoca", Email = "alice.pop@mail.com", Phone = "0700000001", YearsOfExperience = 2, Education = "BSc Computer Science", Resume = "Frontend developer with React projects", PreferredEmploymentType = "Full-time" },
+        new() { UserId = 2, Name = "Bogdan Ionescu", Location = "Bucharest", Email = "bogdan.ionescu@mail.com", Phone = "0700000002", YearsOfExperience = 4, Education = "MSc Software Engineering", Resume = "Backend .NET and SQL developer", PreferredEmploymentType = "Full-time" },
+        new() { UserId = 3, Name = "Carmen Radu", Location = "Iasi", Email = "carmen.radu@mail.com", Phone = "0700000003", YearsOfExperience = 1, Education = "BSc Informatics", Resume = "Junior QA and automation", PreferredEmploymentType = "Internship" },
+        new() { UserId = 4, Name = "Dan Tudor", Location = "Timisoara", Email = "dan.tudor@mail.com", Phone = "0700000004", YearsOfExperience = 6, Education = "BSc Computer Engineering", Resume = "DevOps and cloud pipelines", PreferredEmploymentType = "Remote" },
+        new() { UserId = 5, Name = "Elena Matei", Location = "Brasov", Email = "elena.matei@mail.com", Phone = "0700000005", YearsOfExperience = 3, Education = "BSc Mathematics and CS", Resume = "Data analyst and Python scripting", PreferredEmploymentType = "Hybrid" },
+        new() { UserId = 6, Name = "Florin Pavel", Location = "Oradea", Email = "florin.pavel@mail.com", Phone = "0700000006", YearsOfExperience = 5, Education = "MSc AI", Resume = "ML engineer with NLP focus", PreferredEmploymentType = "Full-time" },
+        new() { UserId = 7, Name = "Gabriela Stan", Location = "Sibiu", Email = "gabriela.stan@mail.com", Phone = "0700000007", YearsOfExperience = 2, Education = "BSc Computer Science", Resume = "UI/UX and mobile interfaces", PreferredEmploymentType = "Part-time" },
+        new() { UserId = 8, Name = "Horia Vasile", Location = "Constanta", Email = "horia.vasile@mail.com", Phone = "0700000008", YearsOfExperience = 7, Education = "BSc Information Systems", Resume = "Tech lead for enterprise systems", PreferredEmploymentType = "Hybrid" },
+        new() { UserId = 9, Name = "Ioana Dobre", Location = "Craiova", Email = "ioana.dobre@mail.com", Phone = "0700000009", YearsOfExperience = 3, Education = "BSc Computer Science", Resume = "Full-stack web developer", PreferredEmploymentType = "Remote" },
+        new() { UserId = 10, Name = "Julian Muresan", Location = "Targu Mures", Email = "julian.muresan@mail.com", Phone = "0700000010", YearsOfExperience = 8, Education = "MSc Distributed Systems", Resume = "Architecture and mentoring", PreferredEmploymentType = "Full-time" }
+    ];
+
+    public User? GetById(int userId) => _users.FirstOrDefault(u => u.UserId == userId);
+
+    public IReadOnlyList<User> GetAll() => _users.ToList();
+
+    public void Add(User user)
+    {
+        if (_users.Any(u => u.UserId == user.UserId))
+        {
+            throw new InvalidOperationException($"User with id {user.UserId} already exists.");
+        }
+
+        _users.Add(user);
+    }
+
+    public void Update(User user)
+    {
+        var existing = GetById(user.UserId) ?? throw new KeyNotFoundException($"User with id {user.UserId} was not found.");
+        existing.Name = user.Name;
+        existing.Location = user.Location;
+        existing.Email = user.Email;
+        existing.Phone = user.Phone;
+        existing.YearsOfExperience = user.YearsOfExperience;
+        existing.Education = user.Education;
+        existing.Resume = user.Resume;
+        existing.PreferredEmploymentType = user.PreferredEmploymentType;
+    }
+
+    public void Remove(int userId)
+    {
+        var existing = GetById(userId) ?? throw new KeyNotFoundException($"User with id {userId} was not found.");
+        _users.Remove(existing);
+    }
+}
