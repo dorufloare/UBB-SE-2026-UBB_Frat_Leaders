@@ -42,7 +42,7 @@ namespace matchmaking
             InitializeComponent();
             Configuration = AppConfigurationLoader.Load();
             Session = new SessionContext();
-            RecommendationAlgorithmQuickTest.RunOrThrow();
+            
         }
 
         /// <summary>
