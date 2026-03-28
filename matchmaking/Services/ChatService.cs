@@ -147,5 +147,8 @@ public class ChatService
         _messageRepository.Add(message);
     }
 
-
+    public void MarkMessageAsRead(int chatId, int readerId)
+    {
+        _messageRepository.MarkAsRead(chatId, readerId);
+    }
 }
