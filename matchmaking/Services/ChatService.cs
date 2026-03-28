@@ -147,8 +147,43 @@ public class ChatService
         _messageRepository.Add(message);
     }
 
-    public void MarkMessageAsRead(int chatId, int readerId)
+    public void MarkMessageAsRead(int chatId, int readerId) 
     {
         _messageRepository.MarkAsRead(chatId, readerId);
     }
+
+    public void BlockUser(int chatId, int blockerId)
+    {
+        var chat = _chatRepository.GetChatById(chatId);
+        if (chat.IsBlocked)
+            throw new InvalidOperationException("Chat is already blocked.");
+        _chatRepository.BlockChat(chatId, blockerId);
+    }
+
+    public void UnblockUser(int chatId, int unblockerId)
+    {
+        var chat = _chatRepository.GetChatById(chatId);
+        if (!chat.IsBlocked)
+            throw new InvalidOperationException("Chat is not blocked.");
+        if (chat.BlockedByUserId != unblockerId)
+            throw new UnauthorizedAccessException("Only the user who blocked the chat can unblock it.");
+        _chatRepository.UnblockUser(chatId, unblockerId);
+    }
+
+    public void DeleteChat(int chatId, int callerId)
+    {
+        var chat = _chatRepository.GetChatById(chatId);
+        if (chat.UserId != callerId && chat.SecondUserId != callerId && chat.CompanyId != callerId)
+            throw new UnauthorizedAccessException("Only participants can delete the chat.");
+        if (chat.UserId == callerId)
+        {
+            _chatRepository.DeletedByUser(chatId, callerId);
+        }
+        else if (chat.CompanyId == callerId || chat.SecondUserId == callerId)
+        {
+            _chatRepository.DeletedBySecondParty(chatId, callerId);
+        }
+    }
+
+
 }
