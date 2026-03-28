@@ -69,6 +69,17 @@ public class SqlChatRepository(string connectionString) : SqlRepositoryBase(conn
         return reader.Read() ? Map(reader) : null;
     }
 
+    public Chat GetChatById(int chatId)
+    {
+        using var connection = OpenConnection();
+        using var command = new SqlCommand(
+            "SELECT ChatId, UserId, CompanyId, SecondUserId, JobId, IsBlocked, BlockedByUserId, IsDeletedByUser, IsDeletedBySecondParty FROM Chat WHERE ChatId = @ChatId",
+            connection);
+        command.Parameters.AddWithValue("@ChatId", chatId);
+        using var reader = command.ExecuteReader();
+        return reader.Read() ? Map(reader) : throw new KeyNotFoundException($"Chat with id {chatId} was not found.");
+    }
+
     public void Add(Chat chat)
     {
         using var connection = OpenConnection();
