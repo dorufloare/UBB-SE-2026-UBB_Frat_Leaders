@@ -37,6 +37,7 @@ public class CompanyStatusViewModel : ObservableObject
     private string _validationErrorFeedback = string.Empty;
     private bool _hasValidationErrors;
     private TestResult? _lastTestResult;
+    private string _pageMessage = string.Empty;
 
     public CompanyStatusViewModel(
         CompanyStatusService companyStatusService,
@@ -73,10 +74,6 @@ public class CompanyStatusViewModel : ObservableObject
                     IsContactUnmasked = false;
                     LastTestResult = null;
                     UpdateContactMasks();
-                }
-                else
-                {
-                    _ = LoadEvaluationAsync(value.Match.MatchId);
                 }
 
                 RaiseCommandStates();
@@ -189,6 +186,12 @@ public class CompanyStatusViewModel : ObservableObject
         private set => SetProperty(ref _lastTestResult, value);
     }
 
+    public string PageMessage
+    {
+        get => _pageMessage;
+        private set => SetProperty(ref _pageMessage, value);
+    }
+
     public ICommand RefreshCommand => _refreshCommand;
     public ICommand SubmitDecisionCommand => _submitDecisionCommand;
     public ICommand CancelEvaluationCommand => _cancelEvaluationCommand;
@@ -200,15 +203,16 @@ public class CompanyStatusViewModel : ObservableObject
         {
             Applications.Clear();
             CancelEvaluation();
+            PageMessage = "Company mode is not active.";
             return;
         }
 
         IsLoading = true;
+        PageMessage = string.Empty;
 
         try
         {
             var results = await _companyStatusService.GetApplicantsForCompanyAsync(_session.CurrentCompanyId.Value);
-            var selectedMatchId = SelectedMatch?.MatchId;
 
             Applications.Clear();
             foreach (var result in results)
@@ -216,18 +220,19 @@ public class CompanyStatusViewModel : ObservableObject
                 Applications.Add(result);
             }
 
-            if (selectedMatchId is int matchId && Applications.Any(item => item.Match.MatchId == matchId))
+            // Requirement workflow starts from applicant list and enters evaluation only via Review action.
+            CancelEvaluation();
+
+            if (Applications.Count == 0)
             {
-                SelectedApplicant = Applications.First(item => item.Match.MatchId == matchId);
+                PageMessage = "No applicants found for this company yet.";
             }
-            else if (Applications.Count > 0)
-            {
-                SelectedApplicant = Applications[0];
-            }
-            else
-            {
-                CancelEvaluation();
-            }
+        }
+        catch (Exception ex)
+        {
+            Applications.Clear();
+            CancelEvaluation();
+            PageMessage = $"Could not load applicants: {ex.Message}";
         }
         finally
         {
@@ -237,38 +242,51 @@ public class CompanyStatusViewModel : ObservableObject
         RaiseCommandStates();
     }
 
-    public async Task LoadEvaluationAsync(int matchId)
+    public async Task<bool> LoadEvaluationAsync(int matchId)
     {
         if (_session.CurrentCompanyId is null)
         {
-            return;
+            return false;
         }
 
-        var result = await _companyStatusService.GetApplicantByMatchIdAsync(_session.CurrentCompanyId.Value, matchId);
-        if (result is null)
+        try
         {
-            return;
+            var result = await _companyStatusService.GetApplicantByMatchIdAsync(_session.CurrentCompanyId.Value, matchId);
+            if (result is null)
+            {
+                PageMessage = "Selected applicant could not be loaded.";
+                return false;
+            }
+
+            SelectedApplicant = result;
+
+            SelectedMatch = result.Match;
+
+            if (result.Match.Status == MatchStatus.Applied)
+            {
+                SelectedDecision = null;
+            }
+            else
+            {
+                SelectedDecision = result.Match.Status;
+            }
+
+            FeedbackMessage = result.Match.FeedbackMessage;
+            IsContactUnmasked = false;
+
+            ValidateAll();
+
+            LastTestResult = await LoadLatestTestResultAsync(result);
+            PageMessage = string.Empty;
+
+            RaiseCommandStates();
+            return true;
         }
-
-        SelectedMatch = result.Match;
-
-        if (result.Match.Status == MatchStatus.Applied)
+        catch (Exception ex)
         {
-            SelectedDecision = null;
+            PageMessage = $"Could not load applicant details: {ex.Message}";
+            return false;
         }
-        else
-        {
-            SelectedDecision = result.Match.Status;
-        }
-
-        FeedbackMessage = result.Match.FeedbackMessage;
-        IsContactUnmasked = false;
-
-        ValidateAll();
-
-        LastTestResult = await LoadLatestTestResultAsync(result);
-
-        RaiseCommandStates();
     }
 
     public bool ValidateDecision()
@@ -309,21 +327,31 @@ public class CompanyStatusViewModel : ObservableObject
         return !HasValidationErrors;
     }
 
-    public async Task SubmitDecisionAsync()
+    public async Task<bool> SubmitDecisionAsync()
     {
         if (SelectedMatch is null || SelectedDecision is null)
         {
             ValidateAll();
-            return;
+            return false;
         }
 
         if (!ValidateAll())
         {
-            return;
+            return false;
         }
 
-        await _matchService.SubmitDecisionAsync(SelectedMatch.MatchId, SelectedDecision.Value, FeedbackMessage);
-        await LoadApplicationsAsync();
+        try
+        {
+            await _matchService.SubmitDecisionAsync(SelectedMatch.MatchId, SelectedDecision.Value, FeedbackMessage);
+            PageMessage = "Decision saved successfully.";
+            await LoadApplicationsAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            PageMessage = $"Could not submit decision: {ex.Message}";
+            return false;
+        }
     }
 
     public void UnmaskContactInfo()

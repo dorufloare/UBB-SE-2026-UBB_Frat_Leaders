@@ -7,109 +7,186 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid ColumnSpacing="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="340" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-
-        <Border Grid.Column="0"
-                Background="{StaticResource CardBackgroundBrush}"
-                CornerRadius="10"
-                Padding="16">
-            <StackPanel Spacing="12">
-                <TextBlock Text="Applicants"
-                           FontSize="24"
-                           FontWeight="SemiBold" />
-
-                <Button Content="Refresh"
-                        Command="{Binding RefreshCommand}"
-                        Style="{StaticResource SecondaryActionButtonStyle}" />
-
-                <ListView ItemsSource="{Binding Applications}"
-                          SelectedItem="{Binding SelectedApplicant, Mode=TwoWay}"
-                          SelectionMode="Single">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="0,0,0,12">
-                                <TextBlock Text="{Binding User.Name}"
-                                           FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding Job.JobDescription}" />
-                                <TextBlock Text="{Binding Match.Status}"
-                                           Foreground="#FF1D4ED8" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </StackPanel>
-        </Border>
-
-        <Border Grid.Column="1"
-                Background="{StaticResource CardBackgroundBrush}"
-                CornerRadius="10"
-                Padding="20">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Spacing="14">
-                    <TextBlock Text="Application Details"
-                               FontSize="26"
+    <Grid>
+        <Grid x:Name="ApplicantListPanel">
+            <Border Background="{StaticResource CardBackgroundBrush}"
+                    CornerRadius="10"
+                    Padding="14"
+                    MaxWidth="860"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Applicant List"
+                               FontSize="30"
                                FontWeight="SemiBold" />
 
-                    <TextBlock Text="{Binding SelectedApplicant.User.Name}"
-                               FontSize="18"
-                               FontWeight="SemiBold" />
-
-                    <TextBlock Text="{Binding SelectedApplicant.Job.JobDescription}" />
-                    <TextBlock Text="{Binding SelectedApplicant.User.Location}" />
-                    <TextBlock Text="{Binding SelectedApplicant.User.Education}" />
-                    <TextBlock Text="{Binding SelectedApplicant.User.Resume}"
+                    <TextBlock Text="{Binding PageMessage}"
+                               Foreground="#FF1D4ED8"
                                TextWrapping="Wrap" />
 
-                    <TextBlock Text="Contact"
-                               FontWeight="SemiBold" />
-                    <TextBlock Text="{Binding MaskedEmail}" />
-                    <TextBlock Text="{Binding MaskedPhone}" />
-                    <TextBlock Text="{Binding UnmaskedEmail}" Foreground="#FF065F46" />
-                    <TextBlock Text="{Binding UnmaskedPhone}" Foreground="#FF065F46" />
-
-                    <Button Content="Unmask Contact"
-                            Command="{Binding UnmaskContactCommand}"
-                            Style="{StaticResource SecondaryActionButtonStyle}"
-                            HorizontalAlignment="Left" />
-
-                    <TextBlock Text="Decision"
-                               FontWeight="SemiBold" />
-
-                    <ComboBox ItemsSource="{Binding DecisionOptions}"
-                              SelectedItem="{Binding SelectedDecision, Mode=TwoWay}" />
-
-                    <TextBox Header="Feedback"
-                             Text="{Binding FeedbackMessage, Mode=TwoWay}"
-                             AcceptsReturn="True"
-                             MinHeight="90"
-                             TextWrapping="Wrap" />
-
-                    <TextBlock Text="{Binding ValidationErrorDecision}"
-                               Foreground="#FFB91C1C" />
-                    <TextBlock Text="{Binding ValidationErrorFeedback}"
-                               Foreground="#FFB91C1C" />
-
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button Content="Submit Decision"
-                                Command="{Binding SubmitDecisionCommand}"
-                                Style="{StaticResource PrimaryActionButtonStyle}" />
-                        <Button Content="Cancel Evaluation"
-                                Command="{Binding CancelEvaluationCommand}"
-                                Style="{StaticResource SecondaryActionButtonStyle}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Refresh"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource SecondaryActionButtonStyle}">
+                            <Button.Resources>
+                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Transparent" />
+                                <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#FF9CA3AF" />
+                                <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#FF111827" />
+                            </Button.Resources>
+                        </Button>
+                        <ProgressRing IsActive="{Binding IsLoading}"
+                                      Width="22"
+                                      Height="22"
+                                      VerticalAlignment="Center" />
                     </StackPanel>
 
-                    <TextBlock Text="Testing Module Snapshot"
-                               FontWeight="SemiBold" />
-                    <TextBlock Text="{Binding LastTestResult.Test.Title}" />
-                    <TextBlock Text="{Binding LastTestResult.Attempt.Status}" />
-                    <TextBlock Text="{Binding LastTestResult.Attempt.Score}" />
-                    <TextBlock Text="{Binding LastTestResult.LeaderboardEntry.RankPosition}" />
+                    <ItemsControl ItemsSource="{Binding Applications}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderThickness="1"
+                                        BorderBrush="#FFE5E7EB"
+                                        CornerRadius="6"
+                                        Margin="0,0,0,6"
+                                        Padding="8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Spacing="2"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding User.Name}"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="16" />
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1"
+                                                Content="Review"
+                                                Tag="{Binding Match.MatchId}"
+                                                Click="OnReviewApplicantClick"
+                                                Style="{StaticResource PrimaryActionButtonStyle}"
+                                                VerticalAlignment="Center">
+                                            <Button.Resources>
+                                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FF2563EB" />
+                                                <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#FF2563EB" />
+                                                <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#FFFFFFFF" />
+                                            </Button.Resources>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
-            </ScrollViewer>
-        </Border>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="EvaluationPanel" Visibility="Collapsed">
+            <Border Background="{StaticResource CardBackgroundBrush}"
+                    CornerRadius="10"
+                    Padding="20"
+                    MaxWidth="960"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Applicant Evaluation"
+                                   FontSize="30"
+                                   FontWeight="SemiBold" />
+
+                        <TextBlock Text="{Binding SelectedApplicant.User.Name}"
+                                   FontSize="20"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding SelectedApplicant.Job.JobDescription}" />
+
+                        <TextBlock Text="Profile"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding SelectedApplicant.User.Location}" />
+                        <TextBlock Text="{Binding SelectedApplicant.User.Education}" />
+                        <TextBlock Text="{Binding SelectedApplicant.User.Resume}"
+                                   TextWrapping="Wrap" />
+
+                        <TextBlock Text="Contact"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding MaskedEmail}" />
+                        <TextBlock Text="{Binding MaskedPhone}" />
+                        <TextBlock Text="{Binding UnmaskedEmail}" Foreground="#FF065F46" />
+                        <TextBlock Text="{Binding UnmaskedPhone}" Foreground="#FF065F46" />
+                        <Button Content="Unmask Contact"
+                                Command="{Binding UnmaskContactCommand}"
+                                Style="{StaticResource SecondaryActionButtonStyle}"
+                                HorizontalAlignment="Left" />
+
+                        <TextBlock Text="Technical Test Results"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="Candidate ID" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding LastTestResult.ExternalUserId}" />
+                        <TextBlock Text="Test ID" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding LastTestResult.Test.TestId}" />
+                        <TextBlock Text="Final Percentage Score" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding LastTestResult.Attempt.Score}" />
+
+                        <TextBlock Text="Written Answers"
+                                   FontWeight="SemiBold" />
+                        <ItemsControl ItemsSource="{Binding LastTestResult.Questions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderThickness="1"
+                                            BorderBrush="#FFE5E7EB"
+                                            CornerRadius="6"
+                                            Margin="0,0,0,8"
+                                            Padding="10">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="{Binding QuestionText}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding QuestionAnswer}" TextWrapping="Wrap" Foreground="#FF4B5563" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Decision"
+                                   FontWeight="SemiBold" />
+                        <Border x:Name="DecisionFieldBorder"
+                                BorderThickness="1"
+                                BorderBrush="#FFD1D5DB"
+                                CornerRadius="6"
+                                Padding="6">
+                            <ComboBox ItemsSource="{Binding DecisionOptions}"
+                                      SelectedItem="{Binding SelectedDecision, Mode=TwoWay}" />
+                        </Border>
+
+                        <TextBlock Text="Feedback"
+                                   FontWeight="SemiBold" />
+                        <Border x:Name="FeedbackFieldBorder"
+                                BorderThickness="1"
+                                BorderBrush="#FFD1D5DB"
+                                CornerRadius="6"
+                                Padding="6">
+                            <TextBox Text="{Binding FeedbackMessage, Mode=TwoWay}"
+                                     AcceptsReturn="True"
+                                     MinHeight="90"
+                                     PlaceholderText="Write your feedback"
+                                     TextWrapping="Wrap" />
+                        </Border>
+
+                        <TextBlock Text="{Binding ValidationErrorDecision}"
+                                   Foreground="#FFB91C1C" />
+                        <TextBlock Text="{Binding ValidationErrorFeedback}"
+                                   Foreground="#FFB91C1C" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button Content="Submit"
+                                    Click="OnSubmitDecisionClickAsync"
+                                    Style="{StaticResource PrimaryActionButtonStyle}" />
+                            <Button Content="Cancel"
+                                    Click="OnCancelEvaluationClickAsync"
+                                    Style="{StaticResource SecondaryActionButtonStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
     </Grid>
 </Page>
