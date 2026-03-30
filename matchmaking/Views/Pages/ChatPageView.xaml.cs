@@ -1,3 +1,4 @@
+using matchmaking.Domain.Entities;
 using matchmaking.Domain.Session;
 using matchmaking.Repositories;
 using matchmaking.Services;
@@ -7,7 +8,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Versioning;
 using Windows.Storage.Pickers;
 
@@ -18,6 +21,7 @@ public sealed partial class ChatPageView : Page
 {
     private readonly ChatViewModel _viewModel;
     private readonly DispatcherTimer _refreshTimer;
+    private readonly JobService _jobService;
 
     public ChatPageView()
     {
@@ -28,10 +32,10 @@ public sealed partial class ChatPageView : Page
         var chatRepository = new SqlChatRepository(App.Configuration.SqlConnectionString);
         var messageRepository = new SqlMessageRepository(App.Configuration.SqlConnectionString);
         var chatService = new ChatService(chatRepository, messageRepository, userRepository, companyRepository);
-        var jobService = new JobService(new JobRepository());
+        _jobService = new JobService(new JobRepository());
         var sessionContext = App.Session ?? new SessionContext();
 
-        _viewModel = new ChatViewModel(chatService, jobService, sessionContext, userRepository, companyRepository);
+        _viewModel = new ChatViewModel(chatService, _jobService, sessionContext, userRepository, companyRepository);
         DataContext = _viewModel;
 
         _refreshTimer = new DispatcherTimer
@@ -45,6 +49,12 @@ public sealed partial class ChatPageView : Page
     {
         base.OnNavigatedTo(e);
         _viewModel.LoadChats();
+
+        if (TryGetCompanyChatStartContext(e.Parameter, out var companyId, out var jobId))
+        {
+            _viewModel.StartCompanyChat(companyId, jobId);
+        }
+
         _refreshTimer.Start();
     }
 
@@ -87,13 +97,24 @@ public sealed partial class ChatPageView : Page
 
     private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
     {
-        _viewModel.StartChat(args.SelectedItem);
     }
 
-    private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
         if (args.ChosenSuggestion is not null)
         {
+            if (args.ChosenSuggestion is Company company && _viewModel.IsUserMode)
+            {
+                var selectedJobId = await PromptForOptionalJobSelectionAsync(company.CompanyId);
+                if (selectedJobId == int.MinValue)
+                {
+                    return;
+                }
+
+                _viewModel.StartCompanyChat(company.CompanyId, selectedJobId == 0 ? null : selectedJobId);
+                return;
+            }
+
             _viewModel.StartChat(args.ChosenSuggestion);
             return;
         }
@@ -180,5 +201,81 @@ public sealed partial class ChatPageView : Page
         {
             _viewModel.DeleteChat();
         }
+    }
+
+    private async System.Threading.Tasks.Task<int> PromptForOptionalJobSelectionAsync(int companyId)
+    {
+        var jobs = _jobService.GetByCompanyId(companyId);
+
+        if (jobs.Count == 0)
+        {
+            return 0;
+        }
+
+        var comboBox = new ComboBox
+        {
+            PlaceholderText = "Select a job (optional)",
+            MinWidth = 320,
+            ItemsSource = jobs,
+            DisplayMemberPath = nameof(Job.JobDescription)
+        };
+
+        var dialog = new ContentDialog
+        {
+            Title = "Start conversation",
+            Content = comboBox,
+            PrimaryButtonText = "Start chat",
+            SecondaryButtonText = "Start without job",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+
+        if (result == ContentDialogResult.None)
+        {
+            return int.MinValue;
+        }
+
+        if (result == ContentDialogResult.Secondary)
+        {
+            return 0;
+        }
+
+        return comboBox.SelectedItem is Job selectedJob ? selectedJob.JobId : 0;
+    }
+
+    private static bool TryGetCompanyChatStartContext(object? parameter, out int companyId, out int? jobId)
+    {
+        companyId = default;
+        jobId = null;
+
+        if (parameter is ChatStartContext context)
+        {
+            companyId = context.CompanyId;
+            jobId = context.JobId;
+            return companyId > 0;
+        }
+
+        if (parameter is IReadOnlyDictionary<string, object> dict)
+        {
+            if (!dict.TryGetValue("CompanyId", out var companyIdObj))
+                return false;
+
+            if (companyIdObj is not int id || id <= 0)
+                return false;
+
+            companyId = id;
+
+            if (dict.TryGetValue("JobId", out var jobIdObj) && jobIdObj is int selectedJobId && selectedJobId > 0)
+            {
+                jobId = selectedJobId;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

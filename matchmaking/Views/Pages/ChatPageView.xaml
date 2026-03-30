@@ -384,8 +384,29 @@
               RowDefinitions="Auto,*,Auto,Auto"
               Background="#FFFFFF">
 
+            <!-- Placeholder: No chat selected -->
+            <StackPanel Grid.Row="0" Grid.RowSpan="4"
+                        Visibility="{Binding SelectedChat, Converter={StaticResource ObjectToVisibilityConverter}, ConverterParameter=Inverse}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="16">
+                <FontIcon Glyph="&#xE77B;" FontSize="64" Foreground="#ABABAB" HorizontalAlignment="Center" />
+                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                    <TextBlock Text="No chat selected"
+                               FontSize="16" FontWeight="SemiBold"
+                               Foreground="#1A1A1A"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="Select a conversation from the list to start messaging"
+                               FontSize="12" Foreground="#6B6B6B"
+                               HorizontalAlignment="Center"
+                               TextWrapping="Wrap"
+                               MaxWidth="300" />
+                </StackPanel>
+            </StackPanel>
+
             <!-- ── Chat header ── -->
             <Border Grid.Row="0"
+                    Visibility="{Binding SelectedChat, Converter={StaticResource ObjectToVisibilityConverter}}"
                     Background="#FFFFFF"
                     BorderBrush="#14000000"
                     BorderThickness="0,0,0,0.5"
@@ -446,6 +467,9 @@
                                 <StackPanel Orientation="Horizontal" Spacing="5">
                                     <FontIcon Glyph="&#xE7BE;" FontSize="11" Foreground="#0F4FAD" />
                                     <TextBlock Text="{Binding LinkedJob.Title}"
+                                               FontSize="11" FontWeight="Medium"
+                                               Foreground="#0F4FAD" />
+                                    <TextBlock Text="{Binding LinkedJob.JobDescription}"
                                                FontSize="11" FontWeight="Medium"
                                                Foreground="#0F4FAD" />
                                 </StackPanel>
@@ -527,6 +551,7 @@
 
             <!-- ── Message list ── -->
             <ListView Grid.Row="1"
+                      Visibility="{Binding SelectedChat, Converter={StaticResource ObjectToVisibilityConverter}}"
                       x:Name="MessageList"
                       ItemsSource="{Binding Messages}"
                       Background="#F8F8F7"
@@ -627,7 +652,8 @@
                                                    FontSize="10"
                                                    Foreground="#1F6FEB"
                                                    FontWeight="SemiBold"
-                                                   Margin="0,0,2,0" />
+                                                   Margin="0,0,2,0"
+                                                   Visibility="{Binding ShowReadReceipt, Converter={StaticResource BoolToVisibilityConverter}}" />
                                     </StackPanel>
                                 </StackPanel>
 
@@ -696,6 +722,7 @@
 
             <!-- ── Compose area ── -->
             <Border Grid.Row="3"
+                    Visibility="{Binding SelectedChat, Converter={StaticResource ObjectToVisibilityConverter}}"
                     Background="#FFFFFF"
                     BorderBrush="#14000000"
                     BorderThickness="0,0.5,0,0"

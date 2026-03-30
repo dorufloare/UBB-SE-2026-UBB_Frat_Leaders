@@ -33,6 +33,19 @@ public class ChatService
         var existingChat = _chatRepository.GetByUserAndCompany(userId, companyId);
         if (existingChat is not null)
         {
+            // If chat was deleted by user, restore it
+            if (existingChat.IsDeletedByUser)
+            {
+                _chatRepository.RestoreDeletedByUser(existingChat.ChatId);
+                existingChat.IsDeletedByUser = false;
+            }
+
+            if (jobId.HasValue && !existingChat.JobId.HasValue)
+            {
+                _chatRepository.UpdateJobId(existingChat.ChatId, jobId.Value);
+                existingChat.JobId = jobId;
+            }
+
             return existingChat;
         }
 
@@ -56,6 +69,12 @@ public class ChatService
         var existingChat = _chatRepository.GetByUsers(userId, secondUserId);
         if (existingChat is not null)
         {
+            // If chat was deleted by user, restore it
+            if (existingChat.IsDeletedByUser)
+            {
+                _chatRepository.RestoreDeletedByUser(existingChat.ChatId);
+                existingChat.IsDeletedByUser = false;
+            }
             return existingChat;
         }
         var chat = new Chat

@@ -243,6 +243,8 @@ public class ChatViewModel : ObservableObject
         if (_sessionContext.CurrentMode != AppMode.UserMode)
             return;
 
+        var selectedChatId = SelectedChat?.ChatId;
+
         FilteredChats.Clear();
         var filtered = ActiveTab == "Users"
             ? Chats.Where(c => c.SecondUserId.HasValue).ToList()
@@ -251,6 +253,15 @@ public class ChatViewModel : ObservableObject
         foreach (var chat in filtered)
         {
             FilteredChats.Add(chat);
+        }
+
+        if (selectedChatId.HasValue)
+        {
+            var restoredSelection = FilteredChats.FirstOrDefault(c => c.ChatId == selectedChatId.Value);
+            if (restoredSelection is not null)
+            {
+                SelectedChat = restoredSelection;
+            }
         }
     }
 
@@ -267,6 +278,7 @@ public class ChatViewModel : ObservableObject
         SelectedChat = chat;
 
         var messages = _chatService.GetMessages(SelectedChat.ChatId);
+        ApplyReadReceiptVisibility(messages);
         Messages.Clear();
         foreach (var message in messages)
         {
@@ -313,27 +325,54 @@ public class ChatViewModel : ObservableObject
         try
         {
             _chatService.SendMessage(SelectedChat.ChatId, MessageText, senderId, SelectedMessageType);
-            
+
             MessageText = string.Empty;
             SelectedMessageType = MessageType.Text;
 
+            var selectedChatId = SelectedChat.ChatId;
             RefreshInboxAndSelectedChat();
 
-            if (SelectedChat is not null && Chats.Count > 0 && Chats[0] != SelectedChat)
-            {
-                Chats.Remove(SelectedChat);
-                Chats.Insert(0, SelectedChat);
-            }
+            MoveChatToTop(Chats, selectedChatId);
 
-            if (_sessionContext.CurrentMode == AppMode.UserMode && SelectedChat is not null && FilteredChats.Count > 0 && FilteredChats[0] != SelectedChat)
+            if (_sessionContext.CurrentMode == AppMode.UserMode)
             {
-                FilteredChats.Remove(SelectedChat);
-                FilteredChats.Insert(0, SelectedChat);
+                MoveChatToTop(FilteredChats, selectedChatId);
+                var restoredSelection = FilteredChats.FirstOrDefault(c => c.ChatId == selectedChatId);
+                if (restoredSelection is not null)
+                {
+                    SelectedChat = restoredSelection;
+                }
+            }
+            else
+            {
+                var restoredSelection = Chats.FirstOrDefault(c => c.ChatId == selectedChatId);
+                if (restoredSelection is not null)
+                {
+                    SelectedChat = restoredSelection;
+                }
             }
         }
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
+        }
+    }
+
+    private static void MoveChatToTop(ObservableCollection<Chat> chats, int chatId)
+    {
+        var index = -1;
+        for (var i = 0; i < chats.Count; i++)
+        {
+            if (chats[i].ChatId == chatId)
+            {
+                index = i;
+                break;
+            }
+        }
+
+        if (index > 0)
+        {
+            chats.Move(index, 0);
         }
     }
 
@@ -375,6 +414,7 @@ public class ChatViewModel : ObservableObject
         }
 
         var latestMessages = _chatService.GetMessages(refreshedSelectedChat.ChatId);
+        ApplyReadReceiptVisibility(latestMessages);
         if (HaveMessagesChanged(latestMessages))
         {
             Messages.Clear();
@@ -404,6 +444,27 @@ public class ChatViewModel : ObservableObject
         UpdateVisibility();
     }
 
+    private void ApplyReadReceiptVisibility(IReadOnlyList<Message> messages)
+    {
+        var currentSenderId = _sessionContext.CurrentMode == AppMode.UserMode
+            ? _sessionContext.CurrentUserId.Value
+            : _sessionContext.CurrentCompanyId.Value;
+
+        for (var i = 0; i < messages.Count; i++)
+        {
+            messages[i].ShowReadReceipt = false;
+        }
+
+        for (var i = messages.Count - 1; i >= 0; i--)
+        {
+            if (messages[i].SenderId == currentSenderId)
+            {
+                messages[i].ShowReadReceipt = true;
+                break;
+            }
+        }
+    }
+
     private bool MergeChats(IReadOnlyList<Chat> latestChats)
     {
         var changed = false;
@@ -418,21 +479,36 @@ public class ChatViewModel : ObservableObject
             }
         }
 
-        for (var i = 0; i < Chats.Count; i++)
+        for (var targetIndex = 0; targetIndex < latestChats.Count; targetIndex++)
         {
-            var current = Chats[i];
-            if (latestById.TryGetValue(current.ChatId, out var updated) && IsChatDifferent(current, updated))
+            var latest = latestChats[targetIndex];
+            var currentIndex = -1;
+
+            for (var i = 0; i < Chats.Count; i++)
             {
-                Chats[i] = updated;
+                if (Chats[i].ChatId == latest.ChatId)
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
+
+            if (currentIndex == -1)
+            {
+                Chats.Insert(targetIndex, latest);
+                changed = true;
+                continue;
+            }
+
+            if (IsChatDifferent(Chats[currentIndex], latest))
+            {
+                Chats[currentIndex] = latest;
                 changed = true;
             }
-        }
 
-        foreach (var latest in latestChats)
-        {
-            if (!Chats.Any(c => c.ChatId == latest.ChatId))
+            if (currentIndex != targetIndex)
             {
-                Chats.Insert(0, latest);
+                Chats.Move(currentIndex, targetIndex);
                 changed = true;
             }
         }
@@ -667,7 +743,14 @@ public class ChatViewModel : ObservableObject
         }
         else if (selectedResult is User user)
         {
-            chat = _chatService.FindOrCreateUserUserChat(_sessionContext.CurrentUserId.Value, user.UserId);
+            if (_sessionContext.CurrentMode == AppMode.CompanyMode)
+            {
+                chat = _chatService.FindOrCreateUserCompanyChat(user.UserId, _sessionContext.CurrentCompanyId.Value, null);
+            }
+            else
+            {
+                chat = _chatService.FindOrCreateUserUserChat(_sessionContext.CurrentUserId.Value, user.UserId);
+            }
         }
         else if (selectedResult is Company company)
         {
@@ -678,11 +761,15 @@ public class ChatViewModel : ObservableObject
             return;
         }
 
-        // Add chat to Chats if not already present
-        if (!Chats.Contains(chat))
+        // Remove old instance of the chat if it exists (could be a restored deleted chat)
+        var oldChat = Chats.FirstOrDefault(c => c.ChatId == chat.ChatId);
+        if (oldChat is not null)
         {
-            Chats.Insert(0, chat);
+            Chats.Remove(oldChat);
         }
+
+        // Add chat to Chats if not already present
+        Chats.Insert(0, chat);
 
         // In UserMode: set the correct active tab and apply filter
         if (_sessionContext.CurrentMode == AppMode.UserMode)
@@ -699,16 +786,53 @@ public class ChatViewModel : ObservableObject
             ApplyTabFilter();
 
             // Add to FilteredChats if not already present
-            if (!FilteredChats.Contains(chat))
+            var oldFilteredChat = FilteredChats.FirstOrDefault(c => c.ChatId == chat.ChatId);
+            if (oldFilteredChat is not null)
             {
-                FilteredChats.Insert(0, chat);
+                FilteredChats.Remove(oldFilteredChat);
             }
+            FilteredChats.Insert(0, chat);
         }
 
         // Select and load the chat
         SelectChat(chat);
 
         // Clear search
+        SearchQuery = null;
+        SearchResults.Clear();
+    }
+
+    public void StartCompanyChat(int companyId, int? jobId)
+    {
+        if (_sessionContext.CurrentMode != AppMode.UserMode)
+            return;
+
+        var company = _companyRepository.GetById(companyId);
+        if (company is null)
+            return;
+
+        var chat = _chatService.FindOrCreateUserCompanyChat(_sessionContext.CurrentUserId.Value, companyId, jobId);
+
+        var oldChat = Chats.FirstOrDefault(c => c.ChatId == chat.ChatId);
+        if (oldChat is not null)
+        {
+            Chats.Remove(oldChat);
+        }
+
+        Chats.Insert(0, chat);
+
+        ActiveTab = "Company";
+        ApplyTabFilter();
+
+        var oldFilteredChat = FilteredChats.FirstOrDefault(c => c.ChatId == chat.ChatId);
+        if (oldFilteredChat is not null)
+        {
+            FilteredChats.Remove(oldFilteredChat);
+        }
+
+        FilteredChats.Insert(0, chat);
+
+        SelectChat(chat);
         SearchQuery = null;
         SearchResults.Clear();
     }
