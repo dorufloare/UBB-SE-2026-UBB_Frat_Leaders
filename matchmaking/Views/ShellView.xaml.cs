@@ -18,7 +18,7 @@ public sealed partial class ShellView : UserControl
     {
         if (ContentHostFrame.Content is null)
         {
-            ContentHostFrame.Navigate(typeof(SampleFormPage));
+            ContentHostFrame.Navigate(typeof(DeveloperPage));
         }
     }
 }

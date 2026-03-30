@@ -69,14 +69,10 @@
                                                        FontSize="15" />
                                         </Border>
 
-                                        <StackPanel Spacing="1" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding AuthorName}"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="14" />
-                                            <TextBlock Text="{Binding PostedAt}"
-                                                       FontSize="12"
-                                                       Opacity="0.55" />
-                                        </StackPanel>
+                                        <TextBlock Text="{Binding AuthorName}"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center" />
                                     </StackPanel>
 
                                     <Border Grid.Column="1"

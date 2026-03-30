@@ -32,11 +32,10 @@ public class DeveloperService
         return _interactionRepository.GetAll();
     }
 
-    public void addPost(int postId, int developerId, string parameter, string value)
+    public void addPost(int developerId, string parameter, string value)
     {
         var post = new Post
         {
-            PostId = postId,
             DeveloperId = developerId,
             Parameter = parameter,
             Value = value
@@ -44,11 +43,10 @@ public class DeveloperService
         _postRepository.Add(post);
     }
 
-    public void addInteraction(int interactionId, int developerId, int postId, InteractionType type)
+    public void addInteraction( int developerId, int postId, InteractionType type)
     {
         var interaction = new Interaction
         {
-            InteractionId = interactionId,
             DeveloperId = developerId,
             PostId = postId,
             Type = type

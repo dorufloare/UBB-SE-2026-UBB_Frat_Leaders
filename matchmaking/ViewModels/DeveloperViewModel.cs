@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using matchmaking.Domain.Entities;
 using matchmaking.Domain.Enums;
 using matchmaking.Domain.Session;
 using matchmaking.Repositories;
@@ -11,18 +10,16 @@ namespace matchmaking.ViewModels;
 
 public class DeveloperViewModel : ObservableObject
 {
-    private ObservableCollection<Post> _posts;
-    private ObservableCollection<Interaction> _interactions;
-
     private readonly DeveloperService _developerService;
     private readonly SessionContext _session;
+
+    public ObservableCollection<PostViewModel> Posts { get; } = new();
 
     public DeveloperViewModel(DeveloperService developerService, SessionContext sessionContext)
     {
         _developerService = developerService;
         _session = sessionContext;
-        _posts = new ObservableCollection<Post>();
-        _interactions = new ObservableCollection<Interaction>();
+        LoadData();
     }
 
     public void AddPost(string parameter, string value)
@@ -30,10 +27,9 @@ public class DeveloperViewModel : ObservableObject
         var developerId = _session.CurrentDeveloperId
             ?? throw new InvalidOperationException("No developer session is active.");
 
-        var existingPosts = _developerService.GetPosts();
-        var newPostId = existingPosts.Count > 0 ? existingPosts.Max(p => p.PostId) + 1 : 1;
 
-        _developerService.addPost(newPostId, developerId, parameter, value);
+        _developerService.addPost(developerId, parameter, value);
+        LoadData();
     }
 
     public void HandleLike(int postId)
@@ -41,10 +37,9 @@ public class DeveloperViewModel : ObservableObject
         var developerId = _session.CurrentDeveloperId
             ?? throw new InvalidOperationException("No developer session is active.");
 
-        var existingInteractions = _developerService.GetInteractions();
-        var newInteractionId = existingInteractions.Count > 0 ? existingInteractions.Max(i => i.InteractionId) + 1 : 1;
 
-        _developerService.addInteraction(newInteractionId, developerId, postId, InteractionType.Like);
+        _developerService.addInteraction(developerId, postId, InteractionType.Like);
+        LoadData();
     }
 
     public void HandleDislike(int postId)
@@ -52,9 +47,21 @@ public class DeveloperViewModel : ObservableObject
         var developerId = _session.CurrentDeveloperId
             ?? throw new InvalidOperationException("No developer session is active.");
 
-        var existingInteractions = _developerService.GetInteractions();
-        var newInteractionId = existingInteractions.Count > 0 ? existingInteractions.Max(i => i.InteractionId) + 1 : 1;
 
-        _developerService.addInteraction(newInteractionId, developerId, postId, InteractionType.Dislike);
+        _developerService.addInteraction(developerId, postId, InteractionType.Dislike);
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        var posts = _developerService.GetPosts();
+        var interactions = _developerService.GetInteractions();
+
+        Posts.Clear();
+        foreach (var post in posts)
+        {
+            var postInteractions = interactions.Where(i => i.PostId == post.PostId);
+            Posts.Add(new PostViewModel(post, postInteractions));
+        }
     }
 }
