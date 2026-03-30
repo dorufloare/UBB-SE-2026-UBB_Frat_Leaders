@@ -1,3 +1,4 @@
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using matchmaking.ViewModels;
@@ -7,10 +8,16 @@ namespace matchmaking.Views;
 
 public sealed partial class ShellView : UserControl
 {
+    private readonly ShellViewModel _viewModel;
+
     public ShellView()
     {
         InitializeComponent();
-        DataContext = new ShellViewModel();
+        _viewModel = new ShellViewModel(
+            onRecommendations: NavigateToRecommendations,
+            onMyStatus: NavigateToMyStatus,
+            onChat: NavigateToChat);
+        DataContext = _viewModel;
 
         HeaderControl.RecommendationsRequested += OnRecommendationsRequested;
         HeaderControl.MyStatusRequested += OnMyStatusRequested;
@@ -23,22 +30,47 @@ public sealed partial class ShellView : UserControl
     {
         if (ContentHostFrame.Content is null)
         {
-            ContentHostFrame.Navigate(typeof(ChatPageView));
+            NavigateToMyStatus();
         }
     }
 
-    private void OnRecommendationsRequested(object? sender, System.EventArgs e)
+    private void NavigateToRecommendations()
     {
-        ContentHostFrame.Navigate(typeof(SampleFormPage));
+        Navigate(typeof(SampleFormPage));
     }
 
-    private void OnMyStatusRequested(object? sender, System.EventArgs e)
+    private void NavigateToMyStatus()
     {
-        ContentHostFrame.Navigate(typeof(SampleFormPage));
+        Navigate(typeof(CompanyStatusPage));
     }
 
-    private void OnChatRequested(object? sender, System.EventArgs e)
+    private void NavigateToChat()
     {
-        ContentHostFrame.Navigate(typeof(ChatPageView));
+        Navigate(typeof(ChatPageView));
+    }
+
+    private void Navigate(Type pageType)
+    {
+        if (ContentHostFrame.CurrentSourcePageType == pageType)
+        {
+            return;
+        }
+
+        ContentHostFrame.Navigate(pageType);
+    }
+
+    private void OnRecommendationsRequested(object? sender, EventArgs e)
+    {
+        NavigateToRecommendations();
+    }
+
+    private void OnMyStatusRequested(object? sender, EventArgs e)
+    {
+        NavigateToMyStatus();
+    }
+
+    private void OnChatRequested(object? sender, EventArgs e)
+    {
+        NavigateToChat();
     }
 }
