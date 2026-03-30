@@ -14,4 +14,5 @@ public class Chat
     public string LastMessageSnippet { get; set; } = string.Empty;
     public string LastMessageTime { get; set; } = string.Empty;
     public string LastMessage { get; set; } = string.Empty;
+    public int UnreadCount { get; set; }
 }

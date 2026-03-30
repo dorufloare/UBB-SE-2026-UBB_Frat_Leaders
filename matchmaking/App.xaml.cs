@@ -53,7 +53,7 @@ namespace matchmaking
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             // hardcode preview mode for now
-            Session.LoginAsUser(1);        // or Session.LoginAsCompany(1)
+            Session.LoginAsCompany(4);        // or Session.LoginAsCompany(1)
 
             MainWindow = new MainWindow();
             MainWindow.Activate();

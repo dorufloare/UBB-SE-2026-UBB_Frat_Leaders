@@ -277,7 +277,22 @@ public class ChatViewModel : ObservableObject
     {
         SelectedChat = chat;
 
+        int currentCallerId = _sessionContext.CurrentMode == AppMode.UserMode
+            ? _sessionContext.CurrentUserId.Value
+            : _sessionContext.CurrentCompanyId.Value;
+
         var messages = _chatService.GetMessages(SelectedChat.ChatId);
+
+        _chatService.MarkMessageAsRead(SelectedChat.ChatId, currentCallerId);
+
+        for (var i = 0; i < messages.Count; i++)
+        {
+            if (messages[i].SenderId != currentCallerId)
+            {
+                messages[i].IsRead = true;
+            }
+        }
+
         ApplyReadReceiptVisibility(messages);
         Messages.Clear();
         foreach (var message in messages)
@@ -285,13 +300,7 @@ public class ChatViewModel : ObservableObject
             Messages.Add(message);
         }
 
-        UpdateChatPreviewFromMessages(SelectedChat, messages);
-
-        int currentCallerId = _sessionContext.CurrentMode == AppMode.UserMode
-            ? _sessionContext.CurrentUserId.Value
-            : _sessionContext.CurrentCompanyId.Value;
-
-        _chatService.MarkMessageAsRead(SelectedChat.ChatId, currentCallerId);
+        UpdateChatPreviewFromMessages(SelectedChat, messages, currentCallerId);
 
         if (SelectedChat.JobId.HasValue)
         {
@@ -413,8 +422,28 @@ public class ChatViewModel : ObservableObject
             SelectedChat = refreshedSelectedChat;
         }
 
+        var currentCallerId = _sessionContext.CurrentMode == AppMode.UserMode
+            ? _sessionContext.CurrentUserId.Value
+            : _sessionContext.CurrentCompanyId.Value;
+
         var latestMessages = _chatService.GetMessages(refreshedSelectedChat.ChatId);
+
+        var hasUnreadFromOtherParty = latestMessages.Any(m => m.SenderId != currentCallerId && !m.IsRead);
+        if (hasUnreadFromOtherParty)
+        {
+            _chatService.MarkMessageAsRead(refreshedSelectedChat.ChatId, currentCallerId);
+
+            for (var i = 0; i < latestMessages.Count; i++)
+            {
+                if (latestMessages[i].SenderId != currentCallerId)
+                {
+                    latestMessages[i].IsRead = true;
+                }
+            }
+        }
+
         ApplyReadReceiptVisibility(latestMessages);
+
         if (HaveMessagesChanged(latestMessages))
         {
             Messages.Clear();
@@ -422,15 +451,9 @@ public class ChatViewModel : ObservableObject
             {
                 Messages.Add(message);
             }
-
-            int currentCallerId = _sessionContext.CurrentMode == AppMode.UserMode
-                ? _sessionContext.CurrentUserId.Value
-                : _sessionContext.CurrentCompanyId.Value;
-
-            _chatService.MarkMessageAsRead(refreshedSelectedChat.ChatId, currentCallerId);
         }
 
-        UpdateChatPreviewFromMessages(refreshedSelectedChat, latestMessages);
+        UpdateChatPreviewFromMessages(refreshedSelectedChat, latestMessages, currentCallerId);
 
         if (SelectedChat.JobId.HasValue)
         {
@@ -526,6 +549,7 @@ public class ChatViewModel : ObservableObject
                current.BlockedByUserId != updated.BlockedByUserId ||
                current.IsDeletedByUser != updated.IsDeletedByUser ||
                current.IsDeletedBySecondParty != updated.IsDeletedBySecondParty ||
+               current.UnreadCount != updated.UnreadCount ||
                !string.Equals(current.LastMessage, updated.LastMessage, StringComparison.Ordinal) ||
                !string.Equals(current.LastMessageSnippet, updated.LastMessageSnippet, StringComparison.Ordinal) ||
                !string.Equals(current.LastMessageTime, updated.LastMessageTime, StringComparison.Ordinal);
@@ -558,10 +582,13 @@ public class ChatViewModel : ObservableObject
     private void PopulateChatPreview(Chat chat)
     {
         var messages = _chatService.GetMessages(chat.ChatId);
-        UpdateChatPreviewFromMessages(chat, messages);
+        var currentCallerId = _sessionContext.CurrentMode == AppMode.UserMode
+            ? _sessionContext.CurrentUserId.Value
+            : _sessionContext.CurrentCompanyId.Value;
+        UpdateChatPreviewFromMessages(chat, messages, currentCallerId);
     }
 
-    private static void UpdateChatPreviewFromMessages(Chat chat, IReadOnlyList<Message> messages)
+    private static void UpdateChatPreviewFromMessages(Chat chat, IReadOnlyList<Message> messages, int currentCallerId)
     {
         var lastMessage = messages.Count > 0
             ? messages[^1]
@@ -572,6 +599,7 @@ public class ChatViewModel : ObservableObject
             chat.LastMessage = string.Empty;
             chat.LastMessageSnippet = string.Empty;
             chat.LastMessageTime = string.Empty;
+            chat.UnreadCount = 0;
             return;
         }
 
@@ -584,6 +612,15 @@ public class ChatViewModel : ObservableObject
         chat.LastMessageTime = localTime.Date == DateTime.Now.Date
             ? localTime.ToString("HH:mm")
             : localTime.ToString("dd MMM");
+
+        if (lastMessage.SenderId != currentCallerId && !lastMessage.IsRead)
+        {
+            chat.UnreadCount = messages.Count(m => m.SenderId != currentCallerId && !m.IsRead);
+        }
+        else
+        {
+            chat.UnreadCount = 0;
+        }
     }
 
     private void UpdateVisibility()
