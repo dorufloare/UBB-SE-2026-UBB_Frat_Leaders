@@ -7,46 +7,71 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <Page.Resources>
+        <Style x:Key="GhostButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+    </Page.Resources>
+
+    <Grid RowSpacing="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!-- Page Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
+        <Grid Grid.Row="0"
+              Padding="0,0,0,20"
+              Margin="0,0,0,4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0"
-                       Text="Developer Page"
-                       FontSize="26"
-                       FontWeight="SemiBold"
-                       VerticalAlignment="Center" />
+            <StackPanel Grid.Column="0" Spacing="3" VerticalAlignment="Center">
+                <TextBlock Text="Developer Page"
+                           FontSize="22"
+                           FontWeight="SemiBold" />
+                <TextBlock Text="Propose algorithm parameter changes and vote on community suggestions."
+                           FontSize="13"
+                           Opacity="0.5" />
+            </StackPanel>
 
             <Button Grid.Column="1"
                     x:Name="NewPostButton"
-                    Content="New Post"
+                    Content="+ New Post"
                     Style="{StaticResource PrimaryActionButtonStyle}"
+                    VerticalAlignment="Center"
                     Click="NewPostButton_Click" />
         </Grid>
 
+        <!-- Horizontal rule below header -->
+        <Rectangle Grid.Row="0"
+                   Height="1"
+                   Fill="#FFE5E7EB"
+                   VerticalAlignment="Bottom" />
+
         <!-- Posts Feed -->
         <ScrollViewer Grid.Row="1"
+                      Padding="0,20,0,0"
                       VerticalScrollBarVisibility="Auto">
-            <ItemsControl x:Name="PostsList"
-                          ItemsSource="{Binding Posts}">
+            <ItemsControl ItemsSource="{Binding Posts}"
+                          MaxWidth="760"
+                          HorizontalAlignment="Left">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Background="{StaticResource CardBackgroundBrush}"
+                                BorderBrush="#FFE5E7EB"
+                                BorderThickness="1"
                                 CornerRadius="8"
-                                Padding="20"
-                                Margin="0,0,0,12">
-                            <StackPanel Spacing="14">
+                                Padding="20,16"
+                                Margin="0,0,0,10">
+                            <StackPanel Spacing="12">
 
-                                <!-- Author Row + Type Badge -->
+                                <!-- Author row -->
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -57,44 +82,45 @@
                                                 Orientation="Horizontal"
                                                 Spacing="10"
                                                 VerticalAlignment="Center">
-                                        <Border Width="36"
-                                                Height="36"
-                                                CornerRadius="18"
+                                        <Border Width="32"
+                                                Height="32"
+                                                CornerRadius="16"
                                                 Background="#FF374151">
                                             <TextBlock Text="{Binding AuthorInitial}"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"
                                                        Foreground="White"
                                                        FontWeight="SemiBold"
-                                                       FontSize="15" />
+                                                       FontSize="13" />
                                         </Border>
-
                                         <TextBlock Text="{Binding AuthorName}"
+                                                   FontSize="13"
                                                    FontWeight="SemiBold"
-                                                   FontSize="14"
+                                                   Opacity="0.75"
                                                    VerticalAlignment="Center" />
                                     </StackPanel>
 
                                     <Border Grid.Column="1"
-                                            CornerRadius="12"
-                                            Padding="10,4"
+                                            CornerRadius="4"
+                                            Padding="8,3"
                                             Background="{Binding TypeBadgeBackground}"
                                             VerticalAlignment="Center">
                                         <TextBlock Text="{Binding TypeLabel}"
-                                                   FontSize="12"
+                                                   FontSize="11"
                                                    Foreground="White"
                                                    FontWeight="SemiBold" />
                                     </Border>
                                 </Grid>
 
-                                <!-- Post Content -->
+                                <!-- Parameter + Value -->
                                 <StackPanel Spacing="4">
                                     <TextBlock Text="{Binding ParameterDisplayName}"
-                                               FontSize="15"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding ValueDisplay}"
                                                FontSize="14"
-                                               Opacity="0.70"
+                                               FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding ValueDisplay}"
+                                               FontSize="13"
+                                               Opacity="0.6"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
 
@@ -102,21 +128,29 @@
                                 <Rectangle Height="1" Fill="#FFE5E7EB" />
 
                                 <!-- Like / Dislike -->
-                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
                                     <Button Tag="{Binding PostId}"
                                             Click="LikeButton_Click"
-                                            Style="{StaticResource SecondaryActionButtonStyle}">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <FontIcon Glyph="&#xE8E1;" FontSize="14" />
-                                            <TextBlock Text="{Binding LikeCount}" />
+                                            Style="{StaticResource GhostButtonStyle}">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <FontIcon Glyph="&#xE8E1;"
+                                                      FontSize="13"
+                                                      Opacity="0.6" />
+                                            <TextBlock Text="{Binding LikeCount}"
+                                                       FontSize="13"
+                                                       Opacity="0.6" />
                                         </StackPanel>
                                     </Button>
                                     <Button Tag="{Binding PostId}"
                                             Click="DislikeButton_Click"
-                                            Style="{StaticResource SecondaryActionButtonStyle}">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <FontIcon Glyph="&#xE8E0;" FontSize="14" />
-                                            <TextBlock Text="{Binding DislikeCount}" />
+                                            Style="{StaticResource GhostButtonStyle}">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <FontIcon Glyph="&#xE8E0;"
+                                                      FontSize="13"
+                                                      Opacity="0.6" />
+                                            <TextBlock Text="{Binding DislikeCount}"
+                                                       FontSize="13"
+                                                       Opacity="0.6" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
@@ -127,5 +161,6 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+
     </Grid>
 </Page>
