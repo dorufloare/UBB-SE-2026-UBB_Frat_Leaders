@@ -26,6 +26,7 @@ namespace matchmaking
         public MainWindow()
         {
             InitializeComponent();
+            RootFrame.Navigate(typeof(UserStatus.Views.UserStatusPage));
         }
     }
 }
