@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using matchmaking.Domain.Entities;
 using matchmaking.Domain.Session;
@@ -603,10 +604,12 @@ public class ChatViewModel : ObservableObject
             return;
         }
 
-        chat.LastMessage = lastMessage.Content;
-        chat.LastMessageSnippet = lastMessage.Content.Length > 60
-            ? $"{lastMessage.Content[..57]}..."
-            : lastMessage.Content;
+        var displayContent = GetDisplayContent(lastMessage);
+
+        chat.LastMessage = displayContent;
+        chat.LastMessageSnippet = displayContent.Length > 60
+            ? $"{displayContent[..57]}..."
+            : displayContent;
 
         var localTime = lastMessage.Timestamp.ToLocalTime();
         chat.LastMessageTime = localTime.Date == DateTime.Now.Date
@@ -621,6 +624,20 @@ public class ChatViewModel : ObservableObject
         {
             chat.UnreadCount = 0;
         }
+    }
+
+    private static string GetDisplayContent(Message message)
+    {
+        if (message.Type == MessageType.Text)
+            return message.Content;
+
+        var fileName = Path.GetFileName(message.Content);
+        if (string.IsNullOrWhiteSpace(fileName))
+            return message.Content;
+
+        return message.Type == MessageType.Image
+            ? $"📷 {fileName}"
+            : $"📎 {fileName}";
     }
 
     private void UpdateVisibility()

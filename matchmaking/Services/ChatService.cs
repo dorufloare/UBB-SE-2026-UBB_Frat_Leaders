@@ -2,15 +2,24 @@
 using matchmaking.Repositories;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using matchmaking.Domain.Enums;
 
 namespace matchmaking.Services;
 
 public class ChatService
 {
+    private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpg", ".jpeg", ".png"
+    };
+
+    private static readonly HashSet<string> AllowedFileExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".pdf", ".docx", ".doc"
+    };
+
     private readonly SqlChatRepository _chatRepository;
     private readonly SqlMessageRepository _messageRepository;
     private readonly UserRepository _userRepository;
@@ -127,7 +136,7 @@ public class ChatService
 
     public void SendMessage(int chatId, string content, int senderId, MessageType type)
     {
-        if (string.IsNullOrEmpty(content))
+        if (string.IsNullOrWhiteSpace(content))
             throw new ArgumentException("Message content cannot be empty.");
 
         Chat chat = _chatRepository.GetChatById(chatId);
@@ -137,21 +146,10 @@ public class ChatService
         if (MessageType.Text == type && content.Length > 2000)
             throw new ArgumentException("Text messages cannot exceed 2000 characters.");
 
-        if (MessageType.Image == type && !content.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
-            !content.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) &&
-            !content.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-            throw new NotSupportedException("Image messages must be a URL ending with .jpg, .jpeg or .png");
-
-        if (MessageType.Image == type && content.Length > 10 * 1024 * 1024)
-            throw new InvalidOperationException("Image must be less than 10 MB");
-
-        if (MessageType.File == type && !content.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) &&
-            !content.EndsWith(".docx", StringComparison.OrdinalIgnoreCase) &&
-            !content.EndsWith(".doc", StringComparison.OrdinalIgnoreCase))
-            throw new NotSupportedException("File messages must be a URL ending with .pdf, .docx or doc");
-
-        if (MessageType.File == type && content.Length > 20 * 1024 * 1024)
-            throw new InvalidOperationException("File must be less than 20 MB");
+        if (type == MessageType.Image || type == MessageType.File)
+        {
+            content = StoreAttachment(content, type);
+        }
 
         var message = new Message
         {
@@ -164,6 +162,45 @@ public class ChatService
         };
 
         _messageRepository.Add(message);
+    }
+
+    private static string StoreAttachment(string sourcePath, MessageType type)
+    {
+        if (!File.Exists(sourcePath))
+            throw new FileNotFoundException("Attachment file was not found.", sourcePath);
+
+        var extension = Path.GetExtension(sourcePath);
+        if (string.IsNullOrWhiteSpace(extension))
+            throw new NotSupportedException("Attachment must have a valid file extension.");
+
+        if (type == MessageType.Image && !AllowedImageExtensions.Contains(extension))
+            throw new NotSupportedException("Image messages must be .jpg, .jpeg or .png");
+
+        if (type == MessageType.File && !AllowedFileExtensions.Contains(extension))
+            throw new NotSupportedException("File messages must be .pdf, .docx or .doc");
+
+        var fileInfo = new FileInfo(sourcePath);
+        var maxBytes = type == MessageType.Image ? 10 * 1024 * 1024 : 20 * 1024 * 1024;
+        if (fileInfo.Length > maxBytes)
+            throw new InvalidOperationException(type == MessageType.Image
+                ? "Image must be less than 10 MB"
+                : "File must be less than 20 MB");
+
+        var now = DateTime.UtcNow;
+        var targetDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "matchmaking",
+            "attachments",
+            now.ToString("yyyy"),
+            now.ToString("MM"),
+            Guid.NewGuid().ToString("N"));
+
+        Directory.CreateDirectory(targetDirectory);
+
+        var targetPath = Path.Combine(targetDirectory, Path.GetFileName(sourcePath));
+        File.Copy(sourcePath, targetPath, overwrite: false);
+
+        return targetPath;
     }
 
     public void MarkMessageAsRead(int chatId, int readerId) 

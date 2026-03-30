@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
@@ -117,6 +118,63 @@ public class ReadReceiptConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         return value is bool isRead ? (isRead ? "Seen" : "Delivered") : "Delivered";
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class MessageContentDisplayConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is not Message message)
+            return string.Empty;
+
+        if (message.Type == MessageType.Text)
+            return message.Content;
+
+        var fileName = Path.GetFileName(message.Content);
+        if (string.IsNullOrWhiteSpace(fileName))
+            return message.Content;
+
+        return message.Type == MessageType.Image
+            ? $"📷 {fileName}"
+            : $"📎 {fileName}";
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class MessageTextVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is not Message message)
+            return Visibility.Collapsed;
+
+        return message.Type == MessageType.Text ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class MessageAttachmentVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is not Message message)
+            return Visibility.Collapsed;
+
+        return message.Type == MessageType.Text ? Visibility.Collapsed : Visibility.Visible;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

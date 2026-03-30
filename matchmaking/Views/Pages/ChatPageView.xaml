@@ -181,6 +181,28 @@
             <Setter Property="AcceptsReturn"         Value="False" />
         </Style>
 
+        <!-- ── Incoming attachment button style ── -->
+        <Style x:Key="IncomingAttachmentButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#EEF4FF" />
+            <Setter Property="Foreground" Value="#0F4FAD" />
+            <Setter Property="BorderBrush" Value="#661F6FEB" />
+            <Setter Property="BorderThickness" Value="0.5" />
+            <Setter Property="CornerRadius" Value="14,14,14,4" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+
+        <!-- ── Outgoing attachment button style ── -->
+        <Style x:Key="OutgoingAttachmentButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#DCEBFF" />
+            <Setter Property="Foreground" Value="#0F4FAD" />
+            <Setter Property="BorderBrush" Value="#661F6FEB" />
+            <Setter Property="BorderThickness" Value="0.5" />
+            <Setter Property="CornerRadius" Value="14,14,4,14" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+
     </Page.Resources>
 
     <!--
@@ -556,7 +578,8 @@
                       ItemsSource="{Binding Messages}"
                       Background="#F8F8F7"
                       SelectionMode="None"
-                      IsItemClickEnabled="False"
+                      IsItemClickEnabled="True"
+                      ItemClick="MessageList_ItemClick"
                       Padding="24,16">
 
                 <ListView.ItemContainerStyle>
@@ -608,13 +631,33 @@
                                             BorderThickness="0.5"
                                             CornerRadius="14,14,14,4"
                                             Padding="12,9"
-                                            MaxWidth="320">
-                                        <TextBlock Text="{Binding Content}"
+                                            MaxWidth="320"
+                                            Visibility="{Binding Converter={StaticResource MessageTextVisibilityConverter}}">
+                                        <TextBlock Text="{Binding Converter={StaticResource MessageContentDisplayConverter}}"
                                                    FontSize="13"
                                                    Foreground="#1A1A1A"
                                                    TextWrapping="Wrap"
                                                    LineHeight="20" />
                                     </Border>
+                                    <Button Style="{StaticResource IncomingAttachmentButtonStyle}"
+                                            MaxWidth="320"
+                                            Visibility="{Binding Converter={StaticResource MessageAttachmentVisibilityConverter}}"
+                                            Click="AttachmentMessage_Click"
+                                            Tag="{Binding}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE896;" FontSize="14" />
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Converter={StaticResource MessageContentDisplayConverter}}"
+                                                           FontSize="13"
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="Wrap" />
+                                                <TextBlock Text="Click to download"
+                                                           FontSize="11"
+                                                           Opacity="0.75" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Button>
+
                                     <TextBlock Text="{Binding Timestamp}"
                                                FontSize="10"
                                                Foreground="#ABABAB"
@@ -635,13 +678,33 @@
                                     <Border Background="#1F6FEB"
                                             CornerRadius="14,14,4,14"
                                             Padding="12,9"
-                                            MaxWidth="320">
-                                        <TextBlock Text="{Binding Content}"
+                                            MaxWidth="320"
+                                            Visibility="{Binding Converter={StaticResource MessageTextVisibilityConverter}}">
+                                        <TextBlock Text="{Binding Converter={StaticResource MessageContentDisplayConverter}}"
                                                    FontSize="13"
                                                    Foreground="White"
                                                    TextWrapping="Wrap"
                                                    LineHeight="20" />
                                     </Border>
+                                    <Button Style="{StaticResource OutgoingAttachmentButtonStyle}"
+                                            MaxWidth="320"
+                                            Visibility="{Binding Converter={StaticResource MessageAttachmentVisibilityConverter}}"
+                                            Click="AttachmentMessage_Click"
+                                            Tag="{Binding}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE896;" FontSize="14" />
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Converter={StaticResource MessageContentDisplayConverter}}"
+                                                           FontSize="13"
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="Wrap" />
+                                                <TextBlock Text="Click to download"
+                                                           FontSize="11"
+                                                           Opacity="0.75" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Button>
+
                                     <StackPanel Orientation="Horizontal"
                                                 Spacing="5"
                                                 HorizontalAlignment="Right">
@@ -772,3 +835,4 @@
         </Grid>
     </Grid>
 </Page>
+

@@ -19,7 +19,10 @@
             <converters:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
             <converters:IsOtherPartyMessageConverter x:Key="IsOtherPartyMessageConverter" />
             <converters:IsCurrentUserMessageConverter x:Key="IsCurrentUserMessageConverter" />
+            <converters:MessageTextVisibilityConverter x:Key="MessageTextVisibilityConverter" />
+            <converters:MessageAttachmentVisibilityConverter x:Key="MessageAttachmentVisibilityConverter" />
             <converters:ReadReceiptConverter x:Key="ReadReceiptConverter" />
+            <converters:MessageContentDisplayConverter x:Key="MessageContentDisplayConverter" />
             <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
             <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />

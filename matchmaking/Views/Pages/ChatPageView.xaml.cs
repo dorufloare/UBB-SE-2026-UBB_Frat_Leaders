@@ -1,4 +1,5 @@
 using matchmaking.Domain.Entities;
+using matchmaking.Domain.Enums;
 using matchmaking.Domain.Session;
 using matchmaking.Repositories;
 using matchmaking.Services;
@@ -9,6 +10,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -22,6 +24,7 @@ public sealed partial class ChatPageView : Page
     private readonly ChatViewModel _viewModel;
     private readonly DispatcherTimer _refreshTimer;
     private readonly JobService _jobService;
+    private bool _isScrollToLatestQueued;
 
     public ChatPageView()
     {
@@ -48,11 +51,14 @@ public sealed partial class ChatPageView : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
+        _viewModel.Messages.CollectionChanged -= Messages_CollectionChanged;
+        _viewModel.Messages.CollectionChanged += Messages_CollectionChanged;
         _viewModel.LoadChats();
 
         if (TryGetCompanyChatStartContext(e.Parameter, out var companyId, out var jobId))
         {
             _viewModel.StartCompanyChat(companyId, jobId);
+            QueueScrollToLatestMessage();
         }
 
         _refreshTimer.Start();
@@ -61,6 +67,7 @@ public sealed partial class ChatPageView : Page
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
         _refreshTimer.Stop();
+        _viewModel.Messages.CollectionChanged -= Messages_CollectionChanged;
         base.OnNavigatedFrom(e);
     }
 
@@ -84,6 +91,7 @@ public sealed partial class ChatPageView : Page
         if (e.AddedItems.Count > 0 && e.AddedItems[0] is Domain.Entities.Chat chat)
         {
             _viewModel.SelectChat(chat);
+            QueueScrollToLatestMessage();
         }
     }
 
@@ -277,5 +285,98 @@ public sealed partial class ChatPageView : Page
         }
 
         return false;
+    }
+
+    private async void MessageList_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is not Message message)
+            return;
+
+        await DownloadAttachmentAsync(message);
+    }
+
+    private async void AttachmentMessage_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: Message message })
+            return;
+
+        await DownloadAttachmentAsync(message);
+    }
+
+    private async System.Threading.Tasks.Task DownloadAttachmentAsync(Message message)
+    {
+        if (message.Type != MessageType.File && message.Type != MessageType.Image)
+            return;
+
+        try
+        {
+            var sourcePath = message.Content;
+            if (string.IsNullOrWhiteSpace(sourcePath) || !File.Exists(sourcePath))
+            {
+                _viewModel.ErrorMessage = "Attachment file is missing.";
+                return;
+            }
+
+            var extension = Path.GetExtension(sourcePath);
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                extension = ".bin";
+            }
+
+            var picker = new FileSavePicker
+            {
+                SuggestedFileName = Path.GetFileName(sourcePath),
+                DefaultFileExtension = extension
+            };
+            picker.FileTypeChoices.Add("File", new List<string> { extension });
+
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+            var file = await picker.PickSaveFileAsync();
+            if (file is null)
+            {
+                return;
+            }
+
+            File.Copy(sourcePath, file.Path, overwrite: true);
+        }
+        catch (Exception ex)
+        {
+            _viewModel.ErrorMessage = ex.Message;
+        }
+    }
+
+    private void Messages_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Add ||
+            e.Action == NotifyCollectionChangedAction.Reset ||
+            e.Action == NotifyCollectionChangedAction.Replace)
+        {
+            QueueScrollToLatestMessage();
+        }
+    }
+
+    private void QueueScrollToLatestMessage()
+    {
+        if (_isScrollToLatestQueued)
+            return;
+
+        _isScrollToLatestQueued = true;
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            _isScrollToLatestQueued = false;
+            ScrollToLatestMessage();
+        });
+    }
+
+    private void ScrollToLatestMessage()
+    {
+        if (MessageList.Items.Count == 0)
+            return;
+
+        var lastMessage = MessageList.Items[MessageList.Items.Count - 1];
+        MessageList.ScrollIntoView(lastMessage);
     }
 }
