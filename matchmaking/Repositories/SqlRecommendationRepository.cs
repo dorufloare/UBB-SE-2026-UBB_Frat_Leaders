@@ -72,24 +72,6 @@ public class SqlRecommendationRepository(string connectionString) : SqlRepositor
         command.ExecuteNonQuery();
     }
 
-    public IReadOnlyList<Recommendation> GetByUserId(int userId)
-    {
-        using var connection = OpenConnection();
-        using var command = new SqlCommand(
-            "SELECT RecommendationId, UserId, JobId, Timestamp FROM Recommendation WHERE UserId = @UserId",
-            connection);
-        command.Parameters.AddWithValue("@UserId", userId);
-        using var reader = command.ExecuteReader();
-
-        var result = new List<Recommendation>();
-        while (reader.Read())
-        {
-            result.Add(Map(reader));
-        }
-
-        return result;
-    }
-
     public Recommendation? GetLatestByUserIdAndJobId(int userId, int jobId)
     {
         using var connection = OpenConnection();

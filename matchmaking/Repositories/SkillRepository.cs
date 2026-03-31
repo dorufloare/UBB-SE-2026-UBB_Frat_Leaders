@@ -44,7 +44,6 @@ public class SkillRepository
     public IReadOnlyList<Skill> GetByUserId(int userId) =>
         _skills.Where(s => s.UserId == userId).ToList();
 
-    /// <summary>Distinct skills for filter multi-select (id + display name).</summary>
     public IReadOnlyList<(int SkillId, string Name)> GetDistinctSkillCatalog() =>
         _skills
             .GroupBy(s => s.SkillId)
