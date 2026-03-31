@@ -3,7 +3,6 @@
     x:Class="matchmaking.Views.Pages.UserRecommendationPageView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:matchmaking.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:matchmaking.ViewModels"
@@ -11,10 +10,6 @@
     xmlns:local="using:matchmaking.Views.Pages"
     mc:Ignorable="d"
     Background="{StaticResource ShellBackgroundBrush}">
-
-    <Page.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BoolToVis" />
-    </Page.Resources>
 
     <Grid>
         <SplitView x:Name="RootSplit"
@@ -108,13 +103,13 @@
                                   HorizontalAlignment="Center"
                                   VerticalAlignment="Center"
                                   IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
-                                  Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVis}}" />
+                                  Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                     <StackPanel HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Spacing="12"
                                 MaxWidth="420"
-                                Visibility="{x:Bind ViewModel.ShowEmptyDeck, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+                                Visibility="{x:Bind ViewModel.ShowEmptyDeck, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="No more jobs match your filters right now."
                                    TextWrapping="WrapWholeWords"
                                    HorizontalAlignment="Center"
@@ -135,7 +130,7 @@
                             MaxWidth="520"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Visibility="{x:Bind ViewModel.HasCard, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+                            Visibility="{x:Bind ViewModel.HasCard, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Spacing="12">
                             <StackPanel Orientation="Horizontal"
                                         Spacing="12">
@@ -221,7 +216,7 @@
         <!-- Detail overlay -->
         <Grid Background="#99000000"
               Padding="24"
-              Visibility="{x:Bind ViewModel.IsDetailOpen, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+              Visibility="{x:Bind ViewModel.IsDetailOpen, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
             <Border MaxWidth="640"
                     MaxHeight="640"
                     HorizontalAlignment="Center"
