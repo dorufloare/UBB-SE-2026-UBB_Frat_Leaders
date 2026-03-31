@@ -6,13 +6,19 @@
     <RootNamespace>matchmaking</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- CLI `dotnet build` defaults to AnyCPU; MSIX-packaged WinUI needs a real platform + win-$(Platform).pubxml. -->
-    <Platform Condition="'$(Platform)' == 'AnyCPU'">ARM64</Platform>
+    <!-- Default x64 so LocalDB (SQLUserInstance.dll) matches; ARM64 app + LocalDB often fails with error 56. Use -p:Platform=ARM64 only if you avoid LocalDB. -->
+    <Platform Condition="'$(Platform)' == 'AnyCPU'">x64</Platform>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- From CLI, `dotnet run` otherwise may pick the MSIX profile and exit without a normal window. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
 
   <ItemGroup>
