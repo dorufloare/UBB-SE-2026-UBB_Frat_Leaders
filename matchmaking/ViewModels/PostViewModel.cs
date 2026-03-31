@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
 using Windows.UI;
 using Microsoft.UI.Xaml.Media;
 using matchmaking.Domain.Entities;
@@ -22,8 +24,10 @@ public class PostViewModel
     public bool IsDislikedByCurrentUser { get; }
     public SolidColorBrush LikeButtonForeground { get; }
     public SolidColorBrush DislikeButtonForeground { get; }
+    public ICommand LikeCommand { get; }
+    public ICommand DislikeCommand { get; }
 
-    public PostViewModel(Post post, IEnumerable<Interaction> postInteractions, string authorName, int currentDeveloperId)
+    public PostViewModel(Post post, IEnumerable<Interaction> postInteractions, string authorName, int currentDeveloperId, Action<int> onLike, Action<int> onDislike)
     {
         var interactions = postInteractions.ToList();
 
@@ -47,5 +51,8 @@ public class PostViewModel
         var inactiveBrush = new SolidColorBrush(Color.FromArgb(0xFF, 0x6B, 0x6B, 0x6B));
         LikeButtonForeground = IsLikedByCurrentUser ? activeBrush : inactiveBrush;
         DislikeButtonForeground = IsDislikedByCurrentUser ? activeBrush : inactiveBrush;
+
+        LikeCommand = new RelayCommand(() => onLike(PostId));
+        DislikeCommand = new RelayCommand(() => onDislike(PostId));
     }
 }

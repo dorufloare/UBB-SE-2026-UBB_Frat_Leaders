@@ -24,6 +24,7 @@ public sealed partial class DeveloperPage : Page
             new SqlPostRepository(connStr),
             new SqlInteractionRepository(connStr));
         DataContext = new DeveloperViewModel(developerService, App.Session);
+        Unloaded += (_, _) => ((DeveloperViewModel)DataContext).StopPolling();
     }
 
     private async void NewPostButton_Click(object sender, RoutedEventArgs e)
@@ -124,18 +125,6 @@ public sealed partial class DeveloperPage : Page
 
         _errorText.Visibility = Visibility.Collapsed;
         ((DeveloperViewModel)DataContext).AddPost(tag, rawValue);
-    }
-
-    private void LikeButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button btn && btn.Tag is int postId)
-            ((DeveloperViewModel)DataContext).HandleLike(postId);
-    }
-
-    private void DislikeButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button btn && btn.Tag is int postId)
-            ((DeveloperViewModel)DataContext).HandleDislike(postId);
     }
 
     private void ShowDialogError(string message)

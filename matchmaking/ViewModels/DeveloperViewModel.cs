@@ -5,6 +5,7 @@ using matchmaking.Domain.Enums;
 using matchmaking.Domain.Session;
 using matchmaking.Repositories;
 using matchmaking.Services;
+using Microsoft.UI.Xaml;
 
 namespace matchmaking.ViewModels;
 
@@ -12,6 +13,7 @@ public class DeveloperViewModel : ObservableObject
 {
     private readonly DeveloperService _developerService;
     private readonly SessionContext _session;
+    private readonly DispatcherTimer _pollTimer;
 
     public ObservableCollection<PostViewModel> Posts { get; } = new();
 
@@ -20,7 +22,13 @@ public class DeveloperViewModel : ObservableObject
         _developerService = developerService;
         _session = sessionContext;
         LoadData();
+
+        _pollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        _pollTimer.Tick += (_, _) => LoadData();
+        _pollTimer.Start();
     }
+
+    public void StopPolling() => _pollTimer.Stop();
 
     public void AddPost(string parameter, string value)
     {
@@ -100,7 +108,7 @@ public class DeveloperViewModel : ObservableObject
         {
             var postInteractions = interactions.Where(i => i.PostId == post.PostId);
             var authorName = developerNames[post.DeveloperId];
-            Posts.Add(new PostViewModel(post, postInteractions, authorName, currentDeveloperId));
+            Posts.Add(new PostViewModel(post, postInteractions, authorName, currentDeveloperId, HandleLike, HandleDislike));
         }
     }
 }

@@ -132,8 +132,7 @@
 
                                 <!-- Like / Dislike -->
                                 <StackPanel Orientation="Horizontal" Spacing="2">
-                                    <Button Tag="{Binding PostId}"
-                                            Click="LikeButton_Click"
+                                    <Button Command="{Binding LikeCommand}"
                                             Style="{StaticResource GhostButtonStyle}"
                                             Foreground="{Binding LikeButtonForeground}">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -141,8 +140,7 @@
                                             <TextBlock Text="{Binding LikeCount}" FontSize="13" />
                                         </StackPanel>
                                     </Button>
-                                    <Button Tag="{Binding PostId}"
-                                            Click="DislikeButton_Click"
+                                    <Button Command="{Binding DislikeCommand}"
                                             Style="{StaticResource GhostButtonStyle}"
                                             Foreground="{Binding DislikeButtonForeground}">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
