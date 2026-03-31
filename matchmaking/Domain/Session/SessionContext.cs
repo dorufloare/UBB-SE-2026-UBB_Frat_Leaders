@@ -6,8 +6,8 @@ public class SessionContext
 {
     public int? CurrentUserId { get; private set; }
     public int? CurrentCompanyId { get; private set; }
-    public int? CurrentDeveloperId { get; private set; } = 1;
-    public AppMode CurrentMode { get; private set; } = AppMode.DeveloperMode;
+    public int? CurrentDeveloperId { get; private set; }
+    public AppMode CurrentMode { get; private set; }
 
     public void LoginAsUser(int userId)
     {
