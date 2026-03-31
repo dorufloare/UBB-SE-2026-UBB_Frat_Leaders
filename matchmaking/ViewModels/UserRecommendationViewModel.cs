@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using matchmaking;
+using matchmaking.Domain.Enums;
 using matchmaking.Domain.Session;
 using matchmaking.DTOs;
 using matchmaking.Repositories;
@@ -16,6 +17,8 @@ public sealed class UserRecommendationViewModel : ObservableObject
 {
     private readonly UserRecommendationService _service;
     private readonly SessionContext _session;
+
+    public event Action<string>? ErrorOccurred;
 
     private readonly RelayCommand _refreshCommand;
     private readonly RelayCommand _likeCommand;
@@ -178,13 +181,15 @@ public sealed class UserRecommendationViewModel : ObservableObject
         && CurrentJob is null
         && string.IsNullOrEmpty(ErrorMessage)
         && App.IsDatabaseConnectionAvailable
-        && _session.CurrentUserId is not null;
+        && _session.CurrentUserId is not null
+        && _session.CurrentMode == AppMode.UserMode;
 
     private bool CanAct() =>
         CurrentJob is not null
         && !IsLoading
         && App.IsDatabaseConnectionAvailable
-        && _session.CurrentUserId is not null;
+        && _session.CurrentUserId is not null
+        && _session.CurrentMode == AppMode.UserMode;
 
     public async Task InitializeAsync()
     {
@@ -195,14 +200,14 @@ public sealed class UserRecommendationViewModel : ObservableObject
     {
         if (!App.IsDatabaseConnectionAvailable)
         {
-            ErrorMessage = App.DatabaseConnectionError;
+            ReportError(App.DatabaseConnectionError);
             CurrentJob = null;
             return;
         }
 
-        if (_session.CurrentUserId is null)
+        if (_session.CurrentUserId is null || _session.CurrentMode != AppMode.UserMode)
         {
-            ErrorMessage = "No user session.";
+            ReportError("User session is not available.");
             CurrentJob = null;
             return;
         }
@@ -222,7 +227,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ReportError(ex.Message);
         }
         finally
         {
@@ -244,6 +249,12 @@ public sealed class UserRecommendationViewModel : ObservableObject
         {
             await Task.Yield();
             var userId = _session.CurrentUserId.Value;
+            if (_session.CurrentMode != AppMode.UserMode)
+            {
+                ReportError("Invalid session for this action.");
+                return;
+            }
+
             var matchId = _service.ApplyLike(userId, job);
             _undoSnapshot = new UndoSnapshot
             {
@@ -258,7 +269,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ReportError(ex.Message);
         }
         finally
         {
@@ -280,6 +291,12 @@ public sealed class UserRecommendationViewModel : ObservableObject
         {
             await Task.Yield();
             var userId = _session.CurrentUserId.Value;
+            if (_session.CurrentMode != AppMode.UserMode)
+            {
+                ReportError("Invalid session for this action.");
+                return;
+            }
+
             var recId = _service.ApplyDismiss(userId, job);
             _undoSnapshot = new UndoSnapshot
             {
@@ -294,7 +311,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ReportError(ex.Message);
         }
         finally
         {
@@ -324,11 +341,11 @@ public sealed class UserRecommendationViewModel : ObservableObject
             await Task.Yield();
             if (snap.WasApply && snap.MatchId is { } mid)
             {
-                _service.UndoLike(mid);
+                _service.UndoLike(mid, snap.Card.DisplayRecommendationId);
             }
             else if (!snap.WasApply && snap.RecommendationId is { } rid)
             {
-                _service.UndoDismiss(rid);
+                _service.UndoDismiss(rid, snap.Card.DisplayRecommendationId);
             }
 
             CurrentJob = snap.Card;
@@ -337,7 +354,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            ReportError(ex.Message);
         }
         finally
         {
@@ -397,6 +414,12 @@ public sealed class UserRecommendationViewModel : ObservableObject
         _dismissCommand.RaiseCanExecuteChanged();
         _undoCommand.RaiseCanExecuteChanged();
         _openDetailCommand.RaiseCanExecuteChanged();
+    }
+
+    private void ReportError(string message)
+    {
+        ErrorMessage = message;
+        ErrorOccurred?.Invoke(message);
     }
 
     private sealed class UndoSnapshot

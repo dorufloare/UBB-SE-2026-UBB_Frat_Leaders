@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using matchmaking.algorithm;
 using matchmaking.Domain.Entities;
-using matchmaking.Domain.Enums;
 using matchmaking.DTOs;
 using matchmaking.Repositories;
 
@@ -52,7 +51,7 @@ public sealed class UserRecommendationService
             ?? throw new InvalidOperationException("User not found.");
 
         var userSkills = _skillRepository.GetByUserId(userId).ToList();
-        var jobs = _jobRepository.GetAll().Where(j => PassesFilters(j, filters)).ToList();
+        var jobs = _jobRepository.GetAll().Where(j => PassesFilters(j, filters, user)).ToList();
 
         var ranked = new List<(Job Job, double Score)>();
         foreach (var job in jobs)
@@ -97,13 +96,22 @@ public sealed class UserRecommendationService
             .Select(js => $"{js.SkillName} (min {js.Score})")
             .ToList();
 
+        var displayRec = new Recommendation
+        {
+            UserId = userId,
+            JobId = best.Job.JobId,
+            Timestamp = DateTime.UtcNow
+        };
+        var displayId = _recommendationRepository.InsertReturningId(displayRec);
+
         return new JobRecommendationResult
         {
             Job = best.Job,
             Company = company,
             CompatibilityScore = best.Score,
             TopSkillLabels = topSkills,
-            AllSkillLabels = allSkillLabels
+            AllSkillLabels = allSkillLabels,
+            DisplayRecommendationId = displayId
         };
     }
 
@@ -130,14 +138,25 @@ public sealed class UserRecommendationService
         return _recommendationRepository.InsertReturningId(rec);
     }
 
-    public void UndoDismiss(int recommendationId)
+    public void UndoLike(int matchId, int? displayRecommendationId)
     {
-        _recommendationRepository.Remove(recommendationId);
+        _matchService.RemoveApplication(matchId);
+        if (displayRecommendationId is { } rid)
+        {
+            _recommendationRepository.Remove(rid);
+        }
     }
 
-    public void UndoLike(int matchId) => _matchService.RemoveApplication(matchId);
+    public void UndoDismiss(int dismissRecommendationId, int? displayRecommendationId)
+    {
+        _recommendationRepository.Remove(dismissRecommendationId);
+        if (displayRecommendationId is { } did && did != dismissRecommendationId)
+        {
+            _recommendationRepository.Remove(did);
+        }
+    }
 
-    private bool PassesFilters(Job job, UserMatchmakingFilters filters)
+    private bool PassesFilters(Job job, UserMatchmakingFilters filters, User user)
     {
         if (filters.EmploymentTypes.Count > 0)
         {
@@ -149,7 +168,7 @@ public sealed class UserRecommendationService
 
         if (filters.ExperienceLevels.Count > 0)
         {
-            var bucket = MapPromotionToExperienceBucket(job.PromotionLevel);
+            var bucket = MapUserYearsToExperienceBucket(user.YearsOfExperience);
             if (!filters.ExperienceLevels.Contains(bucket))
             {
                 return false;
@@ -176,15 +195,15 @@ public sealed class UserRecommendationService
         return true;
     }
 
-    /// <summary>Maps promotion level to filter buckets (demo heuristic; requirements allow multi-select).</summary>
-    public static string MapPromotionToExperienceBucket(int promotionLevel)
+    /// <summary>Maps the signed-in user&apos;s total years of experience to filter buckets (§2 filter panel).</summary>
+    public static string MapUserYearsToExperienceBucket(int yearsOfExperience)
     {
-        return promotionLevel switch
+        return yearsOfExperience switch
         {
-            <= 20 => "Internship",
-            <= 40 => "Entry",
-            <= 60 => "MidSenior",
-            <= 80 => "Director",
+            < 2 => "Internship",
+            < 4 => "Entry",
+            < 7 => "MidSenior",
+            < 10 => "Director",
             _ => "Executive"
         };
     }

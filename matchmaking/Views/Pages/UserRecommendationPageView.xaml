@@ -10,7 +10,7 @@
     x:DataType="local:UserRecommendationPageView"
     xmlns:local="using:matchmaking.Views.Pages"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{StaticResource ShellBackgroundBrush}">
 
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -18,7 +18,7 @@
 
     <Grid>
         <SplitView x:Name="RootSplit"
-                   PaneBackground="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                   PaneBackground="{StaticResource CardBackgroundBrush}"
                    OpenPaneLength="360"
                    CompactPaneLength="0"
                    DisplayMode="Overlay"
@@ -90,7 +90,8 @@
                     <TextBlock Text="Recommendations"
                                FontSize="24"
                                FontWeight="SemiBold"
-                               VerticalAlignment="Center" />
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource TextPrimaryBrush}" />
                     <StackPanel Grid.Column="1"
                                 Orientation="Horizontal"
                                 Spacing="8">
@@ -127,8 +128,8 @@
                     </StackPanel>
 
                     <Border Padding="24"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            Background="{StaticResource CardBackgroundBrush}"
+                            BorderBrush="{StaticResource CardBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="12"
                             MaxWidth="520"
@@ -185,12 +186,6 @@
                             Spacing="12"
                             Margin="0,16,0,0"
                             HorizontalAlignment="Center">
-                    <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
-                               Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                               TextWrapping="Wrap"
-                               MaxWidth="480"
-                               HorizontalAlignment="Center"
-                               Visibility="{x:Bind ViewModel.HasError, Mode=OneWay, Converter={StaticResource BoolToVis}}" />
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 Spacing="24">
@@ -232,8 +227,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Padding="24"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    BorderBrush="{StaticResource CardBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="12">
                 <Grid>

@@ -14,6 +14,9 @@ public sealed class JobRecommendationResult
     public required Company Company { get; init; }
     public double CompatibilityScore { get; init; }
 
+    /// <summary>SQL row id for the &quot;shown&quot; timestamp (§6); cleared after undo removes it.</summary>
+    public int? DisplayRecommendationId { get; init; }
+
     /// <summary>First line of job description for card title area.</summary>
     public string JobTitleLine
     {

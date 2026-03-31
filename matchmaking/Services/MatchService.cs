@@ -21,6 +21,31 @@ public class MatchService
 
     public Match? GetById(int matchId) => _matchRepository.GetById(matchId);
 
+    public Match? GetByUserIdAndJobId(int userId, int jobId) =>
+        _matchRepository.GetByUserIdAndJobId(userId, jobId);
+
+    /// <summary>User applies to a job (Pending in SQL / <see cref="MatchStatus.Applied"/>).</summary>
+    public int CreatePendingApplication(int userId, int jobId)
+    {
+        if (GetByUserIdAndJobId(userId, jobId) is not null)
+        {
+            throw new InvalidOperationException("A match already exists for this user and job.");
+        }
+
+        var match = new Match
+        {
+            UserId = userId,
+            JobId = jobId,
+            Status = MatchStatus.Applied,
+            Timestamp = DateTime.UtcNow,
+            FeedbackMessage = string.Empty
+        };
+
+        return _matchRepository.InsertReturningId(match);
+    }
+
+    public void RemoveApplication(int matchId) => _matchRepository.Remove(matchId);
+
     public IReadOnlyList<Match> GetAllMatches() => _matchRepository.GetAll();
 
     public Task<IReadOnlyList<Match>> GetByCompanyIdAsync(int companyId)
