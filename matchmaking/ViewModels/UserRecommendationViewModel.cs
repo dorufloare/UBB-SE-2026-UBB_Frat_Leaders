@@ -66,10 +66,10 @@ public sealed class UserRecommendationViewModel : ObservableObject
         _dismissCommand = new RelayCommand(async () => await DismissAsync(), () => CanAct());
         _undoCommand = new RelayCommand(async () => await UndoAsync(), () => CanUndo && !IsLoading);
         _openFiltersCommand = new RelayCommand(() => IsFilterOpen = true);
-        _applyFiltersCommand = new RelayCommand(ApplyFilters);
+        _applyFiltersCommand = new RelayCommand(async () => await ApplyFiltersAsync());
         _resetFiltersCommand = new RelayCommand(ResetDraftFilters);
-        _openDetailCommand = new RelayCommand(() => IsDetailOpen = true, () => CurrentJob is not null);
-        _closeDetailCommand = new RelayCommand(() => IsDetailOpen = false);
+        _openDetailCommand = new RelayCommand(ExpandCard, () => CurrentJob is not null);
+        _closeDetailCommand = new RelayCommand(CollapseCard);
     }
 
     public static IReadOnlyList<string> EmploymentTypeOptions { get; } =
@@ -172,6 +172,10 @@ public sealed class UserRecommendationViewModel : ObservableObject
         set => SetProperty(ref _draftLocation, value);
     }
 
+    public void ExpandCard() => IsDetailOpen = true;
+
+    public void CollapseCard() => IsDetailOpen = false;
+
     public bool HasCard => CurrentJob is not null;
 
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
@@ -196,7 +200,8 @@ public sealed class UserRecommendationViewModel : ObservableObject
         await RefreshAsync();
     }
 
-    private async Task RefreshAsync()
+    /// <summary>Reload deck (code-behind calls after <see cref="ApplyFiltersAsync"/> or refresh).</summary>
+    public async Task RefreshAsync()
     {
         if (!App.IsDatabaseConnectionAvailable)
         {
@@ -235,7 +240,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
         }
     }
 
-    private async Task LikeAsync()
+    public async Task LikeAsync()
     {
         var job = CurrentJob;
         if (job is null || _session.CurrentUserId is null)
@@ -277,7 +282,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
         }
     }
 
-    private async Task DismissAsync()
+    public async Task DismissAsync()
     {
         var job = CurrentJob;
         if (job is null || _session.CurrentUserId is null)
@@ -326,7 +331,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
         return Task.CompletedTask;
     }
 
-    private async Task UndoAsync()
+    public async Task UndoAsync()
     {
         var snap = _undoSnapshot;
         if (snap is null || !CanUndo)
@@ -362,7 +367,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
         }
     }
 
-    private void ApplyFilters()
+    public async Task ApplyFiltersAsync()
     {
         _appliedFilters.EmploymentTypes.Clear();
         foreach (var item in DraftEmploymentSelections.Where(i => i.IsChecked))
@@ -384,10 +389,10 @@ public sealed class UserRecommendationViewModel : ObservableObject
         }
 
         IsFilterOpen = false;
-        _ = RefreshAsync();
+        await RefreshAsync();
     }
 
-    private void ResetDraftFilters()
+    public void ResetDraftFilters()
     {
         foreach (var item in DraftEmploymentSelections)
         {
