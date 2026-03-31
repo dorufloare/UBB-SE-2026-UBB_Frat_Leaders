@@ -119,7 +119,8 @@
                 </StackPanel>
 
                 <Grid Grid.Row="1"
-                      VerticalAlignment="Top">
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
