@@ -17,55 +17,70 @@
                    DisplayMode="Overlay"
                    IsPaneOpen="{Binding IsFilterOpen, Mode=TwoWay}">
             <SplitView.Pane>
-                <ScrollViewer Padding="20">
-                    <StackPanel Spacing="16">
-                        <TextBlock Text="Filters"
-                                   FontSize="20"
-                                   FontWeight="SemiBold" />
-                        <TextBlock Text="Employment type"
-                                   FontWeight="SemiBold" />
-                        <ItemsControl ItemsSource="{Binding DraftEmploymentSelections}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="viewmodels:FilterCheckItem">
-                                    <CheckBox Content="{x:Bind Label}"
-                                              IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Text="Experience level"
-                                   FontWeight="SemiBold" />
-                        <ItemsControl ItemsSource="{Binding DraftExperienceSelections}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="viewmodels:FilterCheckItem">
-                                    <CheckBox Content="{x:Bind Label}"
-                                              IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBox Header="Location contains"
-                                 Text="{Binding DraftLocation, Mode=TwoWay}"
-                                 PlaceholderText="City or region" />
-                        <TextBlock Text="Required skills (any)"
-                                   FontWeight="SemiBold" />
-                        <ItemsControl ItemsSource="{Binding DraftSkillSelections}"
-                                      MaxHeight="200">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="viewmodels:SkillFilterItem">
-                                    <CheckBox Content="{x:Bind Name}"
-                                              IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Grid.Row="0"
+                                  Padding="20,20,20,8"
+                                  VerticalAlignment="Stretch"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="Filters"
+                                       FontSize="20"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="Employment type"
+                                       FontWeight="SemiBold" />
+                            <ItemsControl ItemsSource="{Binding DraftEmploymentSelections}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="viewmodels:FilterCheckItem">
+                                        <CheckBox Content="{x:Bind Label}"
+                                                  IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="Experience level"
+                                       FontWeight="SemiBold" />
+                            <ItemsControl ItemsSource="{Binding DraftExperienceSelections}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="viewmodels:FilterCheckItem">
+                                        <CheckBox Content="{x:Bind Label}"
+                                                  IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBox Header="Location contains"
+                                     Text="{Binding DraftLocation, Mode=TwoWay}"
+                                     PlaceholderText="City or region" />
+                            <TextBlock Text="Required skills (any)"
+                                       FontWeight="SemiBold" />
+                            <ItemsControl ItemsSource="{Binding DraftSkillSelections}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="viewmodels:SkillFilterItem">
+                                        <CheckBox Content="{x:Bind Name}"
+                                                  IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Border Grid.Row="1"
+                            Background="{StaticResource CardBackgroundBrush}"
+                            BorderBrush="{StaticResource DividerBrush}"
+                            BorderThickness="0,1,0,0">
                         <StackPanel Orientation="Horizontal"
-                                    Spacing="8">
+                                    Spacing="8"
+                                    Padding="20,12,20,20">
                             <Button Content="Apply"
                                     Click="OnApplyFiltersClick"
                                     Style="{StaticResource AccentButtonStyle}" />
                             <Button Content="Reset"
                                     Click="OnResetDraftFiltersClick" />
                         </StackPanel>
-                    </StackPanel>
-                </ScrollViewer>
+                    </Border>
+                </Grid>
             </SplitView.Pane>
 
             <Grid Padding="24">
