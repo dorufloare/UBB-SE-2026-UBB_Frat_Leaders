@@ -30,6 +30,29 @@ public class DeveloperViewModel : ObservableObject
 
     public void StopPolling() => _pollTimer.Stop();
 
+    public string? ValidatePost(string parameter, string value)
+    {
+        if (parameter == "relevant keyword")
+        {
+            if (string.IsNullOrEmpty(value))
+                return "Keyword cannot be empty.";
+            if (value != value.ToLower())
+                return "Keyword must be all lowercase.";
+        }
+        else if (parameter == "mitigation factor")
+        {
+            if (!double.TryParse(value, out double val) || val < 1)
+                return "Mitigation factor must be a number greater than or equal to 1.";
+        }
+        else
+        {
+            if (!double.TryParse(value, out double val) || val < 0 || val > 100)
+                return "Weight value must be a number between 0 and 100.";
+        }
+
+        return null;
+    }
+
     public void AddPost(string parameter, string value)
     {
         var developerId = _session.CurrentDeveloperId

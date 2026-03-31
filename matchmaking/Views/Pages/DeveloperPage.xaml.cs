@@ -88,43 +88,18 @@ public sealed partial class DeveloperPage : Page
 
         var tag = selectedItem.Tag as string ?? string.Empty;
         var rawValue = _valueTextBox.Text?.Trim() ?? string.Empty;
+        var vm = (DeveloperViewModel)DataContext;
 
-        if (tag == "relevant keyword")
+        var error = vm.ValidatePost(tag, rawValue);
+        if (error != null)
         {
-            if (string.IsNullOrEmpty(rawValue))
-            {
-                ShowDialogError("Keyword cannot be empty.");
-                args.Cancel = true;
-                return;
-            }
-            if (rawValue != rawValue.ToLower())
-            {
-                ShowDialogError("Keyword must be all lowercase.");
-                args.Cancel = true;
-                return;
-            }
-        }
-        else if (tag == "mitigation factor")
-        {
-            if (!double.TryParse(rawValue, out double val) || val < 1)
-            {
-                ShowDialogError("Mitigation factor must be a number greater than or equal to 1.");
-                args.Cancel = true;
-                return;
-            }
-        }
-        else
-        {
-            if (!double.TryParse(rawValue, out double val) || val < 0 || val > 100)
-            {
-                ShowDialogError("Weight value must be a number between 0 and 100.");
-                args.Cancel = true;
-                return;
-            }
+            ShowDialogError(error);
+            args.Cancel = true;
+            return;
         }
 
         _errorText.Visibility = Visibility.Collapsed;
-        ((DeveloperViewModel)DataContext).AddPost(tag, rawValue);
+        vm.AddPost(tag, rawValue);
     }
 
     private void ShowDialogError(string message)
