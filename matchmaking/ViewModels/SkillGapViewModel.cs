@@ -129,7 +129,7 @@ public class SkillGapViewModel : ObservableObject
 
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSkillsToImprove)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasMissingSkills)));
+        OnPropertyChanged(nameof(HasSkillsToImprove));
+         OnPropertyChanged(nameof(HasMissingSkills));
     }
 }

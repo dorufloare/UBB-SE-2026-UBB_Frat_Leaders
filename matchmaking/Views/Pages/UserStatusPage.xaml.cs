@@ -7,7 +7,8 @@ using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 using matchmaking.Models;
 using matchmaking.ViewModels;
-
+using System.Runtime.InteropServices.WindowsRuntime;
+using System;
 namespace matchmaking.Views.Pages;
 
 public sealed partial class UserStatusPage : Page
@@ -161,6 +162,6 @@ public sealed partial class UserStatusPage : Page
             XamlRoot = XamlRoot
         };
 
-        await dialog.ShowAsync();
+        await dialog.ShowAsync().AsTask();
     }
 }
