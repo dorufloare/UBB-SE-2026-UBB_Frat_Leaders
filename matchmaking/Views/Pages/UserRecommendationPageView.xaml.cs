@@ -90,9 +90,9 @@ public sealed partial class UserRecommendationPageView : Page
         _viewModel.IsFilterOpen = true;
     }
 
-    private async void OnRefreshClick(object sender, RoutedEventArgs e)
+    private void OnRefreshClick(object sender, RoutedEventArgs e)
     {
-        await _viewModel.RefreshAsync();
+        _viewModel.LoadRecommendations();
         UpdateView();
     }
 

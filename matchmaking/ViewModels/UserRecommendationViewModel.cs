@@ -61,7 +61,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
             DraftSkillSelections.Add(new SkillFilterItem(skillId, name));
         }
 
-        _refreshCommand = new RelayCommand(async () => await RefreshAsync(), () => !IsLoading);
+        _refreshCommand = new RelayCommand(LoadRecommendations, () => !IsLoading);
         _likeCommand = new RelayCommand(async () => await LikeAsync(), () => CanAct());
         _dismissCommand = new RelayCommand(async () => await DismissAsync(), () => CanAct());
         _undoCommand = new RelayCommand(async () => await UndoAsync(), () => CanUndo && !IsLoading);
@@ -197,10 +197,48 @@ public sealed class UserRecommendationViewModel : ObservableObject
 
     public async Task InitializeAsync()
     {
-        await RefreshAsync();
+        await ReloadStackFromFiltersOrInitAsync();
     }
 
-    public async Task RefreshAsync()
+    public void LoadRecommendations()
+    {
+        if (!App.IsDatabaseConnectionAvailable)
+        {
+            ReportError(App.DatabaseConnectionError);
+            CurrentJob = null;
+            return;
+        }
+
+        if (_session.CurrentUserId is null || _session.CurrentMode != AppMode.UserMode)
+        {
+            ReportError("User session is not available.");
+            CurrentJob = null;
+            return;
+        }
+
+        IsLoading = true;
+        ErrorMessage = string.Empty;
+        try
+        {
+            var userId = _session.CurrentUserId.Value;
+            var next = _service.RefreshDeck(userId, _appliedFilters, CurrentJob);
+            CurrentJob = next;
+            if (next is null)
+            {
+                ErrorMessage = string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            ReportError(ex.Message);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task ReloadStackFromFiltersOrInitAsync()
     {
         if (!App.IsDatabaseConnectionAvailable)
         {
@@ -222,7 +260,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
         {
             await Task.Yield();
             var userId = _session.CurrentUserId.Value;
-            var next = _service.GetNextCard(userId, _appliedFilters);
+            var next = _service.RefreshDeck(userId, _appliedFilters, CurrentJob);
             CurrentJob = next;
             if (next is null)
             {
@@ -388,7 +426,7 @@ public sealed class UserRecommendationViewModel : ObservableObject
         }
 
         IsFilterOpen = false;
-        await RefreshAsync();
+        await ReloadStackFromFiltersOrInitAsync();
     }
 
     public void ResetDraftFilters()
