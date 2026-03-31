@@ -36,7 +36,7 @@ public sealed partial class ShellView : UserControl
 
     private void NavigateToRecommendations()
     {
-        Navigate(typeof(SampleFormPage));
+        Navigate(typeof(CompanyMatchmakingPage));
     }
 
     private void NavigateToMyStatus()
