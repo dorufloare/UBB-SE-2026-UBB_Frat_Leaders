@@ -49,10 +49,14 @@ public sealed partial class ShellView : UserControl
         if (App.Session.CurrentMode == AppMode.UserMode && App.Session.CurrentUserId is not null)
         {
             if (NavigateIfPageExists("matchmaking.Views.Pages.UserMatchmakingPage"))
+            {
                 return;
+            }
 
             if (NavigateIfPageExists("matchmaking.Views.Pages.UserRecommendationPage"))
+            {
                 return;
+            }
         }
     }
 
@@ -91,7 +95,9 @@ public sealed partial class ShellView : UserControl
     {
         var pageType = typeof(ShellView).Assembly.GetType(pageTypeName);
         if (pageType is null)
+        {
             return false;
+        }
 
         Navigate(pageType);
         return true;
