@@ -48,7 +48,7 @@ namespace matchmaking
             Session = new SessionContext();
 
             // User matchmaking flow for Recommendations; switch to LoginAsCompany when testing company flows.
-            Session.LoginAsUser(1);
+            Session.LoginAsCompany(1);
 
             CheckDatabaseConnection();
         }

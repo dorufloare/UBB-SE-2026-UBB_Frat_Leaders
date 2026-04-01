@@ -5,7 +5,6 @@ using Microsoft.UI.Xaml.Controls;
 using matchmaking.Domain.Enums;
 using matchmaking.ViewModels;
 using matchmaking.Views.Pages;
-using System;
 namespace matchmaking.Views;
 
 public sealed partial class ShellView : UserControl
@@ -24,19 +23,8 @@ public sealed partial class ShellView : UserControl
         HeaderControl.RecommendationsRequested += OnRecommendationsRequested;
         HeaderControl.MyStatusRequested        += OnMyStatusRequested;
         HeaderControl.ChatRequested            += OnChatRequested;
-
-        Loaded += OnLoaded;
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        var input = new NumberBox
-        {
-            NavigateToRecommendations();
-        }
-    }
-
-    
 
     private void NavigateToRecommendations()
     {
