@@ -30,37 +30,105 @@
                         <StackPanel Spacing="16">
                             <TextBlock Text="Filters"
                                        FontSize="20"
-                                       FontWeight="SemiBold" />
+                                       FontWeight="SemiBold"
+                                       Foreground="Black" />
                             <TextBlock Text="Employment type"
-                                       FontWeight="SemiBold" />
+                                       FontWeight="SemiBold"
+                                       Foreground="Black" />
                             <ItemsControl ItemsSource="{Binding DraftEmploymentSelections}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="viewmodels:FilterCheckItem">
                                         <CheckBox Content="{x:Bind Label}"
-                                                  IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
+                                                  IsChecked="{x:Bind IsChecked, Mode=TwoWay}"
+                                                  Foreground="Black">
+                                            <CheckBox.Resources>
+                                                <SolidColorBrush x:Key="CheckBoxForeground" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundPointerOver" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundPressed" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundChecked" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundCheckedPointerOver" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundCheckedPressed" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundUncheckedPointerOver" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBackgroundFill" Color="White" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillPointerOver" Color="White" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="White" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="White" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBorderBrush" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBorderBrushPointerOver" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBorderBrushChecked" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBorderBrushCheckedPointerOver" Color="Black" />
+                                            </CheckBox.Resources>
+                                        </CheckBox>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                             <TextBlock Text="Experience level"
-                                       FontWeight="SemiBold" />
+                                       FontWeight="SemiBold"
+                                       Foreground="Black" />
                             <ItemsControl ItemsSource="{Binding DraftExperienceSelections}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="viewmodels:FilterCheckItem">
                                         <CheckBox Content="{x:Bind Label}"
-                                                  IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
+                                                  IsChecked="{x:Bind IsChecked, Mode=TwoWay}"
+                                                  Foreground="Black">
+                                            <CheckBox.Resources>
+                                                <SolidColorBrush x:Key="CheckBoxForeground" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundPointerOver" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundPressed" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundChecked" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundCheckedPointerOver" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundCheckedPressed" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundUncheckedPointerOver" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBackgroundFill" Color="White" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillPointerOver" Color="White" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="White" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="White" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBorderBrush" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBorderBrushPointerOver" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBorderBrushChecked" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxCheckBorderBrushCheckedPointerOver" Color="Black" />
+                                            </CheckBox.Resources>
+                                        </CheckBox>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                             <TextBox Header="Location contains"
                                      Text="{Binding DraftLocation, Mode=TwoWay}"
-                                     PlaceholderText="City or region" />
+                                     PlaceholderText="City or region"
+                                     Foreground="Black"
+                                     Background="White"
+                                     BorderBrush="#FFD1D5DB">
+                                <TextBox.Resources>
+                                    <SolidColorBrush x:Key="TextControlForeground" Color="Black" />
+                                    <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="Black" />
+                                    <SolidColorBrush x:Key="TextControlForegroundFocused" Color="Black" />
+                                    <SolidColorBrush x:Key="TextControlHeaderForeground" Color="Black" />
+                                    <SolidColorBrush x:Key="TextControlBackground" Color="White" />
+                                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="White" />
+                                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="White" />
+                                    <SolidColorBrush x:Key="PlaceholderTextBlockForeground" Color="Black" />
+                                </TextBox.Resources>
+                            </TextBox>
                             <TextBlock Text="Required skills (any)"
-                                       FontWeight="SemiBold" />
+                                       FontWeight="SemiBold"
+                                       Foreground="Black" />
                             <ItemsControl ItemsSource="{Binding DraftSkillSelections}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="viewmodels:SkillFilterItem">
                                         <CheckBox Content="{x:Bind Name}"
-                                                  IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
+                                                  IsChecked="{x:Bind IsChecked, Mode=TwoWay}"
+                                                  Foreground="Black">
+                                            <CheckBox.Resources>
+                                                <SolidColorBrush x:Key="CheckBoxForeground" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundPointerOver" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundPressed" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundChecked" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundCheckedPointerOver" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundCheckedPressed" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundDisabled" Color="Black" />
+                                                <SolidColorBrush x:Key="CheckBoxForegroundUncheckedPointerOver" Color="Black" />
+                                            </CheckBox.Resources>
+                                        </CheckBox>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -75,9 +143,32 @@
                                     Padding="20,12,20,20">
                             <Button Content="Apply"
                                     Click="OnApplyFiltersClick"
-                                    Style="{StaticResource AccentButtonStyle}" />
+                                    Foreground="Black"
+                                    Padding="12,6"
+                                    Height="36">
+                                <Button.Resources>
+                                    <SolidColorBrush x:Key="ButtonBackground" Color="#FF10B981" />
+                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FF059669" />
+                                    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FF047857" />
+                                    <SolidColorBrush x:Key="ButtonForeground" Color="White" />
+                                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White" />
+                                    <SolidColorBrush x:Key="ButtonForegroundPressed" Color="White" />
+                                </Button.Resources>
+                            </Button>
                             <Button Content="Reset"
-                                    Click="OnResetDraftFiltersClick" />
+                                    Click="OnResetDraftFiltersClick"
+                                    Foreground="Black"
+                                    Padding="12,6"
+                                    Height="36">
+                                <Button.Resources>
+                                    <SolidColorBrush x:Key="ButtonBackground" Color="#FFE5E7EB" />
+                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFD1D5DB" />
+                                    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FFB3B6BD" />
+                                    <SolidColorBrush x:Key="ButtonForeground" Color="Black" />
+                                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="Black" />
+                                    <SolidColorBrush x:Key="ButtonForegroundPressed" Color="Black" />
+                                </Button.Resources>
+                            </Button>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -90,6 +181,7 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0"
+                            HorizontalAlignment="Stretch"
                             Spacing="4"
                             Padding="0,4,0,12">
                     <Grid>
@@ -111,9 +203,35 @@
                                     Spacing="8"
                                     VerticalAlignment="Top">
                             <Button Content="Refresh"
-                                    Click="OnRefreshClick" />
+                                    Click="OnRefreshClick"
+                                    Padding="12,6"
+                                    Height="36"
+                                    Foreground="Black">
+                                <Button.Resources>
+                                    <SolidColorBrush x:Key="ButtonBackground" Color="#FFE5E7EB" />
+                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFD1D5DB" />
+                                    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FFB3B6BD" />
+                                    <SolidColorBrush x:Key="ButtonForeground" Color="Black" />
+                                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="Black" />
+                                    <SolidColorBrush x:Key="ButtonForegroundPressed" Color="Black" />
+                                    <SolidColorBrush x:Key="ButtonBorderBrush" Color="#FF9CA3AF" />
+                                </Button.Resources>
+                            </Button>
                             <Button Content="Filters"
-                                    Click="OnOpenFiltersClick" />
+                                    Click="OnOpenFiltersClick"
+                                    Padding="12,6"
+                                    Height="36"
+                                    Foreground="Black">
+                                <Button.Resources>
+                                    <SolidColorBrush x:Key="ButtonBackground" Color="#FFE5E7EB" />
+                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFD1D5DB" />
+                                    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FFB3B6BD" />
+                                    <SolidColorBrush x:Key="ButtonForeground" Color="Black" />
+                                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="Black" />
+                                    <SolidColorBrush x:Key="ButtonForegroundPressed" Color="Black" />
+                                    <SolidColorBrush x:Key="ButtonBorderBrush" Color="#FF9CA3AF" />
+                                </Button.Resources>
+                            </Button>
                         </StackPanel>
                     </Grid>
                 </StackPanel>

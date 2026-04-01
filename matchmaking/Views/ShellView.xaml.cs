@@ -46,12 +46,12 @@ public sealed partial class ShellView : UserControl
 
         if (App.Session.CurrentMode == AppMode.UserMode && App.Session.CurrentUserId is not null)
         {
-            if (NavigateIfPageExists("matchmaking.Views.Pages.UserMatchmakingPage"))
+            if (NavigateIfPageExists("matchmaking.Views.Pages.UserMatchmakingPageView"))
             {
                 return;
             }
 
-            if (NavigateIfPageExists("matchmaking.Views.Pages.UserRecommendationPage"))
+            if (NavigateIfPageExists("matchmaking.Views.Pages.UserRecommendationPageView"))
             {
                 return;
             }
