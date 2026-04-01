@@ -173,6 +173,28 @@ public class JobRepository
             EmploymentType = "Full-time",
             CompanyId = 5,
             PromotionLevel = 5
+        },
+        new()
+        {
+            JobId = 11,
+            JobTitle = "C++ Architect",
+            JobDescription =
+                "Define cloud landing zones, security patterns, and cost guardrails. Align stakeholders on multi-year platform roadmap.",
+            Location = "Targu Mures",
+            EmploymentType = "Full-time",
+            CompanyId = 5,
+            PromotionLevel = 5
+        },
+        new()
+        {
+            JobId = 12,
+            JobTitle = "C-- Architect",
+            JobDescription =
+                "Define cloud landing zones, security patterns, and cost guardrails. Align stakeholders on multi-year platform roadmap.",
+            Location = "Targu Mures",
+            EmploymentType = "Full-time",
+            CompanyId = 5,
+            PromotionLevel = 5
         }
     ];
 
