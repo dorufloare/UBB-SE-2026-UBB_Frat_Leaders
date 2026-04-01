@@ -1,6 +1,8 @@
 using System;
+using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using matchmaking.Domain.Enums;
 using matchmaking.ViewModels;
 using matchmaking.Views.Pages;
 using System;
@@ -30,43 +32,47 @@ public sealed partial class ShellView : UserControl
     {
         var input = new NumberBox
         {
-
-            Header = "Developer ID",
-            Value = 1,
-            Minimum = 1,
-            SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline
-        };
-
-        /*var dialog = new ContentDialog
-        {
-            Title = "Log in as Developer",
-            Content = input,
-            PrimaryButtonText = "Continue",
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = this.XamlRoot
-        };
-
-        await dialog.ShowAsync();*/
-
-        var devId = 1;
-        App.Session.LoginAsDeveloper(devId);
-
-        if (ContentHostFrame.Content is null)
-            ContentHostFrame.Navigate(typeof(DeveloperPage));
-
-            //NavigateToMyStatus();
+            NavigateToRecommendations();
+        }
     }
 
     
 
     private void NavigateToRecommendations()
     {
-        Navigate(typeof(CompanyMatchmakingPage));
+        if (App.Session.CurrentMode == AppMode.CompanyMode && App.Session.CurrentCompanyId is not null)
+        {
+            NavigateIfPageExists("matchmaking.Views.Pages.CompanyMatchmakingPage");
+            return;
+        }
+
+        if (App.Session.CurrentMode == AppMode.UserMode && App.Session.CurrentUserId is not null)
+        {
+            if (NavigateIfPageExists("matchmaking.Views.Pages.UserMatchmakingPageView"))
+            {
+                return;
+            }
+
+            if (NavigateIfPageExists("matchmaking.Views.Pages.UserRecommendationPageView"))
+            {
+                return;
+            }
+        }
     }
 
     private void NavigateToMyStatus()
     {
-        Navigate(typeof(CompanyStatusPage));
+        if (App.Session.CurrentMode == AppMode.CompanyMode && App.Session.CurrentCompanyId is not null)
+        {
+            NavigateIfPageExists("matchmaking.Views.Pages.CompanyStatusPage");
+            return;
+        }
+
+        if (App.Session.CurrentMode == AppMode.UserMode && App.Session.CurrentUserId is not null)
+        {
+            NavigateIfPageExists("matchmaking.Views.Pages.UserStatusPage");
+            return;
+        }
     }
 
     private void NavigateToChat()
@@ -82,6 +88,18 @@ public sealed partial class ShellView : UserControl
         }
 
         ContentHostFrame.Navigate(pageType);
+    }
+
+    private bool NavigateIfPageExists(string pageTypeName)
+    {
+        var pageType = typeof(ShellView).Assembly.GetType(pageTypeName);
+        if (pageType is null)
+        {
+            return false;
+        }
+
+        Navigate(pageType);
+        return true;
     }
 
     private void OnRecommendationsRequested(object? sender, EventArgs e)
