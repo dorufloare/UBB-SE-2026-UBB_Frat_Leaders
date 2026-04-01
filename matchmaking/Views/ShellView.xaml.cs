@@ -17,13 +17,13 @@ public sealed partial class ShellView : UserControl
         InitializeComponent();
         _viewModel = new ShellViewModel(
             onRecommendations: NavigateToRecommendations,
-            onMyStatus: NavigateToMyStatus,
-            onChat: NavigateToChat);
+            onMyStatus:        NavigateToMyStatus,
+            onChat:            NavigateToChat);
         DataContext = _viewModel;
 
         HeaderControl.RecommendationsRequested += OnRecommendationsRequested;
-        HeaderControl.MyStatusRequested += OnMyStatusRequested;
-        HeaderControl.ChatRequested += OnChatRequested;
+        HeaderControl.MyStatusRequested        += OnMyStatusRequested;
+        HeaderControl.ChatRequested            += OnChatRequested;
 
         Loaded += OnLoaded;
     }
@@ -40,6 +40,8 @@ public sealed partial class ShellView : UserControl
 
     private void NavigateToRecommendations()
     {
+        _viewModel.ActivePage = "Recommendations";
+
         if (App.Session.CurrentMode == AppMode.CompanyMode && App.Session.CurrentCompanyId is not null)
         {
             NavigateIfPageExists("matchmaking.Views.Pages.CompanyMatchmakingPage");
@@ -62,6 +64,8 @@ public sealed partial class ShellView : UserControl
 
     private void NavigateToMyStatus()
     {
+        _viewModel.ActivePage = "MyStatus";
+
         if (App.Session.CurrentMode == AppMode.CompanyMode && App.Session.CurrentCompanyId is not null)
         {
             NavigateIfPageExists("matchmaking.Views.Pages.CompanyStatusPage");
@@ -77,15 +81,14 @@ public sealed partial class ShellView : UserControl
 
     private void NavigateToChat()
     {
+        _viewModel.ActivePage = "Chat";
         Navigate(typeof(ChatPageView));
     }
 
     private void Navigate(Type pageType)
     {
         if (ContentHostFrame.CurrentSourcePageType == pageType)
-        {
             return;
-        }
 
         ContentHostFrame.Navigate(pageType);
     }
@@ -103,17 +106,11 @@ public sealed partial class ShellView : UserControl
     }
 
     private void OnRecommendationsRequested(object? sender, EventArgs e)
-    {
-        NavigateToRecommendations();
-    }
+        => NavigateToRecommendations();
 
     private void OnMyStatusRequested(object? sender, EventArgs e)
-    {
-        NavigateToMyStatus();
-    }
+        => NavigateToMyStatus();
 
     private void OnChatRequested(object? sender, EventArgs e)
-    {
-        NavigateToChat();
-    }
+        => NavigateToChat();
 }

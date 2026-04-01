@@ -32,15 +32,18 @@
         <StackPanel Grid.Column="1"
                     Orientation="Horizontal"
                     VerticalAlignment="Center">
-            <Button Content="Recommendations"
+            <Button x:Name="RecommendationsButton"
+                    Content="Recommendations"
                     Click="Recommendations_Click"
-                    Style="{StaticResource HeaderNavButtonStyle}" />
-            <Button Content="My Status"
+                    Style="{StaticResource HeaderNavButtonStyle}"/>
+            <Button x:Name="MyStatusButton"
+                    Content="My Status"
                     Click="MyStatus_Click"
-                    Style="{StaticResource HeaderNavButtonStyle}" />
-            <Button Content="Chat"
+                    Style="{StaticResource HeaderNavButtonStyle}"/>
+            <Button x:Name="ChatButton"
+                    Content="Chat"
                     Click="Chat_Click"
-                    Style="{StaticResource HeaderNavButtonStyle}" />
+                    Style="{StaticResource HeaderNavButtonStyle}"/>
         </StackPanel>
 
         <Grid Grid.Column="2"
