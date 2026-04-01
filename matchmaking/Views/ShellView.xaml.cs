@@ -1,6 +1,8 @@
 using System;
+using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using matchmaking.Domain.Enums;
 using matchmaking.ViewModels;
 using matchmaking.Views.Pages;
 
@@ -30,20 +32,45 @@ public sealed partial class ShellView : UserControl
     {
         if (ContentHostFrame.Content is null)
         {
-            NavigateToMyStatus();
+            NavigateToRecommendations();
         }
     }
 
     private void NavigateToRecommendations()
     {
         _viewModel.ActivePage = "Recommendations";
-        Navigate(typeof(CompanyMatchmakingPage));
+
+        if (App.Session.CurrentMode == AppMode.CompanyMode && App.Session.CurrentCompanyId is not null)
+        {
+            NavigateIfPageExists("matchmaking.Views.Pages.CompanyMatchmakingPage");
+            return;
+        }
+
+        if (App.Session.CurrentMode == AppMode.UserMode && App.Session.CurrentUserId is not null)
+        {
+            if (NavigateIfPageExists("matchmaking.Views.Pages.UserMatchmakingPage"))
+                return;
+
+            if (NavigateIfPageExists("matchmaking.Views.Pages.UserRecommendationPage"))
+                return;
+        }
     }
 
     private void NavigateToMyStatus()
     {
         _viewModel.ActivePage = "MyStatus";
-        Navigate(typeof(UserStatusPage));
+
+        if (App.Session.CurrentMode == AppMode.CompanyMode && App.Session.CurrentCompanyId is not null)
+        {
+            NavigateIfPageExists("matchmaking.Views.Pages.CompanyStatusPage");
+            return;
+        }
+
+        if (App.Session.CurrentMode == AppMode.UserMode && App.Session.CurrentUserId is not null)
+        {
+            NavigateIfPageExists("matchmaking.Views.Pages.UserStatusPage");
+            return;
+        }
     }
 
     private void NavigateToChat()
@@ -58,6 +85,16 @@ public sealed partial class ShellView : UserControl
             return;
 
         ContentHostFrame.Navigate(pageType);
+    }
+
+    private bool NavigateIfPageExists(string pageTypeName)
+    {
+        var pageType = typeof(ShellView).Assembly.GetType(pageTypeName);
+        if (pageType is null)
+            return false;
+
+        Navigate(pageType);
+        return true;
     }
 
     private void OnRecommendationsRequested(object? sender, EventArgs e)
