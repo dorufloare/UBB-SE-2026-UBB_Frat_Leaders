@@ -36,3 +36,7 @@ appsettings.Development.json
 appsettings.Local.json
 
 matchmaking/appsettings.json
+
+.claude
+*.claude
+./matchmaking/.claude

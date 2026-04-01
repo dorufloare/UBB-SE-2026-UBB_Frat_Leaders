@@ -64,11 +64,10 @@
 
         <!-- ── Posts feed ── -->
         <ScrollViewer Grid.Row="2"
-                      Padding="0,20,0,24"
+                      Padding="20,20,20,24"
                       VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Posts}"
-                          MaxWidth="980"
-                          HorizontalAlignment="Center">
+                          HorizontalAlignment="Stretch">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Background="{StaticResource CardBackgroundBrush}"
@@ -76,7 +75,9 @@
                                 BorderThickness="1"
                                 CornerRadius="10"
                                 Padding="28,22"
-                                Margin="0,0,0,12">
+                                Margin="0,0,0,12"
+                                MaxWidth="600"
+                                HorizontalAlignment="Stretch">
                             <StackPanel Spacing="16">
 
                                 <!-- Author row -->
