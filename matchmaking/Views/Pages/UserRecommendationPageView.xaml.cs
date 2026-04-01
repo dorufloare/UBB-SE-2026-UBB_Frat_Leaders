@@ -65,13 +65,11 @@ public sealed partial class UserRecommendationPageView : Page
 
     private async void OnLoadedAsync(object sender, RoutedEventArgs e)
     {
-        if (App.Session.CurrentMode != AppMode.UserMode || App.Session.CurrentUserId is null)
+        if (App.Session.CurrentMode == AppMode.UserMode && App.Session.CurrentUserId is not null)
         {
-            App.Session.LoginAsUser(1);
+            await _viewModel.InitializeAsync();
+            UpdateView();
         }
-
-        await _viewModel.InitializeAsync();
-        UpdateView();
     }
 
     private async void OnApplyFiltersClick(object sender, RoutedEventArgs e)

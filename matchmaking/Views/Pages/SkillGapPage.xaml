@@ -20,7 +20,7 @@
                         <TextBlock Grid.Column="0"
                                    Text="{Binding SkillName}"
                                    FontSize="14" FontWeight="SemiBold"
-                                   VerticalAlignment="Center"/>
+                                   VerticalAlignment="Center" Foreground="Black"/>
                         <Border Grid.Column="1"
                                 Background="#FFF3E0" CornerRadius="6"
                                 Padding="8,3" VerticalAlignment="Center" Margin="10,0,0,0">
@@ -57,7 +57,7 @@
                     <Border Grid.Column="0" Background="#D32F2F" CornerRadius="7,0,0,7"/>
                     <StackPanel Grid.Column="1" Spacing="4" Padding="16,14">
                         <TextBlock Text="{Binding SkillName}"
-                                   FontSize="14" FontWeight="SemiBold"/>
+                                   FontSize="14" FontWeight="SemiBold" Foreground="Black"/>
                         <TextBlock Text="{Binding JobCountText}"
                                    FontSize="12" Foreground="#969696" TextWrapping="Wrap"/>
                     </StackPanel>
@@ -72,13 +72,34 @@
 
                 <!-- Header -->
                 <Grid Grid.Row="0" Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
                     <Button Content="← Back to My Status"
-                            VerticalAlignment="Center" Click="BackToStatus_Click"/>
-                    <TextBlock Text="Skill Gap Analysis" FontSize="22" FontWeight="Bold"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    <Button Content="Refresh"
-                            HorizontalAlignment="Right" VerticalAlignment="Center"
-                            Click="RefreshButton_Click"/>
+                            VerticalAlignment="Center" Click="BackToStatus_Click"
+                            Foreground="Black" Padding="12,6" Height="36">
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="ButtonBackground" Color="#FFE5E7EB" />
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFD1D5DB" />
+                            <SolidColorBrush x:Key="ButtonForeground" Color="Black" />
+                            <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="Black" />
+                        </Button.Resources>
+                    </Button>
+                    <TextBlock Grid.Column="1" Text="Skill Gap Analysis" FontSize="22" FontWeight="Bold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Black"/>
+                    <Button Grid.Column="2" Content="Refresh"
+                            VerticalAlignment="Center"
+                            Click="RefreshButton_Click"
+                            Foreground="Black" Padding="12,6" Height="36">
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="ButtonBackground" Color="#FFE5E7EB" />
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFD1D5DB" />
+                            <SolidColorBrush x:Key="ButtonForeground" Color="Black" />
+                            <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="Black" />
+                        </Button.Resources>
+                    </Button>
                 </Grid>
 
                 <!-- Loading -->
@@ -97,7 +118,7 @@
                                 Visibility="{Binding HasSummaryMessage, Converter={StaticResource BoolToVisibility}}">
                             <TextBlock Text="{Binding SummaryMessage}"
                                        FontSize="14" HorizontalAlignment="Center"
-                                       TextAlignment="Center" TextWrapping="Wrap"/>
+                                       TextAlignment="Center" TextWrapping="Wrap" Foreground="Black"/>
                         </Border>
 
                         <!-- Skill data (only when there are actual gaps) -->
@@ -129,7 +150,7 @@
                             <!-- Skills to Improve list -->
                             <StackPanel Spacing="12"
                                         Visibility="{Binding HasSkillsToImprove, Converter={StaticResource BoolToVisibility}}">
-                                <TextBlock Text="Skills to Improve" FontSize="17" FontWeight="Bold"/>
+                                <TextBlock Text="Skills to Improve" FontSize="17" FontWeight="Bold" Foreground="Black"/>
                                 <ItemsControl ItemsSource="{Binding SkillsToImprove}"
                                               ItemTemplate="{StaticResource UnderscoredSkillTemplate}">
                                     <ItemsControl.ItemContainerStyle>
@@ -143,7 +164,7 @@
                             <!-- Missing Skills list -->
                             <StackPanel Spacing="12"
                                         Visibility="{Binding HasMissingSkills, Converter={StaticResource BoolToVisibility}}">
-                                <TextBlock Text="Missing Skills" FontSize="17" FontWeight="Bold"/>
+                                <TextBlock Text="Missing Skills" FontSize="17" FontWeight="Bold" Foreground="Black"/>
                                 <ItemsControl ItemsSource="{Binding MissingSkills}"
                                               ItemTemplate="{StaticResource MissingSkillTemplate}">
                                     <ItemsControl.ItemContainerStyle>
