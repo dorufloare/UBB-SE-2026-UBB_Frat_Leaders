@@ -14,7 +14,7 @@ public class ApplicationCardModel
     public int         CompatibilityScore { get; set; }
     public string      FeedbackMessage    { get; set; } = string.Empty;
 
-    // Display helpers for XAML binding
+  
     public string TruncatedDescription =>
         JobDescription.Length > 120 ? JobDescription[..120] + "..." : JobDescription;
 

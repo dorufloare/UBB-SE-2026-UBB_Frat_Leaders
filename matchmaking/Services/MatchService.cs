@@ -99,7 +99,7 @@ public class MatchService
         return SubmitDecisionAsync(matchId, MatchStatus.Rejected, feedback);
     }
 
-    // TODO: Update UML (.mdj) to include Advance(int matchId) in MatchService.
+   
     public void Advance(int matchId)
     {
         var match = _matchRepository.GetById(matchId)

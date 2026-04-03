@@ -13,9 +13,7 @@
             </ResourceDictionary.MergedDictionaries>
 
 
-            <!-- Spacing scale -->
-
-            <!-- Converters -->
+          
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:ChatNameConverter x:Key="ChatNameConverter" />
             <converters:ChatPartyNameConverter x:Key="ChatPartyNameConverter" />
@@ -69,7 +67,7 @@
             <SolidColorBrush x:Key="SecondaryButtonBorderBrush"     Color="#FF9CA3AF" />
             <SolidColorBrush x:Key="SecondaryButtonForegroundBrush" Color="#FF111827" />
 
-            <!-- ── Header nav button ── -->
+          
             <Style x:Key="HeaderNavButtonStyle" TargetType="Button">
                 <Setter Property="Padding"         Value="14,6" />
                 <Setter Property="Margin"          Value="2,0" />
@@ -118,7 +116,7 @@
                 </Setter>
             </Style>
 
-            <!-- ── Primary action button (dark filled) ── -->
+          
             <Style x:Key="PrimaryActionButtonStyle" TargetType="Button">
                 <Setter Property="Padding"         Value="18,9" />
                 <Setter Property="Background"      Value="{StaticResource PrimaryButtonBackgroundBrush}" />
@@ -201,7 +199,7 @@
                 <Setter Property="CornerRadius"    Value="7" />
             </Style>
 
-            <!-- ── Ghost button (no background) ── -->
+            
             <Style x:Key="GhostButtonStyle" TargetType="Button">
                 <Setter Property="Background"      Value="Transparent" />
                 <Setter Property="BorderBrush"     Value="Transparent" />

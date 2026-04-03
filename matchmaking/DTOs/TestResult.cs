@@ -14,7 +14,7 @@ public class TestResult
     public MatchStatus Decision { get; set; }
     public string FeedbackMessage { get; set; } = string.Empty;
 
-    // Snapshot from external testing module tables.
+   
     public TestDefinitionRecord? Test { get; set; }
     public TestAttemptRecord? Attempt { get; set; }
     public InterviewSessionRecord? InterviewSession { get; set; }

@@ -169,7 +169,7 @@ public class CompanyStatusViewModel : ObservableObject
                 Applications.Add(result);
             }
 
-            // Requirement workflow starts from applicant list and enters evaluation only via Review action.
+            
             CancelEvaluation();
 
             if (Applications.Count == 0)

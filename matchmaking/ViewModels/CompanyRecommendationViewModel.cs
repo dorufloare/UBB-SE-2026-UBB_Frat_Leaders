@@ -312,8 +312,7 @@ public class CompanyRecommendationViewModel : ObservableObject
 
         try
         {
-            // TODO: Matchmaking skip uses Reject with placeholder feedback.
-            // Team may want a dedicated Skipped status in the future.
+            
             _matchService.RejectAsync(CurrentApplicant.Match.MatchId, "Rejected on first pass").Wait();
 
             StoreForUndo();

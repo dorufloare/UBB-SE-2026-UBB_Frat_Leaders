@@ -28,13 +28,13 @@ public class UserStatusViewModel : ObservableObject
     private string _skillGapSummaryText  = string.Empty;
     private bool   _showGoToRecommendations;
 
-    // ── Collections ────────────────────────────────────────────────────────────
+
     public ObservableCollection<ApplicationCardModel>  AppliedJobs          { get; } = new();
     public ObservableCollection<ApplicationCardModel>  FilteredJobs         { get; } = new();
     public ObservableCollection<UnderscoredSkillModel> UnderscoredSkills    { get; } = new();
     public ObservableCollection<MissingSkillModel>     SkillGapMissingSkills { get; } = new();
 
-    // ── State properties ───────────────────────────────────────────────────────
+    
     public bool   IsLoading             { get => _isLoading;            set => SetProperty(ref _isLoading, value); }
     public bool   HasError              { get => _hasError;             set => SetProperty(ref _hasError, value); }
     public bool   IsEmpty               { get => _isEmpty;              set => SetProperty(ref _isEmpty, value); }
@@ -47,14 +47,13 @@ public class UserStatusViewModel : ObservableObject
     public string SkillGapMessage       { get => _skillGapMessage;      set => SetProperty(ref _skillGapMessage, value); }
     public string SkillGapSummaryText   { get => _skillGapSummaryText;  set => SetProperty(ref _skillGapSummaryText, value); }
 
-    // Sidebar section header visibility
+    
     public bool HasUnderscoredSkills    => UnderscoredSkills.Count > 0;
     public bool HasSidebarMissingSkills => SkillGapMissingSkills.Count > 0;
 
-    // ── Commands ───────────────────────────────────────────────────────────────
     public ICommand RefreshCommand { get; }
 
-    // ── Constructor ────────────────────────────────────────────────────────────
+  
     public UserStatusViewModel()
     {
         var connectionString = App.Configuration.SqlConnectionString;
@@ -78,9 +77,7 @@ public class UserStatusViewModel : ObservableObject
         SkillGapMissingSkills.CollectionChanged += OnSidebarCollectionChanged;
     }
 
-    // ── Public API ─────────────────────────────────────────────────────────────
-
-    /// <summary>Task 2 – Load all matches for the current user.</summary>
+   
     public async Task LoadMatches()
     {
         IsLoading  = true;
@@ -103,7 +100,7 @@ public class UserStatusViewModel : ObservableObject
 
             ApplyFilter(CurrentFilter);
 
-            // Skill gap sidebar
+         
             UnderscoredSkills.Clear();
             SkillGapMissingSkills.Clear();
 
@@ -140,7 +137,7 @@ public class UserStatusViewModel : ObservableObject
         }
     }
 
-    /// <summary>Task 3 – Clear and reload.</summary>
+    
     public void Refresh()
     {
         AppliedJobs.Clear();
@@ -185,11 +182,11 @@ public class UserStatusViewModel : ObservableObject
         }
     }
 
-    /// <summary>Expose job skills for the detail dialog (UI concern stays in code-behind).</summary>
+  
     public System.Collections.Generic.IReadOnlyList<Domain.Entities.JobSkill> GetJobSkills(int jobId)
         => _jobSkillService.GetByJobId(jobId);
 
-    // ── Private ────────────────────────────────────────────────────────────────
+   
 
     private void OnSidebarCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {

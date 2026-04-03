@@ -17,20 +17,12 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <!-- Header bleeds past the shell frame's 24px margin -->
             <RowDefinition Height="Auto" />
-            <!-- Page title bar -->
             <RowDefinition Height="Auto" />
-            <!-- Feed -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- ── Header (edge-to-edge) ── -->
-        <!--<controls:DeveloperHeaderControl
-            Grid.Row="0"
-            Margin="-24,-24,-24,0" />-->
-
-        <!-- ── Page title + New Post button ── -->
+     
         <Grid Grid.Row="0"
               Padding="0,28,0,20">
             <Grid.ColumnDefinitions>

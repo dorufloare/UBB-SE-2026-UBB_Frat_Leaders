@@ -26,7 +26,7 @@
                        Foreground="{StaticResource TextSecondaryBrush}" />
         </StackPanel>
 
-        <!-- ══════════════════ CARD VIEW ══════════════════ -->
+       
         <Grid x:Name="CardViewPanel"
               Grid.Row="1"
               Visibility="Collapsed">
@@ -193,7 +193,7 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- ══════════════════ EXPANDED DETAIL VIEW ══════════════════ -->
+      
         <Grid x:Name="ExpandedViewPanel"
               Grid.Row="1"
               Visibility="Collapsed">
@@ -519,7 +519,7 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- ══════════════════ EMPTY STATE ══════════════════ -->
+       
         <Grid x:Name="EmptyStatePanel"
               Grid.Row="1"
               Visibility="Collapsed">
@@ -560,7 +560,7 @@
             </StackPanel>
         </Grid>
 
-        <!-- ══════════════════ LOADING STATE ══════════════════ -->
+       
         <Grid x:Name="LoadingPanel"
               Grid.Row="1"
               Visibility="Collapsed">
@@ -570,7 +570,7 @@
                           VerticalAlignment="Center" />
         </Grid>
 
-        <!-- ══════════════════ ACTION BUTTONS (always visible) ══════════════════ -->
+      
         <StackPanel x:Name="ActionButtonsPanel"
                     Grid.Row="2"
                     Orientation="Horizontal"

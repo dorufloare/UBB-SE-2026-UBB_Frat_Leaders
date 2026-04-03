@@ -7,7 +7,6 @@ public class SkillGapEntry
     public int    RequiredScore  { get; set; }
     public int    JobCount       { get; set; }
 
-    // Display helpers for XAML binding
     public string GapText          => $"Gap: {RequiredScore - UserScore} pts";
     public string UserScoreText    => $"Your score: {UserScore}";
     public string RequiredScoreText => $"average required: {RequiredScore}";

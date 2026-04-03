@@ -11,7 +11,7 @@ public class TestingModuleAdapterStub : ITestingModuleAdapter
 {
     public Task<TestResult?> GetResultForMatchAsync(int matchId)
     {
-        // Placeholder link until match -> (external_user_id, position_id) mapping is integrated.
+       
         return GetLatestResultForCandidateAsync(externalUserId: matchId, positionId: matchId);
     }
 

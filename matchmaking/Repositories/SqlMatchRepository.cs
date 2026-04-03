@@ -130,9 +130,7 @@ public class SqlMatchRepository(string connectionString) : SqlRepositoryBase(con
         };
     }
 
-    // TODO: Schema conflict — main uses [Matches]/Feedback/nvarchar Status.
-    // Consensus across other branches is Match/FeedbackMessage/int Status.
-    // Team needs to align on a single schema.
+   
     private static MatchStatus FromDbStatus(string rawStatus)
     {
         if (rawStatus.Equals("accepted", StringComparison.OrdinalIgnoreCase))

@@ -30,7 +30,7 @@ public sealed partial class UserStatusPage : Page
         };
     }
 
-    // ── Filter ────────────────────────────────────────────────────────────────
+  
 
     private void Filter_Click(object sender, RoutedEventArgs e)
     {
@@ -58,7 +58,7 @@ public sealed partial class UserStatusPage : Page
         }
     }
 
-    // ── Card button handlers ──────────────────────────────────────────────────
+  
 
     private async void ViewJobDetails_Click(object sender, RoutedEventArgs e)
     {
@@ -69,7 +69,7 @@ public sealed partial class UserStatusPage : Page
     private void ViewSkillGap_Click(object sender, RoutedEventArgs e)
         => Frame.Navigate(typeof(SkillGapPage));
 
-    // ── Top bar handlers ──────────────────────────────────────────────────────
+  
 
     private void SkillInsightsButton_Click(object sender, RoutedEventArgs e)
         => Frame.Navigate(typeof(SkillGapPage));
@@ -77,7 +77,7 @@ public sealed partial class UserStatusPage : Page
     private void RefreshButton_Click(object sender, RoutedEventArgs e)
         => _vm.Refresh();
 
-    // ── Job Details Dialog ────────────────────────────────────────────────────
+   
 
     private async Task ShowJobDetailsAsync(ApplicationCardModel model)
     {

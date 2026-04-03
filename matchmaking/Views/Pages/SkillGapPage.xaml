@@ -9,7 +9,7 @@
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
 
-<!-- ── Skills-to-Improve card DataTemplate ──────────────────────── -->
+
         <DataTemplate x:Key="UnderscoredSkillTemplate">
             <Border Background="White" CornerRadius="8" Padding="18"
                     BorderBrush="#E6E6E6" BorderThickness="1" Margin="0,0,0,0">
@@ -49,7 +49,7 @@
             </Border>
         </DataTemplate>
 
-        <!-- ── Missing-Skill card DataTemplate ──────────────────────────── -->
+        
         <DataTemplate x:Key="MissingSkillTemplate">
             <Border Background="White" CornerRadius="8"
                     BorderBrush="#E6E6E6" BorderThickness="1" Margin="0,0,0,0">

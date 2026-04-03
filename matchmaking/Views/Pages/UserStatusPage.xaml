@@ -65,7 +65,7 @@
             </Setter>
         </Style>
 
-        <!-- ── Job Card DataTemplate ──────────────────────────────────────── -->
+       
         <DataTemplate x:Key="JobCardTemplate">
             <Border Background="White" CornerRadius="10" Padding="24,28"
                     BorderBrush="#E1E1E1" BorderThickness="1" Margin="0,0,0,0">
@@ -123,7 +123,7 @@
             </Border>
         </DataTemplate>
 
-        <!-- ── Sidebar: Skill-to-Improve row DataTemplate ─────────────────── -->
+   
         <DataTemplate x:Key="UnderscoredSkillTemplate">
             <Grid Margin="0,0,0,2" ColumnDefinitions="80,*,30">
                 <TextBlock Grid.Column="0"
@@ -141,7 +141,7 @@
             </Grid>
         </DataTemplate>
 
-        <!-- ── Sidebar: Missing-Skill row DataTemplate ────────────────────── -->
+        
         <DataTemplate x:Key="MissingSkillSidebarTemplate">
             <TextBlock Text="{Binding SkillName}"
                        FontSize="12" Foreground="#D32F2F" TextWrapping="Wrap"/>
@@ -151,7 +151,7 @@
 
     <Grid ColumnDefinitions="*,290" Padding="28,20,16,20">
 
-            <!-- ── Left: Application Status ─────────────────────────────────── -->
+          
             <Grid Grid.Column="0" Padding="0,0,16,0" RowDefinitions="Auto,Auto,*">
 
                 <!-- Title + buttons -->
@@ -238,7 +238,7 @@
                 </Grid>
             </Grid>
 
-            <!-- ── Right: Skill Gap Sidebar ──────────────────────────────────── -->
+           
             <Border Grid.Column="1" Background="White" CornerRadius="8"
                     Padding="16" VerticalAlignment="Top"
                     BorderBrush="Black" BorderThickness="0,3,0,0">

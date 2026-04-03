@@ -20,11 +20,11 @@ public class SkillGapViewModel : ObservableObject
     private int    _missingCount;
     private int    _improveCount;
 
-    // ── Collections ────────────────────────────────────────────────────────────
+    
     public ObservableCollection<UnderscoredSkillModel> SkillsToImprove { get; } = new();
     public ObservableCollection<MissingSkillModel>     MissingSkills   { get; } = new();
 
-    // ── State properties ───────────────────────────────────────────────────────
+ 
     public bool   IsLoading         { get => _isLoading;         set => SetProperty(ref _isLoading, value); }
     public bool   ShowContent       { get => _showContent;       set => SetProperty(ref _showContent, value); }
     public bool   HasSkillData      { get => _hasSkillData;      set => SetProperty(ref _hasSkillData, value); }
@@ -33,14 +33,14 @@ public class SkillGapViewModel : ObservableObject
     public int    MissingCount      { get => _missingCount;      set => SetProperty(ref _missingCount, value); }
     public int    ImproveCount      { get => _improveCount;      set => SetProperty(ref _improveCount, value); }
 
-    // Section header visibility (derived from collection size)
+
     public bool HasSkillsToImprove => SkillsToImprove.Count > 0;
     public bool HasMissingSkills   => MissingSkills.Count > 0;
 
-    // ── Commands ───────────────────────────────────────────────────────────────
+  
     public ICommand RefreshCommand { get; }
 
-    // ── Constructor ────────────────────────────────────────────────────────────
+   
     public SkillGapViewModel()
     {
         var connectionString = App.Configuration.SqlConnectionString;
@@ -57,9 +57,7 @@ public class SkillGapViewModel : ObservableObject
         MissingSkills.CollectionChanged   += OnCollectionChanged;
     }
 
-    // ── Public API ─────────────────────────────────────────────────────────────
-
-    /// <summary>Task 8 – Load all skill gap data for the current user.</summary>
+  
     public async Task LoadData()
     {
         IsLoading         = true;
@@ -113,7 +111,7 @@ public class SkillGapViewModel : ObservableObject
         }
     }
 
-    /// <summary>Task 9 – Clear and reload.</summary>
+   
     public void Refresh()
     {
         SkillsToImprove.Clear();
@@ -124,7 +122,7 @@ public class SkillGapViewModel : ObservableObject
         _ = LoadData();
     }
 
-    // ── Private ────────────────────────────────────────────────────────────────
+  
 
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {

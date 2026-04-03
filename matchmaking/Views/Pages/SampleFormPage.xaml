@@ -17,7 +17,7 @@
                     Padding="32">
                 <StackPanel Spacing="24">
 
-                    <!-- Header (only visible if bindings are non-null) -->
+                   
                     <StackPanel Spacing="4">
                         <TextBlock Text="{Binding FormTitle}"
                                    FontSize="20"
