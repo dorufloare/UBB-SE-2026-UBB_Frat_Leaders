@@ -80,12 +80,40 @@ public class ChatService
 
     public List<Chat> GetChatsForUser(int userId)
     {
-        return _chatRepository.GetByUserId(userId).ToList();
+        var chats = _chatRepository.GetByUserId(userId);
+        var timestamps = _chatRepository.GetLatestMessageTimestamps(chats.Select(c => c.ChatId));
+
+        return chats
+            .Where(c =>
+            {
+                DateTime? deletedAt = c.UserId == userId
+                    ? c.DeletedAtByUser
+                    : c.DeletedAtBySecondParty;
+
+                return deletedAt is null
+                    || (timestamps.TryGetValue(c.ChatId, out var lastMsg) && lastMsg > deletedAt);
+            })
+            .OrderByDescending(c =>
+                timestamps.TryGetValue(c.ChatId, out var ts) ? ts : (DateTime?)new DateTime(1900, 1, 1))
+            .ThenByDescending(c => c.ChatId)
+            .ToList();
     }
 
     public List<Chat> GetChatsForCompany(int companyId)
     {
-        return _chatRepository.GetByCompanyId(companyId).ToList();
+        var chats = _chatRepository.GetByCompanyId(companyId);
+        var timestamps = _chatRepository.GetLatestMessageTimestamps(chats.Select(c => c.ChatId));
+
+        return chats
+            .Where(c =>
+            {
+                return c.DeletedAtBySecondParty is null
+                    || (timestamps.TryGetValue(c.ChatId, out var lastMsg) && lastMsg > c.DeletedAtBySecondParty);
+            })
+            .OrderByDescending(c =>
+                timestamps.TryGetValue(c.ChatId, out var ts) ? ts : (DateTime?)new DateTime(1900, 1, 1))
+            .ThenByDescending(c => c.ChatId)
+            .ToList();
     }
 
     public List<Message> GetMessages(int chatId, int callerId)

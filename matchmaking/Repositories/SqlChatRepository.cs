@@ -11,17 +11,18 @@ public class SqlChatRepository(string connectionString) : SqlRepositoryBase(conn
     {
         using var connection = OpenConnection();
         using var command = new SqlCommand(
-            "SELECT ChatId, UserId, CompanyId, SecondUserId, JobId, IsBlocked, BlockedByUserId, DeletedAtByUser, DeletedAtBySecondParty FROM Chat WHERE (UserId = @UserId OR SecondUserId = @UserId) AND ((UserId = @UserId AND (DeletedAtByUser IS NULL OR EXISTS (SELECT 1 FROM Message m WHERE m.ChatId = Chat.ChatId AND m.[Timestamp] > DeletedAtByUser))) OR (SecondUserId = @UserId AND (DeletedAtBySecondParty IS NULL OR EXISTS (SELECT 1 FROM Message m WHERE m.ChatId = Chat.ChatId AND m.[Timestamp] > DeletedAtBySecondParty)))) ORDER BY ISNULL((SELECT MAX(m.[Timestamp]) FROM Message m WHERE m.ChatId = Chat.ChatId), '19000101') DESC, ChatId DESC",
+            @"SELECT ChatId, UserId, CompanyId, SecondUserId, JobId, IsBlocked, BlockedByUserId, 
+                 DeletedAtByUser, DeletedAtBySecondParty 
+          FROM Chat 
+          WHERE UserId = @UserId OR SecondUserId = @UserId
+          ORDER BY ChatId DESC",
             connection);
         command.Parameters.AddWithValue("@UserId", userId);
 
         using var reader = command.ExecuteReader();
         var result = new List<Chat>();
         while (reader.Read())
-        {
             result.Add(Map(reader));
-        }
-
         return result;
     }
 
@@ -29,17 +30,39 @@ public class SqlChatRepository(string connectionString) : SqlRepositoryBase(conn
     {
         using var connection = OpenConnection();
         using var command = new SqlCommand(
-            "SELECT ChatId, UserId, CompanyId, SecondUserId, JobId, IsBlocked, BlockedByUserId, DeletedAtByUser, DeletedAtBySecondParty FROM Chat WHERE CompanyId = @CompanyId AND (DeletedAtBySecondParty IS NULL OR EXISTS (SELECT 1 FROM Message m WHERE m.ChatId = Chat.ChatId AND m.[Timestamp] > DeletedAtBySecondParty)) ORDER BY ISNULL((SELECT MAX(m.[Timestamp]) FROM Message m WHERE m.ChatId = Chat.ChatId), '19000101') DESC, ChatId DESC",
+            @"SELECT ChatId, UserId, CompanyId, SecondUserId, JobId, IsBlocked, BlockedByUserId, 
+                 DeletedAtByUser, DeletedAtBySecondParty 
+          FROM Chat 
+          WHERE CompanyId = @CompanyId
+          ORDER BY ChatId DESC",
             connection);
         command.Parameters.AddWithValue("@CompanyId", companyId);
 
         using var reader = command.ExecuteReader();
         var result = new List<Chat>();
         while (reader.Read())
-        {
             result.Add(Map(reader));
-        }
+        return result;
+    }
 
+    public IReadOnlyDictionary<int, DateTime?> GetLatestMessageTimestamps(IEnumerable<int> chatIds)
+    {
+        var ids = string.Join(",", chatIds);
+        if (string.IsNullOrEmpty(ids))
+            return new Dictionary<int, DateTime?>();
+
+        using var connection = OpenConnection();
+        using var command = new SqlCommand(
+            $@"SELECT ChatId, MAX([Timestamp]) 
+           FROM Message 
+           WHERE ChatId IN ({ids}) 
+           GROUP BY ChatId",
+            connection);
+
+        using var reader = command.ExecuteReader();
+        var result = new Dictionary<int, DateTime?>();
+        while (reader.Read())
+            result[reader.GetInt32(0)] = reader.IsDBNull(1) ? null : reader.GetDateTime(1);
         return result;
     }
 
