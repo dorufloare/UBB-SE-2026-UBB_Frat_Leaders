@@ -166,37 +166,6 @@ public class SqlChatRepository(string connectionString) : SqlRepositoryBase(conn
         command.ExecuteNonQuery();
     }
 
-    public void RestoreDeletedByUser(int chatId)
-    {
-        using var connection = OpenConnection();
-        using var command = new SqlCommand(
-            "UPDATE Chat SET DeletedAtByUser = NULL WHERE ChatId = @ChatId",
-            connection);
-        command.Parameters.AddWithValue("@ChatId", chatId);
-        command.ExecuteNonQuery();
-    }
-
-    public void RestoreDeletedBySecondParty(int chatId)
-    {
-        using var connection = OpenConnection();
-        using var command = new SqlCommand(
-            "UPDATE Chat SET DeletedAtBySecondParty = NULL WHERE ChatId = @ChatId",
-            connection);
-        command.Parameters.AddWithValue("@ChatId", chatId);
-        command.ExecuteNonQuery();
-    }
-
-    public void UpdateJobId(int chatId, int jobId)
-    {
-        using var connection = OpenConnection();
-        using var command = new SqlCommand(
-            "UPDATE Chat SET JobId = @JobId WHERE ChatId = @ChatId",
-            connection);
-        command.Parameters.AddWithValue("@ChatId", chatId);
-        command.Parameters.AddWithValue("@JobId", jobId);
-        command.ExecuteNonQuery();
-    }
-
     private static Chat Map(SqlDataReader reader)
     {
         return new Chat
