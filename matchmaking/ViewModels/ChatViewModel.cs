@@ -38,14 +38,22 @@ public class ChatViewModel : ObservableObject
     private readonly SessionContext _sessionContext;
     private readonly UserRepository _userRepository;
     private readonly CompanyRepository _companyRepository;
+    private readonly NavigationService _navigationService;
 
-    public ChatViewModel(ChatService chatService, JobService jobService, SessionContext sessionContext, UserRepository userRepository, CompanyRepository companyRepository)
+    public ChatViewModel(
+        ChatService chatService,
+        JobService jobService,
+        SessionContext sessionContext,
+        UserRepository userRepository,
+        CompanyRepository companyRepository,
+        NavigationService navigationService)
     {
         _chatService = chatService;
         _jobService = jobService;
         _sessionContext = sessionContext;
         _userRepository = userRepository;
         _companyRepository = companyRepository;
+        _navigationService = navigationService;
 
         _chats = new ObservableCollection<Chat>();
         _filteredChats = new ObservableCollection<Chat>();
@@ -801,16 +809,34 @@ public class ChatViewModel : ObservableObject
         {
             if (_sessionContext.CurrentMode == AppMode.CompanyMode)
             {
-                chat = _chatService.FindOrCreateUserCompanyChat(user.UserId, _sessionContext.CurrentCompanyId.Value, null);
+                var createdChat = _chatService.FindOrCreateUserCompanyChat(user.UserId, _sessionContext.CurrentCompanyId.Value, null);
+                if (createdChat is null)
+                {
+                    return;
+                }
+
+                chat = createdChat;
             }
             else
             {
-                chat = _chatService.FindOrCreateUserUserChat(_sessionContext.CurrentUserId.Value, user.UserId);
+                var createdChat = _chatService.FindOrCreateUserUserChat(_sessionContext.CurrentUserId.Value, user.UserId);
+                if (createdChat is null)
+                {
+                    return;
+                }
+
+                chat = createdChat;
             }
         }
         else if (selectedResult is Company company)
         {
-            chat = _chatService.FindOrCreateUserCompanyChat(_sessionContext.CurrentUserId.Value, company.CompanyId, null);
+            var createdChat = _chatService.FindOrCreateUserCompanyChat(_sessionContext.CurrentUserId.Value, company.CompanyId, null);
+            if (createdChat is null)
+            {
+                return;
+            }
+
+            chat = createdChat;
         }
         else
         {
@@ -868,6 +894,10 @@ public class ChatViewModel : ObservableObject
             return;
 
         var chat = _chatService.FindOrCreateUserCompanyChat(_sessionContext.CurrentUserId.Value, companyId, jobId);
+        if (chat is null)
+        {
+            return;
+        }
 
         var oldChat = Chats.FirstOrDefault(c => c.ChatId == chat.ChatId);
         if (oldChat is not null)
@@ -994,10 +1024,14 @@ public class ChatViewModel : ObservableObject
 
     public void GoToProfile()
     {
-        if (SelectedChat?.SecondUserId is null)
+        if (SelectedChat is null)
             return;
 
-        // No implementation yet. Waiting for other team.
+        var userId = SelectedChat.SecondUserId ?? SelectedChat.UserId;
+        if (userId <= 0)
+            return;
+
+        _navigationService.RequestUserProfile(userId);
     }
 
     public void GoToCompanyProfile()
@@ -1005,7 +1039,7 @@ public class ChatViewModel : ObservableObject
         if (SelectedChat?.CompanyId is null)
             return;
 
-        // No implementation yet. Waiting for other team.
+        _navigationService.RequestCompanyProfile(SelectedChat.CompanyId.Value);
     }
 
     public void GoToJobPost()
@@ -1013,7 +1047,7 @@ public class ChatViewModel : ObservableObject
         if (SelectedChat?.JobId is null)
             return;
 
-        // No implementation yet. Waiting for other team.
+        _navigationService.RequestJobPost(SelectedChat.JobId.Value);
     }
 }
 

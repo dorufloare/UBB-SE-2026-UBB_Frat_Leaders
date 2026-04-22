@@ -73,6 +73,19 @@ public class SqlInteractionRepository(string connectionString) : SqlRepositoryBa
         return result;
     }
 
+    public Interaction? GetByDeveloperIdAndPostId(int developerId, int postId)
+    {
+        using var connection = OpenConnection();
+        using var command = new SqlCommand(
+            "SELECT InteractionId, DeveloperId, PostId, Type FROM Interaction WHERE DeveloperId = @DeveloperId AND PostId = @PostId",
+            connection);
+        command.Parameters.AddWithValue("@DeveloperId", developerId);
+        command.Parameters.AddWithValue("@PostId", postId);
+
+        using var reader = command.ExecuteReader();
+        return reader.Read() ? Map(reader) : null;
+    }
+
     public void Add(Interaction interaction)
     {
         using var connection = OpenConnection();

@@ -148,6 +148,11 @@ public class SqlMatchRepository(string connectionString) : SqlRepositoryBase(con
             return MatchStatus.Advanced;
         }
 
+        if (rawStatus.Equals("pending", StringComparison.OrdinalIgnoreCase))
+        {
+            return MatchStatus.Applied;
+        }
+
         return MatchStatus.Applied;
     }
 
@@ -158,7 +163,7 @@ public class SqlMatchRepository(string connectionString) : SqlRepositoryBase(con
             MatchStatus.Accepted => "Accepted",
             MatchStatus.Rejected => "Rejected",
             MatchStatus.Advanced => "Advanced",
-            _ => "Pending"
+            _ => "Applied"
         };
     }
 }

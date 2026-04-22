@@ -9,16 +9,16 @@ public class CompanyRepository
 {
     private readonly List<Company> _companies =
     [
-        new() { CompanyId = 1, CompanyName = "TechNova", Email = "hr@technova.com", Phone = "0311000001" },
-        new() { CompanyId = 2, CompanyName = "CloudWorks", Email = "jobs@cloudworks.com", Phone = "0311000002" },
-        new() { CompanyId = 3, CompanyName = "DataForge", Email = "careers@dataforge.com", Phone = "0311000003" },
-        new() { CompanyId = 4, CompanyName = "PixelSoft", Email = "talent@pixelsoft.com", Phone = "0311000004" },
-        new() { CompanyId = 5, CompanyName = "SecureOps", Email = "team@secureops.com", Phone = "0311000005" },
-        new() { CompanyId = 6, CompanyName = "GreenCode", Email = "work@greencode.com", Phone = "0311000006" },
-        new() { CompanyId = 7, CompanyName = "RocketApps", Email = "apply@rocketapps.com", Phone = "0311000007" },
-        new() { CompanyId = 8, CompanyName = "BrightSystems", Email = "people@brightsystems.com", Phone = "0311000008" },
-        new() { CompanyId = 9, CompanyName = "AI Valley", Email = "hr@aivalley.com", Phone = "0311000009" },
-        new() { CompanyId = 10, CompanyName = "CodeBridge", Email = "careers@codebridge.com", Phone = "0311000010" }
+        new() { CompanyId = 1, CompanyName = "TechNova", LogoText = "TN", Email = "hr@technova.com", Phone = "0311000001" },
+        new() { CompanyId = 2, CompanyName = "CloudWorks", LogoText = "CW", Email = "jobs@cloudworks.com", Phone = "0311000002" },
+        new() { CompanyId = 3, CompanyName = "DataForge", LogoText = "DF", Email = "careers@dataforge.com", Phone = "0311000003" },
+        new() { CompanyId = 4, CompanyName = "PixelSoft", LogoText = "PS", Email = "talent@pixelsoft.com", Phone = "0311000004" },
+        new() { CompanyId = 5, CompanyName = "SecureOps", LogoText = "SO", Email = "team@secureops.com", Phone = "0311000005" },
+        new() { CompanyId = 6, CompanyName = "GreenCode", LogoText = "GC", Email = "work@greencode.com", Phone = "0311000006" },
+        new() { CompanyId = 7, CompanyName = "RocketApps", LogoText = "RA", Email = "apply@rocketapps.com", Phone = "0311000007" },
+        new() { CompanyId = 8, CompanyName = "BrightSystems", LogoText = "BS", Email = "people@brightsystems.com", Phone = "0311000008" },
+        new() { CompanyId = 9, CompanyName = "AI Valley", LogoText = "AV", Email = "hr@aivalley.com", Phone = "0311000009" },
+        new() { CompanyId = 10, CompanyName = "CodeBridge", LogoText = "CB", Email = "careers@codebridge.com", Phone = "0311000010" }
     ];
 
     public Company? GetById(int companyId) => _companies.FirstOrDefault(c => c.CompanyId == companyId);
@@ -39,6 +39,7 @@ public class CompanyRepository
     {
         var existing = GetById(company.CompanyId) ?? throw new KeyNotFoundException($"Company with id {company.CompanyId} was not found.");
         existing.CompanyName = company.CompanyName;
+        existing.LogoText = company.LogoText;
         existing.Email = company.Email;
         existing.Phone = company.Phone;
     }

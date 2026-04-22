@@ -5,13 +5,13 @@ namespace matchmaking.Services;
 
 public sealed class CooldownService
 {
-    public static readonly TimeSpan UserJobDeckCooldown = TimeSpan.FromHours(24);
-
     private readonly SqlRecommendationRepository _recommendationRepository;
+    private readonly TimeSpan _cooldownPeriod;
 
-    public CooldownService(SqlRecommendationRepository recommendationRepository)
+    public CooldownService(SqlRecommendationRepository recommendationRepository, TimeSpan cooldownPeriod)
     {
         _recommendationRepository = recommendationRepository;
+        _cooldownPeriod = cooldownPeriod <= TimeSpan.Zero ? TimeSpan.FromHours(24) : cooldownPeriod;
     }
 
     public bool IsOnCooldown(int userId, int jobId, DateTime utcNow)
@@ -23,7 +23,7 @@ public sealed class CooldownService
         }
 
         var elapsed = utcNow - NormalizeToUtc(latest.Timestamp);
-        return elapsed < UserJobDeckCooldown;
+        return elapsed < _cooldownPeriod;
     }
 
     private static DateTime NormalizeToUtc(DateTime timestamp)

@@ -47,6 +47,14 @@ public class DeveloperService
 
     public void AddInteraction(int developerId, int postId, InteractionType type)
     {
+        var existing = _interactionRepository.GetByDeveloperIdAndPostId(developerId, postId);
+        if (existing is not null)
+        {
+            existing.Type = type;
+            _interactionRepository.Update(existing);
+            return;
+        }
+
         var interaction = new Interaction
         {
             DeveloperId = developerId,

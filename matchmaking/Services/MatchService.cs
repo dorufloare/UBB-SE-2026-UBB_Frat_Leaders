@@ -70,6 +70,12 @@ public class MatchService
 
     public Task SubmitDecisionAsync(int matchId, MatchStatus decision, string feedback)
     {
+        SubmitDecision(matchId, decision, feedback);
+        return Task.CompletedTask;
+    }
+
+    public void SubmitDecision(int matchId, MatchStatus decision, string feedback)
+    {
         var match = _matchRepository.GetById(matchId)
             ?? throw new KeyNotFoundException($"Match with id {matchId} was not found.");
 
@@ -85,18 +91,23 @@ public class MatchService
         match.FeedbackMessage = feedback.Trim();
         match.Timestamp = DateTime.UtcNow;
         _matchRepository.Update(match);
-
-        return Task.CompletedTask;
     }
 
     public Task AcceptAsync(int matchId, string feedback)
     {
-        return SubmitDecisionAsync(matchId, MatchStatus.Accepted, feedback);
+        SubmitDecision(matchId, MatchStatus.Accepted, feedback);
+        return Task.CompletedTask;
     }
 
     public Task RejectAsync(int matchId, string feedback)
     {
-        return SubmitDecisionAsync(matchId, MatchStatus.Rejected, feedback);
+        SubmitDecision(matchId, MatchStatus.Rejected, feedback);
+        return Task.CompletedTask;
+    }
+
+    public void Reject(int matchId, string feedback)
+    {
+        SubmitDecision(matchId, MatchStatus.Rejected, feedback);
     }
 
    

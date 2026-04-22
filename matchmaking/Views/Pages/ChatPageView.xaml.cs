@@ -26,6 +26,7 @@ public sealed partial class ChatPageView : Page
     private readonly DispatcherTimer _refreshTimer;
     private readonly JobService _jobService;
     private bool _isScrollToLatestQueued;
+    private readonly NavigationService _navigationService;
 
     public ChatPageView()
     {
@@ -38,8 +39,15 @@ public sealed partial class ChatPageView : Page
         var chatService = new ChatService(chatRepository, messageRepository, userRepository, companyRepository);
         _jobService = new JobService(new JobRepository());
         var sessionContext = App.Session ?? new SessionContext();
+        _navigationService = App.Navigation;
 
-        _viewModel = new ChatViewModel(chatService, _jobService, sessionContext, userRepository, companyRepository);
+        _viewModel = new ChatViewModel(
+            chatService,
+            _jobService,
+            sessionContext,
+            userRepository,
+            companyRepository,
+            _navigationService);
         DataContext = _viewModel;
 
         _refreshTimer = new DispatcherTimer
@@ -52,6 +60,9 @@ public sealed partial class ChatPageView : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
+        _navigationService.UserProfileRequested += OnUserProfileRequested;
+        _navigationService.CompanyProfileRequested += OnCompanyProfileRequested;
+        _navigationService.JobPostRequested += OnJobPostRequested;
         _viewModel.Messages.CollectionChanged -= Messages_CollectionChanged;
         _viewModel.Messages.CollectionChanged += Messages_CollectionChanged;
         _viewModel.LoadChats();
@@ -68,8 +79,39 @@ public sealed partial class ChatPageView : Page
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
         _refreshTimer.Stop();
+        _navigationService.UserProfileRequested -= OnUserProfileRequested;
+        _navigationService.CompanyProfileRequested -= OnCompanyProfileRequested;
+        _navigationService.JobPostRequested -= OnJobPostRequested;
         _viewModel.Messages.CollectionChanged -= Messages_CollectionChanged;
         base.OnNavigatedFrom(e);
+    }
+
+    private async void OnUserProfileRequested(int userId)
+    {
+        await ShowNavigationPlaceholderAsync("User Profile", $"User profile page is not available yet (User ID: {userId}).");
+    }
+
+    private async void OnCompanyProfileRequested(int companyId)
+    {
+        await ShowNavigationPlaceholderAsync("Company Profile", $"Company profile page is not available yet (Company ID: {companyId}).");
+    }
+
+    private async void OnJobPostRequested(int jobId)
+    {
+        await ShowNavigationPlaceholderAsync("Job Post", $"Job post page is not available yet (Job ID: {jobId}).");
+    }
+
+    private async System.Threading.Tasks.Task ShowNavigationPlaceholderAsync(string title, string message)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = message,
+            CloseButtonText = "OK",
+            XamlRoot = XamlRoot
+        };
+
+        await dialog.ShowAsync();
     }
 
     private void RefreshTimer_Tick(object? sender, object e)

@@ -9,7 +9,7 @@ using Windows.UI;
 using matchmaking.Models;
 using matchmaking.ViewModels;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System;
+using matchmaking.Views;
 namespace matchmaking.Views.Pages;
 
 public sealed partial class UserStatusPage : Page
@@ -76,6 +76,19 @@ public sealed partial class UserStatusPage : Page
 
     private void RefreshButton_Click(object sender, RoutedEventArgs e)
         => _vm.Refresh();
+
+    private void GoToRecommendationsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (Frame?.Parent is ShellView)
+        {
+            App.Session.LoginAsUser(App.Session.CurrentUserId ?? 1);
+            Frame.Navigate(typeof(UserRecommendationPageView));
+        }
+        else
+        {
+            Frame?.Navigate(typeof(UserRecommendationPageView));
+        }
+    }
 
    
 

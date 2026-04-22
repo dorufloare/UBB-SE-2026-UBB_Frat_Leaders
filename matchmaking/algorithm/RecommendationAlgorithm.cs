@@ -314,7 +314,7 @@ public class RecommendationAlgorithm
     {
         var matches = 0;
 
-        if (string.Equals(user.Location, job.Location, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(user.PreferredLocation, job.Location, StringComparison.OrdinalIgnoreCase))
         {
             matches++;
         }
