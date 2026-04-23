@@ -5,7 +5,7 @@ public class PostTypeToBadgeBackgroundConverterTests
     private readonly PostTypeToBadgeBackgroundConverter converter = new();
 
     [Fact]
-    public void Convert_True_ReturnsSolidColorBrush()
+    public void Convert_True_ReturnsJobPostColor()
     {
         var result = PostTypeToBadgeBackgroundConverter.GetColor(true);
 
@@ -13,7 +13,7 @@ public class PostTypeToBadgeBackgroundConverterTests
     }
 
     [Fact]
-    public void Convert_False_ReturnsSolidColorBrush()
+    public void Convert_False_ReturnsDeveloperPostColor()
     {
         var result = PostTypeToBadgeBackgroundConverter.GetColor(false);
 
@@ -30,7 +30,7 @@ public class PostTypeToBadgeBackgroundConverterTests
     }
 
     [Fact]
-    public void Convert_NonBoolValue_ReturnsSolidColorBrush()
+    public void Convert_NonBoolValue_ReturnsDeveloperPostColor()
     {
         var result = PostTypeToBadgeBackgroundConverter.GetColor(false);
 
@@ -38,7 +38,7 @@ public class PostTypeToBadgeBackgroundConverterTests
     }
 
     [Fact]
-    public void Convert_NullValue_ReturnsSolidColorBrush()
+    public void Convert_NullValue_ReturnsDeveloperPostColor()
     {
         var result = PostTypeToBadgeBackgroundConverter.GetColor(false);
 

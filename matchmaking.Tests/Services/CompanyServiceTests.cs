@@ -3,22 +3,58 @@ namespace matchmaking.Tests;
 public sealed class CompanyServiceTests
 {
     [Fact]
-    public void DelegatesGetAddUpdateRemoveToRepository()
+    public void GetById_WhenCompanyExists_ReturnsCompany()
     {
         var existingCompany = TestDataFactory.CreateCompany(4);
         var repository = new FakeCompanyRepository([existingCompany]);
         var service = new CompanyService(repository);
-        var newCompany = TestDataFactory.CreateCompany(5);
 
         service.GetById(existingCompany.CompanyId).Should().Be(existingCompany);
+    }
+
+    [Fact]
+    public void GetAll_WhenCompaniesExist_ReturnsCompanies()
+    {
+        var existingCompany = TestDataFactory.CreateCompany(4);
+        var repository = new FakeCompanyRepository([existingCompany]);
+        var service = new CompanyService(repository);
+
         service.GetAll().Should().ContainSingle().Which.Should().Be(existingCompany);
+    }
+
+    [Fact]
+    public void Add_WhenCompanyAdded_DelegatesToRepository()
+    {
+        var repository = new FakeCompanyRepository([]);
+        var service = new CompanyService(repository);
+        var newCompany = TestDataFactory.CreateCompany(5);
 
         service.Add(newCompany);
-        service.Update(existingCompany);
-        service.Remove(existingCompany.CompanyId);
 
         repository.AddedCompanies.Should().ContainSingle().Which.Should().Be(newCompany);
+    }
+
+    [Fact]
+    public void Update_WhenCompanyUpdated_DelegatesToRepository()
+    {
+        var existingCompany = TestDataFactory.CreateCompany(4);
+        var repository = new FakeCompanyRepository([existingCompany]);
+        var service = new CompanyService(repository);
+
+        service.Update(existingCompany);
+
         repository.UpdatedCompanies.Should().ContainSingle().Which.Should().Be(existingCompany);
+    }
+
+    [Fact]
+    public void Remove_WhenCompanyRemoved_DelegatesToRepository()
+    {
+        var existingCompany = TestDataFactory.CreateCompany(4);
+        var repository = new FakeCompanyRepository([existingCompany]);
+        var service = new CompanyService(repository);
+
+        service.Remove(existingCompany.CompanyId);
+
         repository.RemovedCompanyIds.Should().ContainSingle().Which.Should().Be(existingCompany.CompanyId);
     }
 

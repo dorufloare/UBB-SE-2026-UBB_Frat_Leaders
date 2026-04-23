@@ -17,7 +17,7 @@ public class MatchStatusToTextConverterTests
     }
 
     [Fact]
-    public void Convert_WithStringValue_ReturnsFallbackText()
+    public void Convert_WithStringValue_ReturnsAppliedText()
     {
         var result = converter.Convert("not a status", typeof(string), null, string.Empty);
 
@@ -25,7 +25,7 @@ public class MatchStatusToTextConverterTests
     }
 
     [Fact]
-    public void Convert_WithNullValue_ReturnsFallbackText()
+    public void Convert_WithNullValue_ReturnsAppliedText()
     {
         var result = converter.Convert(null, typeof(string), null, string.Empty);
 
@@ -33,7 +33,7 @@ public class MatchStatusToTextConverterTests
     }
 
     [Fact]
-    public void Convert_WithIntegerValue_ReturnsFallbackText()
+    public void Convert_WithIntegerValue_ReturnsAppliedText()
     {
         var result = converter.Convert(42, typeof(string), null, string.Empty);
 

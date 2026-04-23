@@ -3,23 +3,68 @@ namespace matchmaking.Tests;
 public sealed class JobSkillServiceTests
 {
     [Fact]
-    public void DelegatesGetAddUpdateRemoveToRepository()
+    public void GetById_WhenJobSkillExists_ReturnsJobSkill()
     {
         var existingJobSkill = TestDataFactory.CreateJobSkill(100, 10, "C#", 75);
         var repository = new FakeJobSkillRepository([existingJobSkill]);
         var service = new JobSkillService(repository);
-        var newJobSkill = TestDataFactory.CreateJobSkill(100, 11, "Docker", 70);
 
         service.GetById(existingJobSkill.JobId, existingJobSkill.SkillId).Should().Be(existingJobSkill);
+    }
+
+    [Fact]
+    public void GetAll_WhenJobSkillsExist_ReturnsJobSkills()
+    {
+        var existingJobSkill = TestDataFactory.CreateJobSkill(100, 10, "C#", 75);
+        var repository = new FakeJobSkillRepository([existingJobSkill]);
+        var service = new JobSkillService(repository);
+
         service.GetAll().Should().ContainSingle().Which.Should().Be(existingJobSkill);
+    }
+
+    [Fact]
+    public void GetByJobId_WhenJobSkillsExist_ReturnsJobSkills()
+    {
+        var existingJobSkill = TestDataFactory.CreateJobSkill(100, 10, "C#", 75);
+        var repository = new FakeJobSkillRepository([existingJobSkill]);
+        var service = new JobSkillService(repository);
+
         service.GetByJobId(existingJobSkill.JobId).Should().ContainSingle().Which.Should().Be(existingJobSkill);
+    }
+
+    [Fact]
+    public void Add_WhenJobSkillAdded_DelegatesToRepository()
+    {
+        var repository = new FakeJobSkillRepository([]);
+        var service = new JobSkillService(repository);
+        var newJobSkill = TestDataFactory.CreateJobSkill(100, 11, "Docker", 70);
 
         service.Add(newJobSkill);
-        service.Update(existingJobSkill);
-        service.Remove(existingJobSkill.JobId, existingJobSkill.SkillId);
 
         repository.AddedItems.Should().ContainSingle().Which.Should().Be(newJobSkill);
+    }
+
+    [Fact]
+    public void Update_WhenJobSkillUpdated_DelegatesToRepository()
+    {
+        var existingJobSkill = TestDataFactory.CreateJobSkill(100, 10, "C#", 75);
+        var repository = new FakeJobSkillRepository([existingJobSkill]);
+        var service = new JobSkillService(repository);
+
+        service.Update(existingJobSkill);
+
         repository.UpdatedItems.Should().ContainSingle().Which.Should().Be(existingJobSkill);
+    }
+
+    [Fact]
+    public void Remove_WhenJobSkillRemoved_DelegatesToRepository()
+    {
+        var existingJobSkill = TestDataFactory.CreateJobSkill(100, 10, "C#", 75);
+        var repository = new FakeJobSkillRepository([existingJobSkill]);
+        var service = new JobSkillService(repository);
+
+        service.Remove(existingJobSkill.JobId, existingJobSkill.SkillId);
+
         repository.RemovedPairs.Should().ContainSingle().Which.Should().Be((existingJobSkill.JobId, existingJobSkill.SkillId));
     }
 

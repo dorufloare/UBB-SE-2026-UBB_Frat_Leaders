@@ -12,14 +12,16 @@ namespace matchmaking.Converters;
 
 internal static class ChatDisplayResolver
 {
-    private static readonly UserRepository UserRepository = new();
-    private static readonly CompanyRepository CompanyRepository = new();
+    private static readonly UserRepository UserRepository = new UserRepository();
+    private static readonly CompanyRepository CompanyRepository = new CompanyRepository();
 
     public static string ResolveChatName(Chat chat)
     {
         var session = App.Session;
         if (session is null)
+        {
             return "Chat";
+        }
 
         if (session.CurrentMode == AppMode.CompanyMode)
         {
@@ -49,7 +51,9 @@ internal static class ChatDisplayResolver
     {
         var session = App.Session;
         if (session is null)
+        {
             return 0;
+        }
 
         return session.CurrentMode == AppMode.UserMode
             ? session.CurrentUserId ?? 0
@@ -72,10 +76,14 @@ public class ChatNameConverter : IValueConverter
         }
 
         if (value is User user)
+        {
             return user.Name;
+        }
 
         if (value is Company company)
+        {
             return company.CompanyName;
+        }
 
         var type = value.GetType();
         var nameProperty = type.GetProperty("Name", BindingFlags.Public | BindingFlags.Instance);
@@ -132,14 +140,20 @@ public class MessageContentDisplayConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Message message)
+        {
             return string.Empty;
+        }
 
         if (message.Type == MessageType.Text)
+        {
             return message.Content;
+        }
 
         var fileName = Path.GetFileName(message.Content);
         if (string.IsNullOrWhiteSpace(fileName))
+        {
             return message.Content;
+        }
 
         return message.Type == MessageType.Image
             ? $"📷 {fileName}"
@@ -157,7 +171,9 @@ public class MessageTextVisibilityConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Message message)
+        {
             return Visibility.Collapsed;
+        }
 
         return message.Type == MessageType.Text ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -173,7 +189,9 @@ public class MessageAttachmentVisibilityConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Message message)
+        {
             return Visibility.Collapsed;
+        }
 
         return message.Type == MessageType.Text ? Visibility.Collapsed : Visibility.Visible;
     }
@@ -189,7 +207,9 @@ public class MessageFileAttachmentVisibilityConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Message message)
+        {
             return Visibility.Collapsed;
+        }
 
         return message.Type == MessageType.File ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -205,7 +225,9 @@ public class MessageImageVisibilityConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Message message)
+        {
             return Visibility.Collapsed;
+        }
 
         return message.Type == MessageType.Image ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -221,12 +243,16 @@ public class MessageImageSourceConverter : IValueConverter
     public object? Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Message message || message.Type != MessageType.Image || string.IsNullOrWhiteSpace(message.Content))
+        {
             return null;
+        }
 
         try
         {
             if (!File.Exists(message.Content))
+            {
                 return null;
+            }
 
             return new BitmapImage(new Uri(message.Content));
         }
@@ -247,7 +273,9 @@ public class IsOtherPartyMessageConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Message message)
+        {
             return Visibility.Collapsed;
+        }
 
         var currentSenderId = ChatDisplayResolver.GetCurrentSenderId();
         return message.SenderId != currentSenderId ? Visibility.Visible : Visibility.Collapsed;
@@ -264,7 +292,9 @@ public class IsCurrentUserMessageConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Message message)
+        {
             return Visibility.Collapsed;
+        }
 
         var currentSenderId = ChatDisplayResolver.GetCurrentSenderId();
         return message.SenderId == currentSenderId ? Visibility.Visible : Visibility.Collapsed;

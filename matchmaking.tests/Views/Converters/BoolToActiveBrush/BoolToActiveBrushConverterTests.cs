@@ -5,7 +5,7 @@ public class BoolToActiveBrushConverterTests
     private readonly BoolToActiveBrushConverter converter = new();
 
     [Fact]
-    public void Convert_True_ReturnsSolidColorBrush()
+    public void Convert_True_ReturnsActiveColor()
     {
         var result = BoolToActiveBrushConverter.GetColor(true);
 
@@ -13,7 +13,7 @@ public class BoolToActiveBrushConverterTests
     }
 
     [Fact]
-    public void Convert_False_ReturnsSolidColorBrush()
+    public void Convert_False_ReturnsInactiveColor()
     {
         var result = BoolToActiveBrushConverter.GetColor(false);
 
@@ -30,7 +30,7 @@ public class BoolToActiveBrushConverterTests
     }
 
     [Fact]
-    public void Convert_NonBoolValue_ReturnsSolidColorBrush()
+    public void Convert_NonBoolValue_ReturnsInactiveColor()
     {
         var result = BoolToActiveBrushConverter.GetColor(false);
 
@@ -38,7 +38,7 @@ public class BoolToActiveBrushConverterTests
     }
 
     [Fact]
-    public void Convert_NullValue_ReturnsSolidColorBrush()
+    public void Convert_NullValue_ReturnsInactiveColor()
     {
         var result = BoolToActiveBrushConverter.GetColor(false);
 

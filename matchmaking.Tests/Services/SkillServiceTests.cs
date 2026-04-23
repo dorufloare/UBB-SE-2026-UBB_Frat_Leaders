@@ -3,24 +3,78 @@ namespace matchmaking.Tests;
 public sealed class SkillServiceTests
 {
     [Fact]
-    public void DelegatesGetAddUpdateRemoveToRepository()
+    public void GetById_WhenSkillExists_ReturnsSkill()
     {
         var existingSkill = TestDataFactory.CreateSkill(1, 10, "C#", 85);
         var repository = new FakeSkillRepository([existingSkill]);
         var service = new SkillService(repository);
-        var newSkill = TestDataFactory.CreateSkill(1, 11, "SQL", 80);
 
         service.GetById(existingSkill.UserId, existingSkill.SkillId).Should().Be(existingSkill);
+    }
+
+    [Fact]
+    public void GetAll_WhenSkillsExist_ReturnsSkills()
+    {
+        var existingSkill = TestDataFactory.CreateSkill(1, 10, "C#", 85);
+        var repository = new FakeSkillRepository([existingSkill]);
+        var service = new SkillService(repository);
+
         service.GetAll().Should().ContainSingle().Which.Should().Be(existingSkill);
+    }
+
+    [Fact]
+    public void GetByUserId_WhenSkillsExist_ReturnsSkills()
+    {
+        var existingSkill = TestDataFactory.CreateSkill(1, 10, "C#", 85);
+        var repository = new FakeSkillRepository([existingSkill]);
+        var service = new SkillService(repository);
+
         service.GetByUserId(existingSkill.UserId).Should().ContainSingle().Which.Should().Be(existingSkill);
+    }
+
+    [Fact]
+    public void GetDistinctSkillCatalog_WhenSkillsExist_ReturnsCatalog()
+    {
+        var existingSkill = TestDataFactory.CreateSkill(1, 10, "C#", 85);
+        var repository = new FakeSkillRepository([existingSkill]);
+        var service = new SkillService(repository);
+
         service.GetDistinctSkillCatalog().Should().ContainSingle().Which.Should().Be((existingSkill.SkillId, existingSkill.SkillName));
+    }
+
+    [Fact]
+    public void Add_WhenSkillAdded_DelegatesToRepository()
+    {
+        var repository = new FakeSkillRepository([]);
+        var service = new SkillService(repository);
+        var newSkill = TestDataFactory.CreateSkill(1, 11, "SQL", 80);
 
         service.Add(newSkill);
-        service.Update(existingSkill);
-        service.Remove(existingSkill.UserId, existingSkill.SkillId);
 
         repository.AddedSkills.Should().ContainSingle().Which.Should().Be(newSkill);
+    }
+
+    [Fact]
+    public void Update_WhenSkillUpdated_DelegatesToRepository()
+    {
+        var existingSkill = TestDataFactory.CreateSkill(1, 10, "C#", 85);
+        var repository = new FakeSkillRepository([existingSkill]);
+        var service = new SkillService(repository);
+
+        service.Update(existingSkill);
+
         repository.UpdatedSkills.Should().ContainSingle().Which.Should().Be(existingSkill);
+    }
+
+    [Fact]
+    public void Remove_WhenSkillRemoved_DelegatesToRepository()
+    {
+        var existingSkill = TestDataFactory.CreateSkill(1, 10, "C#", 85);
+        var repository = new FakeSkillRepository([existingSkill]);
+        var service = new SkillService(repository);
+
+        service.Remove(existingSkill.UserId, existingSkill.SkillId);
+
         repository.RemovedPairs.Should().ContainSingle().Which.Should().Be((existingSkill.UserId, existingSkill.SkillId));
     }
 

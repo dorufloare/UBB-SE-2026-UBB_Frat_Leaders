@@ -9,7 +9,7 @@ public class MatchStatusToColorConverterTests
     [InlineData(MatchStatus.Rejected)]
     [InlineData(MatchStatus.Applied)]
     [InlineData(MatchStatus.Advanced)]
-    public void Convert_WithMatchStatus_ReturnsSolidColorBrush(MatchStatus status)
+    public void Convert_WithMatchStatus_ReturnsColor(MatchStatus status)
     {
         var result = MatchStatusToColorConverter.GetColor(status);
 
@@ -17,7 +17,7 @@ public class MatchStatusToColorConverterTests
     }
 
     [Fact]
-    public void Convert_WithNonMatchStatusValue_ReturnsSolidColorBrush()
+    public void Convert_WithNonMatchStatusValue_ReturnsAppliedColor()
     {
         var result = MatchStatusToColorConverter.GetColor(MatchStatus.Applied);
 
@@ -25,7 +25,7 @@ public class MatchStatusToColorConverterTests
     }
 
     [Fact]
-    public void Convert_WithNullValue_ReturnsSolidColorBrush()
+    public void Convert_WithNullValue_ReturnsAppliedColor()
     {
         var result = MatchStatusToColorConverter.GetColor(MatchStatus.Applied);
 

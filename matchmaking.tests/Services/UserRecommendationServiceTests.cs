@@ -11,13 +11,13 @@ public sealed class UserRecommendationServiceTests
     public void GetNextCard_WhenNoMatchingJobsExist_ReturnsNull()
     {
         var service = CreateService(
-            users: [TestDataFactory.CreateUser()],
-            jobs: [],
-            skills: [],
-            jobSkills: [],
-            companies: [TestDataFactory.CreateCompany()],
-            matches: [],
-            recommendations: []);
+            users: new[] { TestDataFactory.CreateUser() },
+            jobs: Array.Empty<Job>(),
+            skills: Array.Empty<Skill>(),
+            jobSkills: Array.Empty<JobSkill>(),
+            companies: new[] { TestDataFactory.CreateCompany() },
+            matches: Array.Empty<Match>(),
+            recommendations: Array.Empty<Recommendation>());
 
         var result = service.GetNextCard(1, UserMatchmakingFilters.Empty());
 
@@ -31,13 +31,13 @@ public sealed class UserRecommendationServiceTests
         var job = TestDataFactory.CreateJob();
 
         var service = CreateService(
-            users: [user],
-            jobs: [job],
-            skills: [TestDataFactory.CreateSkill(user.UserId, 1, "C#", 90)],
-            jobSkills: [TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 80)],
-            companies: [TestDataFactory.CreateCompany(job.CompanyId)],
-            matches: [],
-            recommendations: []);
+            users: new[] { user },
+            jobs: new[] { job },
+            skills: new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 90) },
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 80) },
+            companies: new[] { TestDataFactory.CreateCompany(job.CompanyId) },
+            matches: Array.Empty<Match>(),
+            recommendations: Array.Empty<Recommendation>());
 
         var result = service.GetNextCard(user.UserId, UserMatchmakingFilters.Empty());
 
@@ -50,13 +50,13 @@ public sealed class UserRecommendationServiceTests
     public void ApplyLike_WhenNoExistingMatchCreatesPendingApplication()
     {
         var service = CreateService(
-            users: [TestDataFactory.CreateUser()],
-            jobs: [TestDataFactory.CreateJob()],
-            skills: [],
-            jobSkills: [TestDataFactory.CreateJobSkill(100, 1, "C#", 80)],
-            companies: [TestDataFactory.CreateCompany()],
-            matches: [],
-            recommendations: []);
+            users: new[] { TestDataFactory.CreateUser() },
+            jobs: new[] { TestDataFactory.CreateJob() },
+            skills: Array.Empty<Skill>(),
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(100, 1, "C#", 80) },
+            companies: new[] { TestDataFactory.CreateCompany() },
+            matches: Array.Empty<Match>(),
+            recommendations: Array.Empty<Recommendation>());
 
         var card = service.GetNextCard(1, UserMatchmakingFilters.Empty())!;
         var matchId = service.ApplyLike(1, card);
@@ -68,13 +68,13 @@ public sealed class UserRecommendationServiceTests
     public void ApplyDismiss_WhenCardIsDismissed_CreatesRecommendationRecord()
     {
         var service = CreateService(
-            users: [TestDataFactory.CreateUser()],
-            jobs: [TestDataFactory.CreateJob()],
-            skills: [],
-            jobSkills: [TestDataFactory.CreateJobSkill(100, 1, "C#", 80)],
-            companies: [TestDataFactory.CreateCompany()],
-            matches: [],
-            recommendations: []);
+            users: new[] { TestDataFactory.CreateUser() },
+            jobs: new[] { TestDataFactory.CreateJob() },
+            skills: Array.Empty<Skill>(),
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(100, 1, "C#", 80) },
+            companies: new[] { TestDataFactory.CreateCompany() },
+            matches: Array.Empty<Match>(),
+            recommendations: Array.Empty<Recommendation>());
 
         var card = service.GetNextCard(1, UserMatchmakingFilters.Empty())!;
         var recommendationId = service.ApplyDismiss(1, card);
@@ -93,11 +93,11 @@ public sealed class UserRecommendationServiceTests
         ]);
 
         var service = CreateService(
-            users: [TestDataFactory.CreateUser()],
-            jobs: [TestDataFactory.CreateJob()],
-            skills: [],
-            jobSkills: [TestDataFactory.CreateJobSkill(100, 1, "C#", 80)],
-            companies: [TestDataFactory.CreateCompany()],
+            users: new[] { TestDataFactory.CreateUser() },
+            jobs: new[] { TestDataFactory.CreateJob() },
+            skills: Array.Empty<Skill>(),
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(100, 1, "C#", 80) },
+            companies: new[] { TestDataFactory.CreateCompany() },
             matches: matchRepository.Matches,
             recommendations: repository.Recommendations,
             recommendationRepository: repository,
@@ -117,12 +117,12 @@ public sealed class UserRecommendationServiceTests
         ]);
 
         var service = CreateService(
-            users: [TestDataFactory.CreateUser()],
-            jobs: [TestDataFactory.CreateJob()],
-            skills: [],
-            jobSkills: [TestDataFactory.CreateJobSkill(100, 1, "C#", 80)],
-            companies: [TestDataFactory.CreateCompany()],
-            matches: [],
+            users: new[] { TestDataFactory.CreateUser() },
+            jobs: new[] { TestDataFactory.CreateJob() },
+            skills: Array.Empty<Skill>(),
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(100, 1, "C#", 80) },
+            companies: new[] { TestDataFactory.CreateCompany() },
+            matches: Array.Empty<Match>(),
             recommendations: repository.Recommendations,
             recommendationRepository: repository);
 
@@ -171,9 +171,17 @@ public sealed class UserRecommendationServiceTests
         public FakeUserRepository(IReadOnlyList<User> users) => _users = users;
         public User? GetById(int userId) => _users.FirstOrDefault(user => user.UserId == userId);
         public IReadOnlyList<User> GetAll() => _users;
-        public void Add(User user) { }
-        public void Update(User user) { }
-        public void Remove(int userId) { }
+        public void Add(User user)
+        {
+        }
+
+        public void Update(User user)
+        {
+        }
+
+        public void Remove(int userId)
+        {
+        }
     }
 
     private sealed class FakeJobRepository : IJobRepository
@@ -183,9 +191,17 @@ public sealed class UserRecommendationServiceTests
         public Job? GetById(int jobId) => _jobs.FirstOrDefault(job => job.JobId == jobId);
         public IReadOnlyList<Job> GetAll() => _jobs;
         public IReadOnlyList<Job> GetByCompanyId(int companyId) => _jobs.Where(job => job.CompanyId == companyId).ToList();
-        public void Add(Job job) { }
-        public void Update(Job job) { }
-        public void Remove(int jobId) { }
+        public void Add(Job job)
+        {
+        }
+
+        public void Update(Job job)
+        {
+        }
+
+        public void Remove(int jobId)
+        {
+        }
     }
 
     private sealed class FakeSkillRepository : ISkillRepository
@@ -196,9 +212,17 @@ public sealed class UserRecommendationServiceTests
         public IReadOnlyList<Skill> GetAll() => _skills;
         public IReadOnlyList<Skill> GetByUserId(int userId) => _skills.Where(skill => skill.UserId == userId).ToList();
         public IReadOnlyList<(int SkillId, string Name)> GetDistinctSkillCatalog() => _skills.GroupBy(skill => skill.SkillId).Select(group => (group.Key, group.First().SkillName)).ToList();
-        public void Add(Skill skill) { }
-        public void Update(Skill skill) { }
-        public void Remove(int userId, int skillId) { }
+        public void Add(Skill skill)
+        {
+        }
+
+        public void Update(Skill skill)
+        {
+        }
+
+        public void Remove(int userId, int skillId)
+        {
+        }
     }
 
     private sealed class FakeJobSkillRepository : IJobSkillRepository
@@ -208,9 +232,17 @@ public sealed class UserRecommendationServiceTests
         public JobSkill? GetById(int jobId, int skillId) => _jobSkills.FirstOrDefault(jobSkill => jobSkill.JobId == jobId && jobSkill.SkillId == skillId);
         public IReadOnlyList<JobSkill> GetAll() => _jobSkills;
         public IReadOnlyList<JobSkill> GetByJobId(int jobId) => _jobSkills.Where(jobSkill => jobSkill.JobId == jobId).ToList();
-        public void Add(JobSkill jobSkill) { }
-        public void Update(JobSkill jobSkill) { }
-        public void Remove(int jobId, int skillId) { }
+        public void Add(JobSkill jobSkill)
+        {
+        }
+
+        public void Update(JobSkill jobSkill)
+        {
+        }
+
+        public void Remove(int jobId, int skillId)
+        {
+        }
     }
 
     private sealed class FakeCompanyRepository : ICompanyRepository
@@ -219,20 +251,31 @@ public sealed class UserRecommendationServiceTests
         public FakeCompanyRepository(IReadOnlyList<Company> companies) => _companies = companies;
         public Company? GetById(int companyId) => _companies.FirstOrDefault(company => company.CompanyId == companyId);
         public IReadOnlyList<Company> GetAll() => _companies;
-        public void Add(Company company) { }
-        public void Update(Company company) { }
-        public void Remove(int companyId) { }
+        public void Add(Company company)
+        {
+        }
+
+        public void Update(Company company)
+        {
+        }
+
+        public void Remove(int companyId)
+        {
+        }
     }
 
     private sealed class FakeRecommendationRepository : IRecommendationRepository
     {
         public FakeRecommendationRepository(IReadOnlyList<Recommendation> recommendations) => Recommendations = recommendations.ToList();
         public List<Recommendation> Recommendations { get; }
-        public List<int> RemovedIds { get; } = [];
+        public List<int> RemovedIds { get; } = new List<int>();
         public Recommendation? GetById(int recommendationId) => Recommendations.FirstOrDefault(recommendation => recommendation.RecommendationId == recommendationId);
         public IReadOnlyList<Recommendation> GetAll() => Recommendations;
         public void Add(Recommendation recommendation) => Recommendations.Add(recommendation);
-        public void Update(Recommendation recommendation) { }
+        public void Update(Recommendation recommendation)
+        {
+        }
+
         public void Remove(int recommendationId) => RemovedIds.Add(recommendationId);
         public Recommendation? GetLatestByUserIdAndJobId(int userId, int jobId) => Recommendations.Where(recommendation => recommendation.UserId == userId && recommendation.JobId == jobId).OrderByDescending(recommendation => recommendation.Timestamp).FirstOrDefault();
         public int InsertReturningId(Recommendation recommendation)
@@ -248,11 +291,14 @@ public sealed class UserRecommendationServiceTests
     {
         public FakeMatchRepository(IReadOnlyList<Match> matches) => Matches = matches.ToList();
         public List<Match> Matches { get; }
-        public List<int> RemovedIds { get; } = [];
+        public List<int> RemovedIds { get; } = new List<int>();
         public Match? GetById(int matchId) => Matches.FirstOrDefault(match => match.MatchId == matchId);
         public IReadOnlyList<Match> GetAll() => Matches;
         public void Add(Match match) => Matches.Add(match);
-        public void Update(Match match) { }
+        public void Update(Match match)
+        {
+        }
+
         public void Remove(int matchId) => RemovedIds.Add(matchId);
         public int InsertReturningId(Match match)
         {

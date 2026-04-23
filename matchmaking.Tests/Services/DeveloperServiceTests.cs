@@ -3,7 +3,7 @@ namespace matchmaking.Tests;
 public sealed class DeveloperServiceTests
 {
     [Fact]
-    public void AddPostAndGetMethods_DelegateToRepositories()
+    public void GetDeveloperById_WhenDeveloperExists_ReturnsDeveloper()
     {
         var developer = new Developer { DeveloperId = 3, Name = "Dev", Password = "pwd" };
         var developerRepository = new FakeDeveloperRepository(developer);
@@ -12,8 +12,39 @@ public sealed class DeveloperServiceTests
         var service = new DeveloperService(developerRepository, postRepository, interactionRepository);
 
         service.GetDeveloperById(3).Should().Be(developer);
+    }
+
+    [Fact]
+    public void GetPosts_WhenPostsExist_ReturnsPosts()
+    {
+        var developer = new Developer { DeveloperId = 3, Name = "Dev", Password = "pwd" };
+        var developerRepository = new FakeDeveloperRepository(developer);
+        var postRepository = new FakePostRepository([TestDataFactory.CreatePost(postId: 2, developerId: 3)]);
+        var interactionRepository = new FakeInteractionRepository([TestDataFactory.CreateInteraction(interactionId: 9, developerId: 3, postId: 2)]);
+        var service = new DeveloperService(developerRepository, postRepository, interactionRepository);
+
         service.GetPosts().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void GetInteractions_WhenInteractionsExist_ReturnsInteractions()
+    {
+        var developer = new Developer { DeveloperId = 3, Name = "Dev", Password = "pwd" };
+        var developerRepository = new FakeDeveloperRepository(developer);
+        var postRepository = new FakePostRepository([TestDataFactory.CreatePost(postId: 2, developerId: 3)]);
+        var interactionRepository = new FakeInteractionRepository([TestDataFactory.CreateInteraction(interactionId: 9, developerId: 3, postId: 2)]);
+        var service = new DeveloperService(developerRepository, postRepository, interactionRepository);
+
         service.GetInteractions().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void AddPost_WhenPostAdded_PersistsUnknownParameterType()
+    {
+        var developerRepository = new FakeDeveloperRepository(null);
+        var postRepository = new FakePostRepository([]);
+        var interactionRepository = new FakeInteractionRepository([]);
+        var service = new DeveloperService(developerRepository, postRepository, interactionRepository);
 
         service.AddPost(3, "burnout_threshold", "6");
 
@@ -39,18 +70,28 @@ public sealed class DeveloperServiceTests
     }
 
     [Fact]
-    public void AddInteractionAndRemoveInteraction_WhenNoExisting_AddsThenRemoves()
+    public void AddInteraction_WhenNoExisting_AddsInteraction()
     {
         var interactionRepository = new FakeInteractionRepository([]);
         var service = new DeveloperService(new FakeDeveloperRepository(null), new FakePostRepository([]), interactionRepository);
 
         service.AddInteraction(2, 8, InteractionType.Dislike);
-        service.RemoveInteraction(44);
 
         interactionRepository.AddedInteractions.Should().ContainSingle();
         interactionRepository.AddedInteractions[0].DeveloperId.Should().Be(2);
         interactionRepository.AddedInteractions[0].PostId.Should().Be(8);
         interactionRepository.AddedInteractions[0].Type.Should().Be(InteractionType.Dislike);
+        interactionRepository.UpdatedInteractions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RemoveInteraction_WhenCalled_RemovesInteraction()
+    {
+        var interactionRepository = new FakeInteractionRepository([]);
+        var service = new DeveloperService(new FakeDeveloperRepository(null), new FakePostRepository([]), interactionRepository);
+
+        service.RemoveInteraction(44);
+
         interactionRepository.RemovedInteractionIds.Should().ContainSingle().Which.Should().Be(44);
     }
 
