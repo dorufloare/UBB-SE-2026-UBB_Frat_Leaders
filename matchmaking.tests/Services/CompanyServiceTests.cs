@@ -60,19 +60,19 @@ public sealed class CompanyServiceTests
 
     private sealed class FakeCompanyRepository : ICompanyRepository
     {
-        private readonly List<Company> _companies;
+        private readonly List<Company> companies;
 
         public FakeCompanyRepository(IReadOnlyList<Company> companies)
         {
-            _companies = companies.ToList();
+            this.companies = companies.ToList();
         }
 
         public List<Company> AddedCompanies { get; } = [];
         public List<Company> UpdatedCompanies { get; } = [];
         public List<int> RemovedCompanyIds { get; } = [];
 
-        public Company? GetById(int companyId) => _companies.FirstOrDefault(company => company.CompanyId == companyId);
-        public IReadOnlyList<Company> GetAll() => _companies;
+        public Company? GetById(int companyId) => companies.FirstOrDefault(company => company.CompanyId == companyId);
+        public IReadOnlyList<Company> GetAll() => companies;
         public void Add(Company company) => AddedCompanies.Add(company);
         public void Update(Company company) => UpdatedCompanies.Add(company);
         public void Remove(int companyId) => RemovedCompanyIds.Add(companyId);

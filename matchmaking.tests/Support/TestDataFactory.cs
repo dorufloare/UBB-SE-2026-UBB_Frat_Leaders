@@ -129,7 +129,7 @@ internal static class TestDataFactory
             Job = job,
             Match = match,
             CompatibilityScore = compatibilityScore,
-            UserSkills = [CreateSkill(user.UserId, 1, "C#", 80)],
+            UserSkills = new[] { CreateSkill(user.UserId, 1, "C#", 80) },
             Feedback = match.FeedbackMessage
         };
     }

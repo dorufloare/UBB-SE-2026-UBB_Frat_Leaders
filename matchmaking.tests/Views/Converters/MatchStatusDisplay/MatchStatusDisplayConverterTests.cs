@@ -2,7 +2,7 @@ namespace matchmaking.Tests.Views.Converters;
 
 public class MatchStatusDisplayConverterTests
 {
-    private readonly MatchStatusDisplayConverter converter = new();
+    private readonly MatchStatusDisplayConverter converter = new MatchStatusDisplayConverter();
 
     [Theory]
     [InlineData(MatchStatus.Accepted, "Accepted")]

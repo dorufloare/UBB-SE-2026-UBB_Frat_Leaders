@@ -2,7 +2,7 @@ namespace matchmaking.Tests.Views.Converters;
 
 public class PostTypeToBadgeBackgroundConverterTests
 {
-    private readonly PostTypeToBadgeBackgroundConverter converter = new();
+    private readonly PostTypeToBadgeBackgroundConverter converter = new PostTypeToBadgeBackgroundConverter();
 
     [Fact]
     public void Convert_True_ReturnsJobPostColor()

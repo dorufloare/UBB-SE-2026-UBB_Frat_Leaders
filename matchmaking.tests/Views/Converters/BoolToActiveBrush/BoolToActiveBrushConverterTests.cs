@@ -2,7 +2,7 @@ namespace matchmaking.Tests.Views.Converters;
 
 public class BoolToActiveBrushConverterTests
 {
-    private readonly BoolToActiveBrushConverter converter = new();
+    private readonly BoolToActiveBrushConverter converter = new BoolToActiveBrushConverter();
 
     [Fact]
     public void Convert_True_ReturnsActiveColor()

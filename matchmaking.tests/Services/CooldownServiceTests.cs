@@ -47,9 +47,18 @@ public sealed class CooldownServiceTests
 
         public Recommendation? GetById(int recommendationId) => _recommendations.FirstOrDefault(r => r.RecommendationId == recommendationId);
         public IReadOnlyList<Recommendation> GetAll() => _recommendations;
-        public void Add(Recommendation recommendation) { }
-        public void Update(Recommendation recommendation) { }
-        public void Remove(int recommendationId) { }
+        public void Add(Recommendation recommendation)
+        {
+        }
+
+        public void Update(Recommendation recommendation)
+        {
+        }
+
+        public void Remove(int recommendationId)
+        {
+        }
+
         public Recommendation? GetLatestByUserIdAndJobId(int userId, int jobId) => _recommendations.Where(r => r.UserId == userId && r.JobId == jobId).OrderByDescending(r => r.Timestamp).FirstOrDefault();
         public int InsertReturningId(Recommendation recommendation) => 1;
     }

@@ -25,7 +25,7 @@ public sealed class UserServiceTests
     [Fact]
     public void Add_WhenUserAdded_DelegatesToRepository()
     {
-        var repository = new FakeUserRepository([]);
+        var repository = new FakeUserRepository(Array.Empty<User>());
         var service = new UserService(repository);
         var newUser = TestDataFactory.CreateUser(8);
 
@@ -60,19 +60,19 @@ public sealed class UserServiceTests
 
     private sealed class FakeUserRepository : IUserRepository
     {
-        private readonly List<User> _users;
+        private readonly List<User> users;
 
         public FakeUserRepository(IReadOnlyList<User> users)
         {
-            _users = users.ToList();
+            this.users = users.ToList();
         }
 
-        public List<User> AddedUsers { get; } = [];
-        public List<User> UpdatedUsers { get; } = [];
-        public List<int> RemovedUserIds { get; } = [];
+        public List<User> AddedUsers { get; } = new List<User>();
+        public List<User> UpdatedUsers { get; } = new List<User>();
+        public List<int> RemovedUserIds { get; } = new List<int>();
 
-        public User? GetById(int userId) => _users.FirstOrDefault(user => user.UserId == userId);
-        public IReadOnlyList<User> GetAll() => _users;
+        public User? GetById(int userId) => users.FirstOrDefault(user => user.UserId == userId);
+        public IReadOnlyList<User> GetAll() => users;
         public void Add(User user) => AddedUsers.Add(user);
         public void Update(User user) => UpdatedUsers.Add(user);
         public void Remove(int userId) => RemovedUserIds.Add(userId);

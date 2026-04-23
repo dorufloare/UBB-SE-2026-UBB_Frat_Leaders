@@ -90,7 +90,9 @@ public class PostParameterTypeMapperTests
         foreach (PostParameterType type in Enum.GetValues<PostParameterType>())
         {
             if (type == PostParameterType.Unknown)
+            {
                 continue;
+            }
 
             var storageValue = PostParameterTypeMapper.ToStorageValue(type);
             var back = PostParameterTypeMapper.FromStorageValue(storageValue);

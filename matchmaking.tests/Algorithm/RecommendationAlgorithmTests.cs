@@ -70,7 +70,7 @@ public sealed class RecommendationAlgorithmTests
         var user = TestDataFactory.CreateUser();
         var job = TestDataFactory.CreateJob();
 
-        var breakdown = algorithm.CalculateScoreBreakdown(user, job, [TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80)], []);
+        var breakdown = algorithm.CalculateScoreBreakdown(user, job, new List<Skill> { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) }, new List<Skill>());
 
         breakdown.SkillScore.Should().Be(0);
         breakdown.KeywordScore.Should().BeGreaterThanOrEqualTo(0);
@@ -79,33 +79,43 @@ public sealed class RecommendationAlgorithmTests
 
     private sealed class FakePostRepository : IPostRepository
     {
-        private readonly IReadOnlyList<Post> _posts;
+        private readonly IReadOnlyList<Post> posts;
 
         public FakePostRepository(IReadOnlyList<Post> posts)
         {
-            _posts = posts;
+            this.posts = posts;
         }
 
-        public IReadOnlyList<Post> GetAll() => _posts;
-        public void Add(Post post) { }
+        public IReadOnlyList<Post> GetAll() => posts;
+        public void Add(Post post)
+        {
+        }
     }
 
     private sealed class FakeInteractionRepository : IInteractionRepository
     {
-        private readonly IReadOnlyList<Interaction> _interactions;
+        private readonly IReadOnlyList<Interaction> interactions;
 
         public FakeInteractionRepository(IReadOnlyList<Interaction> interactions)
         {
-            _interactions = interactions;
+            this.interactions = interactions;
         }
 
-        public IReadOnlyList<Interaction> GetAll() => _interactions;
-        public Interaction? GetByDeveloperIdAndPostId(int developerId, int postId) => _interactions.FirstOrDefault(i => i.DeveloperId == developerId && i.PostId == postId);
-        public Interaction? GetById(int interactionId) => _interactions.FirstOrDefault(i => i.InteractionId == interactionId);
-        public IReadOnlyList<Interaction> GetByDeveloperId(int developerId) => _interactions.Where(i => i.DeveloperId == developerId).ToList();
-        public IReadOnlyList<Interaction> GetByPostId(int postId) => _interactions.Where(i => i.PostId == postId).ToList();
-        public void Add(Interaction interaction) { }
-        public void Update(Interaction interaction) { }
-        public void Remove(int interactionId) { }
+        public IReadOnlyList<Interaction> GetAll() => interactions;
+        public Interaction? GetByDeveloperIdAndPostId(int developerId, int postId) => interactions.FirstOrDefault(i => i.DeveloperId == developerId && i.PostId == postId);
+        public Interaction? GetById(int interactionId) => interactions.FirstOrDefault(i => i.InteractionId == interactionId);
+        public IReadOnlyList<Interaction> GetByDeveloperId(int developerId) => interactions.Where(i => i.DeveloperId == developerId).ToList();
+        public IReadOnlyList<Interaction> GetByPostId(int postId) => interactions.Where(i => i.PostId == postId).ToList();
+        public void Add(Interaction interaction)
+        {
+        }
+
+        public void Update(Interaction interaction)
+        {
+        }
+
+        public void Remove(int interactionId)
+        {
+        }
     }
 }

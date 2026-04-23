@@ -14,7 +14,7 @@ public sealed class UserStatusAndSkillGapTests
         var job = TestDataFactory.CreateJob(companyId: company.CompanyId);
         var match = TestDataFactory.CreateMatch(1, user.UserId, job.JobId, MatchStatus.Accepted, "good fit");
 
-        var userStatusService = CreateUserStatusService([user], [company], [job], [TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80)], [TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70)], [match]);
+        var userStatusService = CreateUserStatusService(new[] { user }, new[] { company }, new[] { job }, new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) }, new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70) }, new[] { match });
 
         var applications = userStatusService.GetApplicationsForUser(user.UserId);
 
@@ -28,7 +28,7 @@ public sealed class UserStatusAndSkillGapTests
     {
         var user = TestDataFactory.CreateUser();
         var rejectedMatch = TestDataFactory.CreateMatch(1, user.UserId, 100, MatchStatus.Rejected, "missing skills");
-        var service = CreateSkillGapService([user], [rejectedMatch], [TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80)], [TestDataFactory.CreateJobSkill(100, 2, "SQL", 70)]);
+        var service = CreateSkillGapService(new[] { user }, new[] { rejectedMatch }, new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) }, new[] { TestDataFactory.CreateJobSkill(100, 2, "SQL", 70) });
 
         var missingSkills = service.GetMissingSkills(user.UserId);
 
@@ -42,7 +42,7 @@ public sealed class UserStatusAndSkillGapTests
     {
         var user = TestDataFactory.CreateUser();
         var rejectedMatch = TestDataFactory.CreateMatch(1, user.UserId, 100, MatchStatus.Rejected, "improve this");
-        var service = CreateSkillGapService([user], [rejectedMatch], [TestDataFactory.CreateSkill(user.UserId, 1, "C#", 40)], [TestDataFactory.CreateJobSkill(100, 1, "C#", 70)]);
+        var service = CreateSkillGapService(new[] { user }, new[] { rejectedMatch }, new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 40) }, new[] { TestDataFactory.CreateJobSkill(100, 1, "C#", 70) });
 
         var underscoredSkills = service.GetUnderscoredSkills(user.UserId);
 
@@ -55,7 +55,7 @@ public sealed class UserStatusAndSkillGapTests
     public void GetSummary_WhenNoRejections_ReturnsNoRejectionsState()
     {
         var user = TestDataFactory.CreateUser();
-        var service = CreateSkillGapService([user], [], [], []);
+        var service = CreateSkillGapService(new[] { user }, Array.Empty<Match>(), Array.Empty<Skill>(), Array.Empty<JobSkill>());
 
         var summary = service.GetSummary(user.UserId);
 
@@ -71,7 +71,7 @@ public sealed class UserStatusAndSkillGapTests
         var job = TestDataFactory.CreateJob(companyId: company.CompanyId);
         var match = TestDataFactory.CreateMatch(1, user.UserId, job.JobId, MatchStatus.Accepted, "approved");
 
-        var service = CreateCompanyStatusService([user], [company], [job], [TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80)], [TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70)], [match]);
+        var service = CreateCompanyStatusService(new[] { user }, new[] { company }, new[] { job }, new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) }, new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70) }, new[] { match });
 
         var applicants = await service.GetApplicantsForCompanyAsync(company.CompanyId);
 
@@ -88,7 +88,7 @@ public sealed class UserStatusAndSkillGapTests
         var job = TestDataFactory.CreateJob(companyId: company.CompanyId);
         var match = TestDataFactory.CreateMatch(1, user.UserId, job.JobId, MatchStatus.Rejected, "nope");
 
-        var service = CreateCompanyStatusService([user], [company], [job], [TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80)], [TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70)], [match]);
+        var service = CreateCompanyStatusService(new[] { user }, new[] { company }, new[] { job }, new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) }, new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70) }, new[] { match });
 
         var applicant = await service.GetApplicantByMatchIdAsync(company.CompanyId, match.MatchId);
 

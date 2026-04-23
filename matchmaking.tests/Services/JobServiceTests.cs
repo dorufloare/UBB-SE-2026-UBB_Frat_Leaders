@@ -70,20 +70,20 @@ public sealed class JobServiceTests
 
     private sealed class FakeJobRepository : IJobRepository
     {
-        private readonly List<Job> _jobs;
+        private readonly List<Job> jobs;
 
         public FakeJobRepository(IReadOnlyList<Job> jobs)
         {
-            _jobs = jobs.ToList();
+            this.jobs = jobs.ToList();
         }
 
         public List<Job> AddedJobs { get; } = [];
         public List<Job> UpdatedJobs { get; } = [];
         public List<int> RemovedJobIds { get; } = [];
 
-        public Job? GetById(int jobId) => _jobs.FirstOrDefault(job => job.JobId == jobId);
-        public IReadOnlyList<Job> GetAll() => _jobs;
-        public IReadOnlyList<Job> GetByCompanyId(int companyId) => _jobs.Where(job => job.CompanyId == companyId).ToList();
+        public Job? GetById(int jobId) => jobs.FirstOrDefault(job => job.JobId == jobId);
+        public IReadOnlyList<Job> GetAll() => jobs;
+        public IReadOnlyList<Job> GetByCompanyId(int companyId) => jobs.Where(job => job.CompanyId == companyId).ToList();
         public void Add(Job job) => AddedJobs.Add(job);
         public void Update(Job job) => UpdatedJobs.Add(job);
         public void Remove(int jobId) => RemovedJobIds.Add(jobId);

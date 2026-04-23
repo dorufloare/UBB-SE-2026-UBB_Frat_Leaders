@@ -80,21 +80,21 @@ public sealed class SkillServiceTests
 
     private sealed class FakeSkillRepository : ISkillRepository
     {
-        private readonly List<Skill> _skills;
+        private readonly List<Skill> skills;
 
         public FakeSkillRepository(IReadOnlyList<Skill> skills)
         {
-            _skills = skills.ToList();
+            this.skills = skills.ToList();
         }
 
         public List<Skill> AddedSkills { get; } = [];
         public List<Skill> UpdatedSkills { get; } = [];
         public List<(int UserId, int SkillId)> RemovedPairs { get; } = [];
 
-        public Skill? GetById(int userId, int skillId) => _skills.FirstOrDefault(skill => skill.UserId == userId && skill.SkillId == skillId);
-        public IReadOnlyList<Skill> GetAll() => _skills;
-        public IReadOnlyList<Skill> GetByUserId(int userId) => _skills.Where(skill => skill.UserId == userId).ToList();
-        public IReadOnlyList<(int SkillId, string Name)> GetDistinctSkillCatalog() => _skills.Select(skill => (skill.SkillId, skill.SkillName)).Distinct().ToList();
+        public Skill? GetById(int userId, int skillId) => skills.FirstOrDefault(skill => skill.UserId == userId && skill.SkillId == skillId);
+        public IReadOnlyList<Skill> GetAll() => skills;
+        public IReadOnlyList<Skill> GetByUserId(int userId) => skills.Where(skill => skill.UserId == userId).ToList();
+        public IReadOnlyList<(int SkillId, string Name)> GetDistinctSkillCatalog() => skills.Select(skill => (skill.SkillId, skill.SkillName)).Distinct().ToList();
         public void Add(Skill skill) => AddedSkills.Add(skill);
         public void Update(Skill skill) => UpdatedSkills.Add(skill);
         public void Remove(int userId, int skillId) => RemovedPairs.Add((userId, skillId));

@@ -70,20 +70,20 @@ public sealed class JobSkillServiceTests
 
     private sealed class FakeJobSkillRepository : IJobSkillRepository
     {
-        private readonly List<JobSkill> _jobSkills;
+        private readonly List<JobSkill> jobSkills;
 
         public FakeJobSkillRepository(IReadOnlyList<JobSkill> jobSkills)
         {
-            _jobSkills = jobSkills.ToList();
+            this.jobSkills = jobSkills.ToList();
         }
 
         public List<JobSkill> AddedItems { get; } = [];
         public List<JobSkill> UpdatedItems { get; } = [];
         public List<(int JobId, int SkillId)> RemovedPairs { get; } = [];
 
-        public JobSkill? GetById(int jobId, int skillId) => _jobSkills.FirstOrDefault(item => item.JobId == jobId && item.SkillId == skillId);
-        public IReadOnlyList<JobSkill> GetAll() => _jobSkills;
-        public IReadOnlyList<JobSkill> GetByJobId(int jobId) => _jobSkills.Where(item => item.JobId == jobId).ToList();
+        public JobSkill? GetById(int jobId, int skillId) => jobSkills.FirstOrDefault(item => item.JobId == jobId && item.SkillId == skillId);
+        public IReadOnlyList<JobSkill> GetAll() => jobSkills;
+        public IReadOnlyList<JobSkill> GetByJobId(int jobId) => jobSkills.Where(item => item.JobId == jobId).ToList();
         public void Add(JobSkill jobSkill) => AddedItems.Add(jobSkill);
         public void Update(JobSkill jobSkill) => UpdatedItems.Add(jobSkill);
         public void Remove(int jobId, int skillId) => RemovedPairs.Add((jobId, skillId));
