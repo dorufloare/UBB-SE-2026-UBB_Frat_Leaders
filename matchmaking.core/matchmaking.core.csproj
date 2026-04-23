@@ -14,6 +14,7 @@
     <Compile Include="..\matchmaking\algorithm\IRecommendationAlgorithm.cs" Link="algorithm\IRecommendationAlgorithm.cs" />
     <Compile Include="..\matchmaking\Repositories\ICompanyRepository.cs" Link="Repositories\ICompanyRepository.cs" />
     <Compile Include="..\matchmaking\Repositories\IConnectionTestRepository.cs" Link="Repositories\IConnectionTestRepository.cs" />
+    <Compile Include="..\matchmaking\Repositories\IDeveloperRepository.cs" Link="Repositories\IDeveloperRepository.cs" />
     <Compile Include="..\matchmaking\Repositories\IInteractionRepository.cs" Link="Repositories\IInteractionRepository.cs" />
     <Compile Include="..\matchmaking\Repositories\IJobRepository.cs" Link="Repositories\IJobRepository.cs" />
     <Compile Include="..\matchmaking\Repositories\IJobSkillRepository.cs" Link="Repositories\IJobSkillRepository.cs" />
@@ -35,8 +36,11 @@
     <Compile Include="..\matchmaking\Services\UserRecommendationService.cs" Link="Services\UserRecommendationService.cs" />
     <Compile Include="..\matchmaking\Services\UserStatusService.cs" Link="Services\UserStatusService.cs" />
     <Compile Include="..\matchmaking\Services\CompanyService.cs" Link="Services\CompanyService.cs" />
+    <Compile Include="..\matchmaking\Services\DeveloperService.cs" Link="Services\DeveloperService.cs" />
     <Compile Include="..\matchmaking\Services\UserService.cs" Link="Services\UserService.cs" />
+    <Compile Include="..\matchmaking\Services\NavigationService.cs" Link="Services\NavigationService.cs" />
     <Compile Include="..\matchmaking\Services\ICompanyService.cs" Link="Services\ICompanyService.cs" />
+    <Compile Include="..\matchmaking\Services\IDeveloperService.cs" Link="Services\IDeveloperService.cs" />
     <Compile Include="..\matchmaking\Services\IJobService.cs" Link="Services\IJobService.cs" />
     <Compile Include="..\matchmaking\Services\IJobSkillService.cs" Link="Services\IJobSkillService.cs" />
     <Compile Include="..\matchmaking\Services\ISkillService.cs" Link="Services\ISkillService.cs" />

@@ -8,11 +8,11 @@ namespace matchmaking.Services;
 
 public class DeveloperService
 {
-    private readonly SqlDeveloperRepository _developerRepository;
-    private readonly SqlPostRepository _postRepository;
-    private readonly SqlInteractionRepository _interactionRepository;
+    private readonly IDeveloperRepository _developerRepository;
+    private readonly IPostRepository _postRepository;
+    private readonly IInteractionRepository _interactionRepository;
 
-    public DeveloperService(SqlDeveloperRepository developerRepository, SqlPostRepository postRepository, SqlInteractionRepository interactionRepository)
+    public DeveloperService(IDeveloperRepository developerRepository, IPostRepository postRepository, IInteractionRepository interactionRepository)
     {
         _developerRepository = developerRepository;
         _postRepository = postRepository;
