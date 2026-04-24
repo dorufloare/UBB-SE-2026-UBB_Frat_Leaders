@@ -67,6 +67,14 @@ public class MatchStatusToColorConverterTests
     }
 
     [Fact]
+    public void GetColor_WithAdvancedStatus_ReturnsSameFallbackAsApplied()
+    {
+        var advancedColor = MatchStatusToColorConverter.GetColor(MatchStatus.Advanced);
+
+        advancedColor.Should().Be(MatchStatusToColorConverter.GetColor(MatchStatus.Applied));
+    }
+
+    [Fact]
     public void ConvertBack_WhenInvoked_ThrowsNotImplementedException()
     {
         var act = () => converter.ConvertBack(null, typeof(object), null, string.Empty);

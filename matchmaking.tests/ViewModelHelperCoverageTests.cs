@@ -34,6 +34,16 @@ public sealed class ViewModelHelperCoverageTests
     }
 
     [Fact]
+    public void SetProperty_WhenNoSubscribersAreAttached_DoesNotThrow()
+    {
+        var model = new TestObservableObject();
+
+        Action act = () => model.UpdateValue(42);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
     public void SetProperty_WhenValueIsNew_ReturnsTrue()
     {
         var model = new TestObservableObject();
