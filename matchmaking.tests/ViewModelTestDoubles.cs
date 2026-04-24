@@ -78,9 +78,22 @@ internal sealed class FakeChatService : IChatService
     public List<(int ChatId, int BlockerId)> BlockCalls { get; } = new List<(int ChatId, int BlockerId)>();
     public List<(int ChatId, int UnblockerId)> UnblockCalls { get; } = new List<(int ChatId, int UnblockerId)>();
     public List<(int ChatId, int CallerId)> DeleteCalls { get; } = new List<(int ChatId, int CallerId)>();
+    public Func<string, List<Company>> SearchCompaniesImpl { get; set; } = _ => new List<Company>();
+    public Func<string, List<User>> SearchUsersImpl { get; set; } = _ => new List<User>();
+    public bool ReturnNullForUserCompanyChat { get; set; }
+    public bool ReturnNullForUserUserChat { get; set; }
+    public Exception? SendMessageException { get; set; }
+    public Exception? BlockException { get; set; }
+    public Exception? UnblockException { get; set; }
+    public Exception? DeleteException { get; set; }
 
     public Chat? FindOrCreateUserCompanyChat(int userId, int companyId, int? jobId = null)
     {
+        if (ReturnNullForUserCompanyChat)
+        {
+            return null;
+        }
+
         var existing = chats.FirstOrDefault(chat => chat.UserId == userId && chat.CompanyId == companyId && chat.JobId == jobId);
         if (existing is not null)
         {
@@ -94,6 +107,11 @@ internal sealed class FakeChatService : IChatService
 
     public Chat? FindOrCreateUserUserChat(int userId, int secondUserId)
     {
+        if (ReturnNullForUserUserChat)
+        {
+            return null;
+        }
+
         var existing = chats.FirstOrDefault(chat => chat.UserId == userId && chat.SecondUserId == secondUserId);
         if (existing is not null)
         {
@@ -118,11 +136,16 @@ internal sealed class FakeChatService : IChatService
             : new List<Message>();
     }
 
-    public List<Company> SearchCompanies(string query) => new List<Company>();
-    public List<User> SearchUsers(string query) => new List<User>();
+    public List<Company> SearchCompanies(string query) => SearchCompaniesImpl(query);
+    public List<User> SearchUsers(string query) => SearchUsersImpl(query);
 
     public void SendMessage(int chatId, string content, int senderId, MessageType type)
     {
+        if (SendMessageException is not null)
+        {
+            throw SendMessageException;
+        }
+
         SentMessages.Add((chatId, senderId, content, type));
 
         if (!messagesByChatId.TryGetValue(chatId, out var messages))
@@ -147,16 +170,31 @@ internal sealed class FakeChatService : IChatService
 
     public void BlockUser(int chatId, int blockerId)
     {
+        if (BlockException is not null)
+        {
+            throw BlockException;
+        }
+
         BlockCalls.Add((chatId, blockerId));
     }
 
     public void UnblockUser(int chatId, int unblockerId)
     {
+        if (UnblockException is not null)
+        {
+            throw UnblockException;
+        }
+
         UnblockCalls.Add((chatId, unblockerId));
     }
 
     public void DeleteChat(int chatId, int callerId)
     {
+        if (DeleteException is not null)
+        {
+            throw DeleteException;
+        }
+
         DeleteCalls.Add((chatId, callerId));
     }
 
@@ -168,6 +206,12 @@ internal sealed class FakeChatService : IChatService
     public void SeedChat(Chat chat)
     {
         chats.Add(chat);
+    }
+
+    public void ReplaceChats(IEnumerable<Chat> updatedChats)
+    {
+        chats.Clear();
+        chats.AddRange(updatedChats);
     }
 }
 

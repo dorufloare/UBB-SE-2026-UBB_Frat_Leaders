@@ -189,6 +189,34 @@ public sealed class MatchServiceStateTransitionTests
     }
 
     [Fact]
+    public async Task AcceptAsync_WhenCalled_SubmitsAcceptedDecision()
+    {
+        var match = TestDataFactory.CreateMatch(matchId: 21, status: MatchStatus.Applied, feedback: string.Empty);
+        var repository = new FakeMatchRepository([match]);
+        var service = new MatchService(repository, new FakeJobService([]));
+
+        await service.AcceptAsync(21, "  accepted  ");
+
+        match.Status.Should().Be(MatchStatus.Accepted);
+        match.FeedbackMessage.Should().Be("accepted");
+        repository.UpdatedMatches.Should().ContainSingle(item => item.MatchId == 21);
+    }
+
+    [Fact]
+    public async Task RejectAsync_WhenCalled_SubmitsRejectedDecision()
+    {
+        var match = TestDataFactory.CreateMatch(matchId: 22, status: MatchStatus.Applied, feedback: string.Empty);
+        var repository = new FakeMatchRepository([match]);
+        var service = new MatchService(repository, new FakeJobService([]));
+
+        await service.RejectAsync(22, "  rejected  ");
+
+        match.Status.Should().Be(MatchStatus.Rejected);
+        match.FeedbackMessage.Should().Be("rejected");
+        repository.UpdatedMatches.Should().ContainSingle(item => item.MatchId == 22);
+    }
+
+    [Fact]
     public void IsDecisionTransitionAllowed_WhenCurrentIsRejected_ReturnsFalse()
     {
         var service = new MatchService(new FakeMatchRepository(Array.Empty<Match>()), new FakeJobService(Array.Empty<Job>()));

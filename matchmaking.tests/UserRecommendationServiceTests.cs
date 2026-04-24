@@ -107,6 +107,140 @@ public sealed class UserRecommendationServiceTests
     }
 
     [Fact]
+    public void RecalculateTopCardIgnoringCooldown_WhenExistingMatchAlreadyExists_ReturnsNull()
+    {
+        var user = TestDataFactory.CreateUser();
+        var job = TestDataFactory.CreateJob();
+        var existingMatch = TestDataFactory.CreateMatch(11, user.UserId, job.JobId, MatchStatus.Applied);
+
+        var service = CreateService(
+            users: new[] { user },
+            jobs: new[] { job },
+            skills: new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) },
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70) },
+            companies: new[] { TestDataFactory.CreateCompany(job.CompanyId) },
+            matches: new[] { existingMatch },
+            recommendations: Array.Empty<Recommendation>());
+
+        var result = service.RecalculateTopCardIgnoringCooldown(user.UserId, UserMatchmakingFilters.Empty());
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetNextCard_WhenLocationFilterDoesNotMatch_ReturnsNull()
+    {
+        var user = TestDataFactory.CreateUser();
+        var job = TestDataFactory.CreateJob();
+        job.Location = "Cluj";
+        var filters = UserMatchmakingFilters.Empty();
+        filters.LocationSubstring = "Bucharest";
+
+        var service = CreateService(
+            users: new[] { user },
+            jobs: new[] { job },
+            skills: new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) },
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70) },
+            companies: new[] { TestDataFactory.CreateCompany(job.CompanyId) },
+            matches: Array.Empty<Match>(),
+            recommendations: Array.Empty<Recommendation>());
+
+        var result = service.GetNextCard(user.UserId, filters);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetNextCard_WhenSkillFilterDoesNotMatchAnyJobSkill_ReturnsNull()
+    {
+        var user = TestDataFactory.CreateUser();
+        var job = TestDataFactory.CreateJob();
+        var filters = UserMatchmakingFilters.Empty();
+        filters.SkillIds.Add(999);
+
+        var service = CreateService(
+            users: new[] { user },
+            jobs: new[] { job },
+            skills: new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) },
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70) },
+            companies: new[] { TestDataFactory.CreateCompany(job.CompanyId) },
+            matches: Array.Empty<Match>(),
+            recommendations: Array.Empty<Recommendation>());
+
+        var result = service.GetNextCard(user.UserId, filters);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetNextCard_WhenLocationAndSkillFiltersMatch_ReturnsCard()
+    {
+        var user = TestDataFactory.CreateUser();
+        var job = TestDataFactory.CreateJob();
+        job.Location = "Cluj-Napoca";
+        var filters = UserMatchmakingFilters.Empty();
+        filters.LocationSubstring = "cluj";
+        filters.SkillIds.Add(1);
+
+        var service = CreateService(
+            users: new[] { user },
+            jobs: new[] { job },
+            skills: new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) },
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70) },
+            companies: new[] { TestDataFactory.CreateCompany(job.CompanyId) },
+            matches: Array.Empty<Match>(),
+            recommendations: Array.Empty<Recommendation>());
+
+        var result = service.GetNextCard(user.UserId, filters);
+
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void GetNextCard_WhenExperienceFilterDoesNotMatchUserBucket_ReturnsNull()
+    {
+        var user = TestDataFactory.CreateUser();
+        var job = TestDataFactory.CreateJob();
+        var filters = UserMatchmakingFilters.Empty();
+        filters.ExperienceLevels.Add("Executive");
+
+        var service = CreateService(
+            users: new[] { user },
+            jobs: new[] { job },
+            skills: new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) },
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70) },
+            companies: new[] { TestDataFactory.CreateCompany(job.CompanyId) },
+            matches: Array.Empty<Match>(),
+            recommendations: Array.Empty<Recommendation>());
+
+        var result = service.GetNextCard(user.UserId, filters);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetNextCard_WhenExperienceFilterMatchesUserBucket_ReturnsCard()
+    {
+        var user = TestDataFactory.CreateUser();
+        var job = TestDataFactory.CreateJob();
+        var filters = UserMatchmakingFilters.Empty();
+        filters.ExperienceLevels.Add("Entry");
+
+        var service = CreateService(
+            users: new[] { user },
+            jobs: new[] { job },
+            skills: new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 80) },
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 70) },
+            companies: new[] { TestDataFactory.CreateCompany(job.CompanyId) },
+            matches: Array.Empty<Match>(),
+            recommendations: Array.Empty<Recommendation>());
+
+        var result = service.GetNextCard(user.UserId, filters);
+
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
     public void ApplyLike_WhenNoExistingMatch_CreatesPendingApplication()
     {
         var service = CreateService(

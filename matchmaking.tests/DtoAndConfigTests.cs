@@ -22,9 +22,10 @@ public sealed class DtoAndConfigTests
     [Fact]
     public void FormattedDate_WhenAppliedDateProvided_ReturnsAppliedOnPrefix()
     {
-        var card = new ApplicationCardModel { AppliedDate = new DateTime(2026, 4, 24) };
+        var appliedDate = new DateTime(2026, 4, 24);
+        var card = new ApplicationCardModel { AppliedDate = appliedDate };
 
-        card.FormattedDate.Should().Be("Applied on 24 Apr 2026");
+        card.FormattedDate.Should().Be($"Applied on {appliedDate:dd MMM yyyy}");
     }
 
     [Fact]
@@ -56,14 +57,15 @@ public sealed class DtoAndConfigTests
     public void MatchScoreDisplay_WhenCompatibilityScoreHasFraction_FormatsToOneDecimalPercent()
     {
         var job = TestDataFactory.CreateJob();
+        const double compatibilityScore = 88.4;
         var result = new JobRecommendationResult
         {
             Job = job,
             Company = TestDataFactory.CreateCompany(job.CompanyId),
-            CompatibilityScore = 88.4
+            CompatibilityScore = compatibilityScore
         };
 
-        result.MatchScoreDisplay.Should().Be("88.4%");
+        result.MatchScoreDisplay.Should().Be($"{compatibilityScore:0.#}%");
     }
 
     [Fact]

@@ -38,6 +38,36 @@ public sealed class CooldownServiceTests
         service.IsOnCooldown(1, 100, DateTime.UtcNow).Should().BeFalse();
     }
 
+    [Fact]
+    public void IsOnCooldown_WhenRecommendationTimestampIsExactlyAtCutoff_ReturnsFalse()
+    {
+        var cooldown = TimeSpan.FromHours(24);
+        var utcNow = DateTime.UtcNow;
+        var timestamp = utcNow - cooldown;
+        var repository = new FakeRecommendationRepository(new[]
+        {
+            TestDataFactory.CreateRecommendation(1, 1, 100, timestamp)
+        });
+        var service = new CooldownService(repository, cooldown);
+
+        service.IsOnCooldown(1, 100, utcNow).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsOnCooldown_WhenTimestampKindIsUnspecified_TreatsAsLocalAndChecks()
+    {
+        var cooldown = TimeSpan.FromHours(24);
+        var utcNow = DateTime.UtcNow;
+        var unspecifiedTimestamp = new DateTime(utcNow.AddDays(-2).Ticks);
+        var repository = new FakeRecommendationRepository(new[]
+        {
+            TestDataFactory.CreateRecommendation(1, 1, 100, unspecifiedTimestamp)
+        });
+        var service = new CooldownService(repository, cooldown);
+
+        service.IsOnCooldown(1, 100, utcNow).Should().BeFalse();
+    }
+
     private sealed class FakeRecommendationRepository : IRecommendationRepository
     {
         private readonly IReadOnlyList<Recommendation> recommendations;

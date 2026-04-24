@@ -17,7 +17,7 @@ public sealed class DeveloperViewModelTests
     {
         var viewModel = CreateViewModel();
 
-        var result = viewModel.ValidateDeveloperPostInput("mitigation factor", "0.5");
+        var result = viewModel.ValidateDeveloperPostInput("mitigation factor", "0,5");
 
         result.Should().Be("Mitigation factor must be a number greater than or equal to 1.");
     }
@@ -40,6 +40,36 @@ public sealed class DeveloperViewModelTests
         var result = viewModel.ValidateDeveloperPostInput("weight", "101");
 
         result.Should().Be("Weight value must be a number between 0 and 100.");
+    }
+
+    [Fact]
+    public void ValidateDeveloperPostInput_WhenKeywordContainsUppercase_ReturnsError()
+    {
+        var viewModel = CreateViewModel();
+
+        var result = viewModel.ValidateDeveloperPostInput("relevant keyword", "CSharp");
+
+        result.Should().Be("Keyword must be all lowercase.");
+    }
+
+    [Fact]
+    public void ValidateDeveloperPostInput_WhenMitigationFactorIsValid_ReturnsNull()
+    {
+        var viewModel = CreateViewModel();
+
+        var result = viewModel.ValidateDeveloperPostInput("mitigation factor", "1");
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void ValidateDeveloperPostInput_WhenWeightIsValid_ReturnsNull()
+    {
+        var viewModel = CreateViewModel();
+
+        var result = viewModel.ValidateDeveloperPostInput("weight", "50");
+
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -94,6 +124,52 @@ public sealed class DeveloperViewModelTests
         viewModel.HandleDislikePost(1);
 
         viewModel.Posts.Should().ContainSingle(post => post.PostId == 1 && post.DislikeCount == 1 && post.IsDislikedByCurrentUser);
+    }
+
+    [Fact]
+    public void HandleDislikePost_WhenNoInteractionExists_AddsDislike()
+    {
+        var service = CreateService();
+        var viewModel = new DeveloperViewModel(service, CreateSession());
+
+        viewModel.HandleDislikePost(1);
+
+        viewModel.Posts.Should().ContainSingle(post => post.PostId == 1 && post.DislikeCount == 1 && post.IsDislikedByCurrentUser);
+    }
+
+    [Fact]
+    public void HandleDislikePost_WhenDislikeAlreadyExists_RemovesDislike()
+    {
+        var service = CreateService();
+        var viewModel = new DeveloperViewModel(service, CreateSession());
+
+        viewModel.HandleDislikePost(1);
+        viewModel.HandleDislikePost(1);
+
+        viewModel.Posts.Should().ContainSingle(post => post.PostId == 1 && post.DislikeCount == 0 && !post.IsDislikedByCurrentUser);
+    }
+
+    [Fact]
+    public void HandleLikePost_WhenDislikeExists_SwitchesToLike()
+    {
+        var service = CreateService();
+        var viewModel = new DeveloperViewModel(service, CreateSession());
+        viewModel.HandleDislikePost(1);
+
+        viewModel.HandleLikePost(1);
+
+        viewModel.Posts.Should().ContainSingle(post => post.PostId == 1 && post.LikeCount == 1 && post.IsLikedByCurrentUser);
+        viewModel.Posts.Should().ContainSingle(post => post.PostId == 1 && post.DislikeCount == 0 && !post.IsDislikedByCurrentUser);
+    }
+
+    [Fact]
+    public void Refresh_WhenCalled_RebuildsPostCards()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.Refresh();
+
+        viewModel.Posts.Should().ContainSingle(post => post.PostId == 1);
     }
 
     private static DeveloperViewModel CreateViewModel()

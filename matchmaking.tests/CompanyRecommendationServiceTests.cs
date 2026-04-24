@@ -77,6 +77,44 @@ public sealed class CompanyRecommendationServiceTests
         service.GetNextApplicant().Should().Be(firstApplicant);
     }
 
+    [Fact]
+    public void MoveToPrevious_WhenAlreadyAtBeginning_DoesNotGoNegative()
+    {
+        var service = CreateService(
+            users: new[] { TestDataFactory.CreateUser() },
+            jobs: new[] { TestDataFactory.CreateJob() },
+            skills: Array.Empty<Skill>(),
+            jobSkills: new[] { TestDataFactory.CreateJobSkill(100, 1, "C#", 80) },
+            matches: new[] { TestDataFactory.CreateMatch(1, 1, 100, MatchStatus.Applied) });
+        service.LoadApplicants(1);
+        var firstApplicant = service.GetNextApplicant();
+
+        service.MoveToPrevious();
+
+        service.GetNextApplicant().Should().Be(firstApplicant);
+    }
+
+    [Fact]
+    public void LoadApplicants_WhenMatchReferencesMissingUserOrJob_SkipsInvalidEntries()
+    {
+        var validUser = TestDataFactory.CreateUser(userId: 1);
+        var validJob = TestDataFactory.CreateJob(jobId: 100, companyId: 1);
+        var missingUserMatch = TestDataFactory.CreateMatch(matchId: 1, userId: 999, jobId: 100, status: MatchStatus.Applied);
+        var missingJobMatch = TestDataFactory.CreateMatch(matchId: 2, userId: 1, jobId: 999, status: MatchStatus.Applied);
+
+        var service = CreateService(
+            users: new[] { validUser },
+            jobs: new[] { validJob },
+            skills: Array.Empty<Skill>(),
+            jobSkills: Array.Empty<JobSkill>(),
+            matches: new[] { missingUserMatch, missingJobMatch });
+
+        service.LoadApplicants(1);
+
+        service.GetNextApplicant().Should().BeNull();
+        service.HasMore.Should().BeFalse();
+    }
+
     private static CompanyRecommendationService CreateService(
         IReadOnlyList<User>? users = null,
         IReadOnlyList<Job>? jobs = null,

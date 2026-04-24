@@ -65,6 +65,31 @@ public sealed class StatusServiceCoverageTests
     }
 
     [Fact]
+    public void UserStatusService_GetApplicationsForUser_WhenCompanyIsNull_UsesUnknownCompanyName()
+    {
+        var user = TestDataFactory.CreateUser();
+        var job = TestDataFactory.CreateJob(companyId: 999);
+        var match = TestDataFactory.CreateMatch(1, user.UserId, job.JobId, MatchStatus.Applied, "feedback");
+
+        var matchRepository = new FakeMatchRepository(new[] { match });
+        var jobRepository = new FakeJobRepository(new[] { job });
+        var companyRepository = new FakeCompanyRepository(Array.Empty<Company>());
+        var skillRepository = new FakeSkillRepository(Array.Empty<Skill>());
+        var jobSkillRepository = new FakeJobSkillRepository(Array.Empty<JobSkill>());
+
+        var service = new UserStatusService(
+            matchRepository,
+            new JobService(jobRepository),
+            new CompanyService(companyRepository),
+            new SkillService(skillRepository),
+            new JobSkillService(jobSkillRepository));
+
+        var applications = service.GetApplicationsForUser(user.UserId);
+
+        applications.Should().ContainSingle(app => app.CompanyName == "Unknown Company");
+    }
+
+    [Fact]
     public void AddInteraction_WhenInteractionAlreadyExists_UpdatesExistingRecordInsteadOfAdding()
     {
         var interaction = TestDataFactory.CreateInteraction(1, 1, 1, InteractionType.Like);

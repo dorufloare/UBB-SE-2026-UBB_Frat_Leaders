@@ -141,6 +141,166 @@ public sealed class RecommendationAlgorithmTests
         score.Should().BeGreaterThanOrEqualTo(0);
     }
 
+    [Fact]
+    public void CalculateCompatibilityScore_WhenKeywordsHaveMaxNegativeSignal_ReturnsValidScore()
+    {
+        var user = TestDataFactory.CreateUser();
+        user.Resume = "csharp";
+        var job = TestDataFactory.CreateJob();
+        job.JobDescription = "csharp";
+
+        var posts = new List<Post>
+        {
+            TestDataFactory.CreatePost(1, 1, PostParameterType.RelevantKeyword, "csharp")
+        };
+
+        var interactions = Enumerable.Range(1, 10)
+            .Select(index => TestDataFactory.CreateInteraction(index, index, 1, InteractionType.Dislike))
+            .ToList();
+
+        var algorithm = new RecommendationAlgorithm();
+        var score = algorithm.CalculateCompatibilityScore(user, job, new List<Skill>(), new List<JobSkill>(), posts, interactions);
+
+        score.Should().BeInRange(0, 100);
+    }
+
+    [Fact]
+    public void CalculateCompatibilityScore_WhenSkillMatchedByNameNotId_UsesNameFallback()
+    {
+        var algorithm = new RecommendationAlgorithm();
+        var user = TestDataFactory.CreateUser();
+        var job = TestDataFactory.CreateJob();
+
+        var userSkills = new List<Skill> { TestDataFactory.CreateSkill(user.UserId, 999, "C#", 90) };
+        var jobSkills = new List<Skill> { TestDataFactory.CreateSkill(0, 1, "C#", 80) };
+
+        var score = algorithm.CalculateCompatibilityScore(user, job, userSkills, jobSkills);
+
+        score.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public void CalculateCompatibilityScore_WhenMitigationFactorPostIsLessThanOne_ClampsMitigationFactorToOne()
+    {
+        var user = TestDataFactory.CreateUser();
+        var job = TestDataFactory.CreateJob();
+        var userSkills = new List<Skill> { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 90) };
+        var jobSkills = new List<Skill> { TestDataFactory.CreateSkill(0, 1, "C#", 50) };
+
+        var posts = new List<Post>
+        {
+            TestDataFactory.CreatePost(1, 1, PostParameterType.MitigationFactor, "0.5")
+        };
+        var interactions = new List<Interaction>
+        {
+            TestDataFactory.CreateInteraction(1, 1, 1, InteractionType.Like)
+        };
+
+        var algorithm = new RecommendationAlgorithm(new FakePostRepository(posts), new FakeInteractionRepository(interactions));
+        var score = algorithm.CalculateCompatibilityScore(user, job, userSkills, jobSkills);
+
+        score.Should().BeInRange(0, 100);
+    }
+
+    [Fact]
+    public void CalculateCompatibilityScore_WhenDuplicateKeywordPostsExist_AggregatesKeywordSignals()
+    {
+        var user = TestDataFactory.CreateUser();
+        user.Resume = "csharp";
+        var job = TestDataFactory.CreateJob();
+        job.JobDescription = "csharp";
+
+        var posts = new List<Post>
+        {
+            TestDataFactory.CreatePost(1, 1, PostParameterType.RelevantKeyword, "csharp"),
+            TestDataFactory.CreatePost(2, 1, PostParameterType.RelevantKeyword, " CSharp ")
+        };
+
+        var interactions = new List<Interaction>
+        {
+            TestDataFactory.CreateInteraction(1, 1, 1, InteractionType.Like),
+            TestDataFactory.CreateInteraction(2, 1, 2, InteractionType.Like)
+        };
+
+        var algorithm = new RecommendationAlgorithm(new FakePostRepository(posts), new FakeInteractionRepository(interactions));
+
+        var score = algorithm.CalculateCompatibilityScore(user, job, new List<Skill>(), new List<JobSkill>(), posts, interactions);
+
+        score.Should().BeInRange(0, 100);
+    }
+
+    [Fact]
+    public void CalculateCompatibilityScore_WhenWeightedPostValueIsInvalid_UsesDefaultWeightsWithoutThrowing()
+    {
+        var user = TestDataFactory.CreateUser();
+        var job = TestDataFactory.CreateJob();
+
+        var posts = new List<Post>
+        {
+            TestDataFactory.CreatePost(1, 1, PostParameterType.WeightedDistanceScoreWeight, "abc")
+        };
+
+        var algorithm = new RecommendationAlgorithm(new FakePostRepository(posts), new FakeInteractionRepository(Array.Empty<Interaction>()));
+
+        var score = algorithm.CalculateCompatibilityScore(user, job, new List<Skill>(), new List<Skill>());
+
+        score.Should().BeInRange(0, 100);
+    }
+
+    [Fact]
+    public void NormalizeParameterKey_WhenParameterIsWhitespace_ReturnsEmptyString()
+    {
+        var method = typeof(RecommendationAlgorithm)
+            .GetMethod("NormalizeParameterKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        method.Should().NotBeNull();
+
+        var result = (string?)method!.Invoke(null, new object?[] { "   " });
+
+        result.Should().Be(string.Empty);
+    }
+
+    [Fact]
+    public void NormalizeParameterKey_WhenParameterContainsSymbols_ReturnsAlphaNumericKey()
+    {
+        var method = typeof(RecommendationAlgorithm)
+            .GetMethod("NormalizeParameterKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        method.Should().NotBeNull();
+
+        var result = (string?)method!.Invoke(null, new object?[] { "Relevant keyword!! 123" });
+
+        result.Should().Be("relevantkeyword123");
+    }
+
+    [Fact]
+    public void Clamp_WhenValueIsOutsideBounds_ReturnsBoundaries()
+    {
+        var method = typeof(RecommendationAlgorithm)
+            .GetMethod("Clamp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        method.Should().NotBeNull();
+
+        var low = (double)method!.Invoke(null, new object?[] { -5.0, 0.0, 100.0 })!;
+        var high = (double)method.Invoke(null, new object?[] { 105.0, 0.0, 100.0 })!;
+
+        low.Should().Be(0.0);
+        high.Should().Be(100.0);
+    }
+
+    [Fact]
+    public void KeywordValue_WhenKeywordIsWhitespace_ReturnsOne()
+    {
+        var method = typeof(RecommendationAlgorithm)
+            .GetMethod("KeywordValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        method.Should().NotBeNull();
+
+        var result = (double)method!.Invoke(null, new object?[] { " ", new Dictionary<string, int>() })!;
+
+        result.Should().Be(1.0);
+    }
+
     private sealed class FakePostRepository : IPostRepository
     {
         private readonly IReadOnlyList<Post> posts;

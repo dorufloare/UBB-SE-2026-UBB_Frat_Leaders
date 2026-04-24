@@ -75,9 +75,27 @@ public class MatchStatusToColorConverterTests
     }
 
     [Fact]
+    public void GetColor_WithUnknownEnumValue_ReturnsAppliedColor()
+    {
+        var unknownStatus = (MatchStatus)999;
+
+        var result = MatchStatusToColorConverter.GetColor(unknownStatus);
+
+        result.Should().Be(MatchStatusToColorConverter.GetColor(MatchStatus.Applied));
+    }
+
+    [Fact]
     public void ConvertBack_WhenInvoked_ThrowsNotImplementedException()
     {
         var act = () => converter.ConvertBack(null, typeof(object), null, string.Empty);
+
+        act.Should().Throw<NotImplementedException>();
+    }
+
+    [Fact]
+    public void ConvertBack_WhenInvokedWithNonNullParameter_ThrowsNotImplementedException()
+    {
+        var act = () => converter.ConvertBack(MatchStatus.Applied, typeof(object), "param", string.Empty);
 
         act.Should().Throw<NotImplementedException>();
     }

@@ -76,6 +76,16 @@ public sealed class ViewModelHelperCoverageTests
     }
 
     [Fact]
+    public void RaisePropertyChanged_WhenCalledWithoutSubscribers_DoesNotThrow()
+    {
+        var model = new TestObservableObject();
+
+        Action act = () => model.TriggerRaisePropertyChanged();
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
     public void CompanyRecommendationViewModel_WhenNoApplicantAvailable_ShowsEmptyCollectionsForSkills()
     {
         var session = new SessionContext();
@@ -111,6 +121,11 @@ public sealed class ViewModelHelperCoverageTests
         public bool UpdateValue(int newValue)
         {
             return SetProperty(ref value, newValue);
+        }
+
+        public void TriggerRaisePropertyChanged()
+        {
+            RaisePropertyChanged(nameof(value));
         }
     }
 }
