@@ -17,7 +17,7 @@ public sealed class DeveloperViewModelTests
     {
         var viewModel = CreateViewModel();
 
-        var result = viewModel.ValidateDeveloperPostInput("mitigation factor", "0,5");
+        var result = viewModel.ValidateDeveloperPostInput("mitigation factor", "0");
 
         result.Should().Be("Mitigation factor must be a number greater than or equal to 1.");
     }
