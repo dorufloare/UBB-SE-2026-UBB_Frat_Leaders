@@ -23,6 +23,7 @@ public sealed class SqlInteractionRepositoryIntegrationTests
         repository.Add(new Interaction { DeveloperId = developerId, PostId = postId, Type = InteractionType.Like });
         repository.Add(new Interaction { DeveloperId = otherDeveloperId, PostId = otherPostId, Type = InteractionType.Dislike });
 
+        repository.GetAll().Should().HaveCount(2);
         repository.GetByDeveloperId(developerId).Should().ContainSingle().Which.Type.Should().Be(InteractionType.Like);
         repository.GetByPostId(otherPostId).Should().ContainSingle().Which.Type.Should().Be(InteractionType.Dislike);
 

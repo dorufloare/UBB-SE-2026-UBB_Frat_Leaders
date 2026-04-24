@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using matchmaking.Domain.Entities;
 using matchmaking.Domain.Enums;
 
@@ -476,29 +477,22 @@ public sealed class ChatServiceCoverageTests
     }
 
     [Fact]
-    public void SendMessage_WhenImageAttachmentIsValidPath_AttemptsToStoreAttachment()
+    public void SendMessage_WhenImageAttachmentIsValidPath_StoresAttachmentAndAddsMessage()
     {
         var chat = new Chat { ChatId = 1, UserId = 1, SecondUserId = 2 };
-        var harness = CreateHarness(chats: new[] { chat });
+        var attachmentRoot = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}");
+        var harness = CreateHarness(chats: new[] { chat }, attachmentRootPathProvider: () => attachmentRoot);
         var source = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.png");
         File.WriteAllText(source, "image");
+        string? storedPath = null;
 
         try
         {
-            try
-            {
-                harness.Service.SendMessage(1, source, 1, MessageType.Image);
+            harness.Service.SendMessage(1, source, 1, MessageType.Image);
 
-                harness.MessageRepository.AddedMessages.Should().ContainSingle();
-                var storedPath = harness.MessageRepository.AddedMessages[0].Content;
-                File.Exists(storedPath).Should().BeTrue();
-
-                File.Delete(storedPath);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // Sandbox environments can block LocalApplicationData writes.
-            }
+            harness.MessageRepository.AddedMessages.Should().ContainSingle();
+            storedPath = harness.MessageRepository.AddedMessages[0].Content;
+            File.Exists(storedPath).Should().BeTrue();
         }
         finally
         {
@@ -506,7 +500,28 @@ public sealed class ChatServiceCoverageTests
             {
                 File.Delete(source);
             }
+
+            if (!string.IsNullOrEmpty(storedPath) && File.Exists(storedPath))
+            {
+                File.Delete(storedPath);
+            }
+
+            if (Directory.Exists(attachmentRoot))
+            {
+                Directory.Delete(attachmentRoot, recursive: true);
+            }
         }
+    }
+
+    [Fact]
+    public void GetDefaultAttachmentRootPath_WhenInvoked_ReturnsPathUnderLocalApplicationData()
+    {
+        var method = typeof(ChatService).GetMethod("GetDefaultAttachmentRootPath", BindingFlags.NonPublic | BindingFlags.Static);
+
+        var result = method!.Invoke(null, null) as string;
+
+        result.Should().NotBeNullOrWhiteSpace();
+        result!.Should().EndWith(Path.Combine("matchmaking", "attachments"));
     }
 
     [Fact]
@@ -523,7 +538,8 @@ public sealed class ChatServiceCoverageTests
     private static ChatServiceHarness CreateHarness(
         IReadOnlyList<Chat>? chats = null,
         IReadOnlyList<Message>? messages = null,
-        IReadOnlyDictionary<int, DateTime?>? latestMessageTimestamps = null)
+        IReadOnlyDictionary<int, DateTime?>? latestMessageTimestamps = null,
+        Func<string>? attachmentRootPathProvider = null)
     {
         var chatRepository = new FakeChatRepository(chats ?? Array.Empty<Chat>(), latestMessageTimestamps);
         var messageRepository = new FakeMessageRepository(messages ?? Array.Empty<Message>());
@@ -531,7 +547,7 @@ public sealed class ChatServiceCoverageTests
         var companyRepository = new FakeCompanyRepository(new[] { TestDataFactory.CreateCompany() });
 
         return new ChatServiceHarness(
-            new ChatService(chatRepository, messageRepository, userRepository, companyRepository),
+            new ChatService(chatRepository, messageRepository, userRepository, companyRepository, attachmentRootPathProvider),
             chatRepository,
             messageRepository);
     }

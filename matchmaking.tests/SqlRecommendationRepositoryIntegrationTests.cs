@@ -56,6 +56,34 @@ public sealed class SqlRecommendationRepositoryIntegrationTests
         latest.Timestamp.Should().Be(new DateTime(2026, 2, 1, 10, 0, 0, DateTimeKind.Utc));
     }
 
+    [Fact]
+    public void AddAndGetAll_WhenRowsExist_ReturnsInsertedRecommendations()
+    {
+        var repository = new SqlRecommendationRepository(database.ConnectionString);
+        var first = new Recommendation
+        {
+            UserId = 31,
+            JobId = 41,
+            Timestamp = new DateTime(2026, 2, 3, 9, 0, 0, DateTimeKind.Utc)
+        };
+        var second = new Recommendation
+        {
+            UserId = 32,
+            JobId = 42,
+            Timestamp = new DateTime(2026, 2, 3, 10, 0, 0, DateTimeKind.Utc)
+        };
+        repository.Add(first);
+        repository.Add(second);
+
+        var all = repository.GetAll();
+
+        all.Should().HaveCount(2);
+        first.RecommendationId.Should().BeGreaterThan(0);
+        second.RecommendationId.Should().BeGreaterThan(0);
+        all.Should().Contain(item => item.RecommendationId == first.RecommendationId && item.UserId == 31 && item.JobId == 41);
+        all.Should().Contain(item => item.RecommendationId == second.RecommendationId && item.UserId == 32 && item.JobId == 42);
+    }
+
     private int InsertRecommendation(int userId, int jobId, DateTime timestamp)
     {
         return database.ExecuteScalar<int>(

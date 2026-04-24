@@ -46,9 +46,12 @@ public class SqlMatchRepository : SqlRepositoryBase, IMatchRepository
     {
         using var connection = OpenConnection();
         using var command = new SqlCommand(
-            "INSERT INTO [Matches] (MatchID, UserID, JobID, Status, Timestamp, Feedback) VALUES (@MatchId, @UserId, @JobId, @Status, @Timestamp, @Feedback)",
+            """
+            INSERT INTO [Matches] (UserID, JobID, Status, Timestamp, Feedback)
+            OUTPUT INSERTED.MatchID
+            VALUES (@UserId, @JobId, @Status, @Timestamp, @Feedback)
+            """,
             connection);
-        command.Parameters.AddWithValue("@MatchId", match.MatchId);
         command.Parameters.AddWithValue("@UserId", match.UserId);
         command.Parameters.AddWithValue("@JobId", match.JobId);
         command.Parameters.AddWithValue("@Status", ToDbStatus(match.Status));
@@ -56,7 +59,7 @@ public class SqlMatchRepository : SqlRepositoryBase, IMatchRepository
         command.Parameters.AddWithValue("@Feedback", string.IsNullOrWhiteSpace(match.FeedbackMessage)
             ? DBNull.Value
             : match.FeedbackMessage);
-        command.ExecuteNonQuery();
+        match.MatchId = Convert.ToInt32(command.ExecuteScalar());
     }
 
     public void Update(Match match)

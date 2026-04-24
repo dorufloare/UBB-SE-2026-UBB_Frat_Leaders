@@ -73,4 +73,14 @@ public sealed class SqlChatRepositoryIntegrationTests
         latestMap[first.ChatId].Should().Be(new DateTime(2026, 03, 01, 10, 0, 0, DateTimeKind.Utc));
         latestMap.Should().NotContainKey(second.ChatId);
     }
+
+    [Fact]
+    public void GetLatestMessageTimestamps_WhenChatIdsAreEmpty_ReturnsEmptyDictionary()
+    {
+        var repository = new SqlChatRepository(database.ConnectionString);
+
+        var result = repository.GetLatestMessageTimestamps(Array.Empty<int>());
+
+        result.Should().BeEmpty();
+    }
 }

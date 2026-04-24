@@ -46,4 +46,16 @@ public sealed class TestingModuleCoverageTests
         history[0].Should().NotBeNull();
         history[0].Questions.Should().HaveCount(3);
     }
+
+    [Fact]
+    public async Task TestingModuleAdapterStub_GetResultForMatchAsync_ReturnsResultForSameUserAndPosition()
+    {
+        var adapter = new TestingModuleAdapterStub();
+
+        var result = await adapter.GetResultForMatchAsync(45);
+
+        result.Should().NotBeNull();
+        result!.ExternalUserId.Should().Be(45);
+        result.PositionId.Should().Be(45);
+    }
 }

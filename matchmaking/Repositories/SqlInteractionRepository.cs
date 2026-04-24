@@ -129,22 +129,16 @@ public class SqlInteractionRepository : SqlRepositoryBase, IInteractionRepositor
     private static Interaction Map(SqlDataReader reader)
     {
         var rawType = reader.GetValue(3);
-        var interactionType = rawType switch
+        var interactionType = InteractionType.Dislike;
+
+        if (rawType is IConvertible)
         {
-            bool isLike => isLike ? InteractionType.Like : InteractionType.Dislike,
-            byte numericType => Enum.IsDefined(typeof(InteractionType), (int)numericType)
-                ? (InteractionType)numericType
-                : InteractionType.Dislike,
-            short numericType => Enum.IsDefined(typeof(InteractionType), (int)numericType)
-                ? (InteractionType)numericType
-                : InteractionType.Dislike,
-            int numericType => Enum.IsDefined(typeof(InteractionType), numericType)
-                ? (InteractionType)numericType
-                : InteractionType.Dislike,
-            long numericType when numericType is >= int.MinValue and <= int.MaxValue
-                && Enum.IsDefined(typeof(InteractionType), (int)numericType) => (InteractionType)numericType,
-            _ => InteractionType.Dislike
-        };
+            var numericType = Convert.ToInt32(rawType);
+            if (Enum.IsDefined(typeof(InteractionType), numericType))
+            {
+                interactionType = (InteractionType)numericType;
+            }
+        }
 
         return new Interaction
         {
