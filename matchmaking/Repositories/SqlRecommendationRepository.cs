@@ -45,13 +45,16 @@ public class SqlRecommendationRepository : SqlRepositoryBase, IRecommendationRep
     {
         using var connection = OpenConnection();
         using var command = new SqlCommand(
-            "INSERT INTO Recommendation (RecommendationId, UserId, JobId, Timestamp) VALUES (@RecommendationId, @UserId, @JobId, @Timestamp)",
+            """
+            INSERT INTO Recommendation (UserId, JobId, Timestamp)
+            OUTPUT INSERTED.RecommendationId
+            VALUES (@UserId, @JobId, @Timestamp)
+            """,
             connection);
-        command.Parameters.AddWithValue("@RecommendationId", recommendation.RecommendationId);
         command.Parameters.AddWithValue("@UserId", recommendation.UserId);
         command.Parameters.AddWithValue("@JobId", recommendation.JobId);
         command.Parameters.AddWithValue("@Timestamp", recommendation.Timestamp);
-        command.ExecuteNonQuery();
+        recommendation.RecommendationId = Convert.ToInt32(command.ExecuteScalar());
     }
 
     public void Update(Recommendation recommendation)

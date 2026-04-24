@@ -24,17 +24,20 @@ public class ChatService : IChatService
     private readonly IMessageRepository _messageRepository;
     private readonly IUserRepository _userRepository;
     private readonly ICompanyRepository _companyRepository;
+    private readonly Func<string> _attachmentRootPathProvider;
 
     public ChatService(
         IChatRepository chatRepo,
         IMessageRepository messageRepo,
         IUserRepository userRepo,
-        ICompanyRepository companyRepo)
+        ICompanyRepository companyRepo,
+        Func<string>? attachmentRootPathProvider = null)
     {
         _chatRepository = chatRepo;
         _messageRepository = messageRepo;
         _userRepository = userRepo;
         _companyRepository = companyRepo;
+        _attachmentRootPathProvider = attachmentRootPathProvider ?? GetDefaultAttachmentRootPath;
     }
 
     public Chat? FindOrCreateUserCompanyChat(int userId, int companyId, int? jobId = null)
@@ -202,7 +205,7 @@ public class ChatService : IChatService
 
         if (type == MessageType.Image || type == MessageType.File)
         {
-            content = StoreAttachment(content, type);
+            content = this.StoreAttachment(content, type);
         }
 
         var message = new Message
@@ -218,7 +221,7 @@ public class ChatService : IChatService
         _messageRepository.Add(message);
     }
 
-    private static string StoreAttachment(string sourcePath, MessageType type)
+    private string StoreAttachment(string sourcePath, MessageType type)
     {
         if (!File.Exists(sourcePath))
             throw new FileNotFoundException("Attachment file was not found.", sourcePath);
@@ -242,9 +245,7 @@ public class ChatService : IChatService
 
         var now = DateTime.UtcNow;
         var targetDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "matchmaking",
-            "attachments",
+            _attachmentRootPathProvider(),
             now.ToString("yyyy"),
             now.ToString("MM"),
             Guid.NewGuid().ToString("N"));
@@ -255,6 +256,14 @@ public class ChatService : IChatService
         File.Copy(sourcePath, targetPath, overwrite: false);
 
         return targetPath;
+    }
+
+    private static string GetDefaultAttachmentRootPath()
+    {
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "matchmaking",
+            "attachments");
     }
 
     public void MarkMessageAsRead(int chatId, int readerId) 

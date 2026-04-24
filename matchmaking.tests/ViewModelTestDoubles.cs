@@ -1,0 +1,314 @@
+namespace matchmaking.Tests;
+
+internal sealed class FakeMatchRepository : IMatchRepository, IUserStatusMatchRepository
+{
+    private readonly List<Match> matches;
+
+    public FakeMatchRepository(IReadOnlyList<Match> matches)
+    {
+        this.matches = matches.ToList();
+    }
+
+    public List<Match> InsertedMatches { get; } = new List<Match>();
+    public List<Match> UpdatedMatches { get; } = new List<Match>();
+    public List<int> RemovedIds { get; } = new List<int>();
+
+    public Match? GetById(int matchId) => matches.FirstOrDefault(item => item.MatchId == matchId);
+    public IReadOnlyList<Match> GetAll() => matches;
+    public void Add(Match match) => matches.Add(match);
+    public void Update(Match match) => UpdatedMatches.Add(match);
+    public void Remove(int matchId) => RemovedIds.Add(matchId);
+
+    public int InsertReturningId(Match match)
+    {
+        var nextId = matches.Count == 0 ? 1 : matches.Max(item => item.MatchId) + 1;
+        match.MatchId = nextId;
+        matches.Add(match);
+        InsertedMatches.Add(match);
+        return nextId;
+    }
+
+    public Match? GetByUserIdAndJobId(int userId, int jobId) =>
+        matches.FirstOrDefault(item => item.UserId == userId && item.JobId == jobId);
+
+    public IReadOnlyList<Match> GetByUserId(int userId) =>
+        matches.Where(item => item.UserId == userId).ToList();
+
+    public IReadOnlyList<Match> GetRejectedByUserId(int userId) =>
+        matches.Where(item => item.UserId == userId && item.Status == MatchStatus.Rejected).ToList();
+}
+
+internal sealed class FakeRecommendationRepository : IRecommendationRepository
+{
+    private readonly List<Recommendation> recommendations;
+
+    public FakeRecommendationRepository(IReadOnlyList<Recommendation> recommendations)
+    {
+        this.recommendations = recommendations.ToList();
+    }
+
+    public List<int> RemovedIds { get; } = new List<int>();
+
+    public Recommendation? GetById(int recommendationId) =>
+        recommendations.FirstOrDefault(item => item.RecommendationId == recommendationId);
+
+    public IReadOnlyList<Recommendation> GetAll() => recommendations;
+    public void Add(Recommendation recommendation) => recommendations.Add(recommendation);
+    public void Update(Recommendation recommendation) { }
+    public void Remove(int recommendationId) => RemovedIds.Add(recommendationId);
+    public Recommendation? GetLatestByUserIdAndJobId(int userId, int jobId) =>
+        recommendations.Where(item => item.UserId == userId && item.JobId == jobId).OrderByDescending(item => item.Timestamp).FirstOrDefault();
+
+    public int InsertReturningId(Recommendation recommendation)
+    {
+        var nextId = recommendations.Count == 0 ? 1 : recommendations.Max(item => item.RecommendationId) + 1;
+        recommendation.RecommendationId = nextId;
+        recommendations.Add(recommendation);
+        return nextId;
+    }
+}
+
+internal sealed class FakeChatService : IChatService
+{
+    private readonly List<Chat> chats = new List<Chat>();
+    private readonly Dictionary<int, List<Message>> messagesByChatId = new Dictionary<int, List<Message>>();
+
+    public List<(int ChatId, int SenderId, string Content, MessageType Type)> SentMessages { get; } = new List<(int ChatId, int SenderId, string Content, MessageType Type)>();
+    public List<(int ChatId, int ReaderId)> MarkReadCalls { get; } = new List<(int ChatId, int ReaderId)>();
+    public List<(int ChatId, int BlockerId)> BlockCalls { get; } = new List<(int ChatId, int BlockerId)>();
+    public List<(int ChatId, int UnblockerId)> UnblockCalls { get; } = new List<(int ChatId, int UnblockerId)>();
+    public List<(int ChatId, int CallerId)> DeleteCalls { get; } = new List<(int ChatId, int CallerId)>();
+    public Func<string, List<Company>> SearchCompaniesImpl { get; set; } = _ => new List<Company>();
+    public Func<string, List<User>> SearchUsersImpl { get; set; } = _ => new List<User>();
+    public bool ReturnNullForUserCompanyChat { get; set; }
+    public bool ReturnNullForUserUserChat { get; set; }
+    public Exception? SendMessageException { get; set; }
+    public Exception? BlockException { get; set; }
+    public Exception? UnblockException { get; set; }
+    public Exception? DeleteException { get; set; }
+
+    public Chat? FindOrCreateUserCompanyChat(int userId, int companyId, int? jobId = null)
+    {
+        if (ReturnNullForUserCompanyChat)
+        {
+            return null;
+        }
+
+        var existing = chats.FirstOrDefault(chat => chat.UserId == userId && chat.CompanyId == companyId && chat.JobId == jobId);
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var chat = new Chat { ChatId = chats.Count + 1, UserId = userId, CompanyId = companyId, JobId = jobId };
+        chats.Add(chat);
+        return chat;
+    }
+
+    public Chat? FindOrCreateUserUserChat(int userId, int secondUserId)
+    {
+        if (ReturnNullForUserUserChat)
+        {
+            return null;
+        }
+
+        var existing = chats.FirstOrDefault(chat => chat.UserId == userId && chat.SecondUserId == secondUserId);
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var chat = new Chat { ChatId = chats.Count + 1, UserId = userId, SecondUserId = secondUserId };
+        chats.Add(chat);
+        return chat;
+    }
+
+    public List<Chat> GetChatsForUser(int userId) =>
+        chats.Where(chat => chat.UserId == userId || chat.SecondUserId == userId).ToList();
+
+    public List<Chat> GetChatsForCompany(int companyId) =>
+        chats.Where(chat => chat.CompanyId == companyId).ToList();
+
+    public List<Message> GetMessages(int chatId, int callerId)
+    {
+        return messagesByChatId.TryGetValue(chatId, out var messages)
+            ? messages
+            : new List<Message>();
+    }
+
+    public List<Company> SearchCompanies(string query) => SearchCompaniesImpl(query);
+    public List<User> SearchUsers(string query) => SearchUsersImpl(query);
+
+    public void SendMessage(int chatId, string content, int senderId, MessageType type)
+    {
+        if (SendMessageException is not null)
+        {
+            throw SendMessageException;
+        }
+
+        SentMessages.Add((chatId, senderId, content, type));
+
+        if (!messagesByChatId.TryGetValue(chatId, out var messages))
+        {
+            messages = new List<Message>();
+            messagesByChatId[chatId] = messages;
+        }
+
+        messages.Add(new Message
+        {
+            MessageId = messages.Count + 1,
+            ChatId = chatId,
+            SenderId = senderId,
+            Content = content,
+            Type = type,
+            Timestamp = DateTime.UtcNow,
+            IsRead = false
+        });
+    }
+
+    public void MarkMessageAsRead(int chatId, int readerId) => MarkReadCalls.Add((chatId, readerId));
+
+    public void BlockUser(int chatId, int blockerId)
+    {
+        if (BlockException is not null)
+        {
+            throw BlockException;
+        }
+
+        BlockCalls.Add((chatId, blockerId));
+    }
+
+    public void UnblockUser(int chatId, int unblockerId)
+    {
+        if (UnblockException is not null)
+        {
+            throw UnblockException;
+        }
+
+        UnblockCalls.Add((chatId, unblockerId));
+    }
+
+    public void DeleteChat(int chatId, int callerId)
+    {
+        if (DeleteException is not null)
+        {
+            throw DeleteException;
+        }
+
+        DeleteCalls.Add((chatId, callerId));
+    }
+
+    public void SeedMessages(int chatId, IEnumerable<Message> messages)
+    {
+        messagesByChatId[chatId] = messages.ToList();
+    }
+
+    public void SeedChat(Chat chat)
+    {
+        chats.Add(chat);
+    }
+
+    public void ReplaceChats(IEnumerable<Chat> updatedChats)
+    {
+        chats.Clear();
+        chats.AddRange(updatedChats);
+    }
+}
+
+internal sealed class FakeTestingModuleAdapter : ITestingModuleAdapter
+{
+    private readonly TestResult? result;
+
+    public FakeTestingModuleAdapter(TestResult? result = null)
+    {
+        this.result = result;
+    }
+
+    public Task<matchmaking.DTOs.TestResult?> GetResultForMatchAsync(int matchId) => Task.FromResult(result);
+    public Task<matchmaking.DTOs.TestResult?> GetLatestResultForCandidateAsync(int externalUserId, int positionId) => Task.FromResult(result);
+    public Task<IReadOnlyList<matchmaking.DTOs.TestResult>> GetResultHistoryForCandidateAsync(int externalUserId, int positionId) => Task.FromResult<IReadOnlyList<matchmaking.DTOs.TestResult>>(result is null ? new List<matchmaking.DTOs.TestResult>() : new List<matchmaking.DTOs.TestResult> { result });
+}
+
+internal sealed class FakeUserRepository : IUserRepository
+{
+    private readonly List<User> users;
+
+    public FakeUserRepository(IReadOnlyList<User> users)
+    {
+        this.users = users.ToList();
+    }
+
+    public User? GetById(int userId) => users.FirstOrDefault(item => item.UserId == userId);
+    public IReadOnlyList<User> GetAll() => users;
+    public void Add(User user) => users.Add(user);
+    public void Update(User user) { }
+    public void Remove(int userId) { }
+}
+
+internal sealed class FakeCompanyRepository : ICompanyRepository
+{
+    private readonly List<Company> companies;
+
+    public FakeCompanyRepository(IReadOnlyList<Company> companies)
+    {
+        this.companies = companies.ToList();
+    }
+
+    public Company? GetById(int companyId) => companies.FirstOrDefault(item => item.CompanyId == companyId);
+    public IReadOnlyList<Company> GetAll() => companies;
+    public void Add(Company company) => companies.Add(company);
+    public void Update(Company company) { }
+    public void Remove(int companyId) { }
+}
+
+internal sealed class FakeJobRepository : IJobRepository
+{
+    private readonly List<Job> jobs;
+
+    public FakeJobRepository(IReadOnlyList<Job> jobs)
+    {
+        this.jobs = jobs.ToList();
+    }
+
+    public Job? GetById(int jobId) => jobs.FirstOrDefault(item => item.JobId == jobId);
+    public IReadOnlyList<Job> GetAll() => jobs;
+    public IReadOnlyList<Job> GetByCompanyId(int companyId) => jobs.Where(item => item.CompanyId == companyId).ToList();
+    public void Add(Job job) => jobs.Add(job);
+    public void Update(Job job) { }
+    public void Remove(int jobId) { }
+}
+
+internal sealed class FakeSkillRepository : ISkillRepository
+{
+    private readonly List<Skill> skills;
+
+    public FakeSkillRepository(IReadOnlyList<Skill> skills)
+    {
+        this.skills = skills.ToList();
+    }
+
+    public Skill? GetById(int userId, int skillId) => skills.FirstOrDefault(item => item.UserId == userId && item.SkillId == skillId);
+    public IReadOnlyList<Skill> GetAll() => skills;
+    public IReadOnlyList<Skill> GetByUserId(int userId) => skills.Where(item => item.UserId == userId).ToList();
+    public IReadOnlyList<(int SkillId, string Name)> GetDistinctSkillCatalog() => skills.GroupBy(item => item.SkillId).Select(group => (group.Key, group.First().SkillName)).ToList();
+    public void Add(Skill skill) => skills.Add(skill);
+    public void Update(Skill skill) { }
+    public void Remove(int userId, int skillId) { }
+}
+
+internal sealed class FakeJobSkillRepository : IJobSkillRepository
+{
+    private readonly List<JobSkill> jobSkills;
+
+    public FakeJobSkillRepository(IReadOnlyList<JobSkill> jobSkills)
+    {
+        this.jobSkills = jobSkills.ToList();
+    }
+
+    public JobSkill? GetById(int jobId, int skillId) => jobSkills.FirstOrDefault(item => item.JobId == jobId && item.SkillId == skillId);
+    public IReadOnlyList<JobSkill> GetAll() => jobSkills;
+    public IReadOnlyList<JobSkill> GetByJobId(int jobId) => jobSkills.Where(item => item.JobId == jobId).ToList();
+    public void Add(JobSkill jobSkill) => jobSkills.Add(jobSkill);
+    public void Update(JobSkill jobSkill) { }
+    public void Remove(int jobId, int skillId) { }
+}

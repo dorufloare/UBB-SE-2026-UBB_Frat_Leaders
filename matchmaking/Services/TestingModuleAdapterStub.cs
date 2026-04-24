@@ -11,7 +11,6 @@ public class TestingModuleAdapterStub : ITestingModuleAdapter
 {
     public Task<TestResult?> GetResultForMatchAsync(int matchId)
     {
-       
         return GetLatestResultForCandidateAsync(externalUserId: matchId, positionId: matchId);
     }
 
@@ -101,11 +100,6 @@ public class TestingModuleAdapterStub : ITestingModuleAdapter
     public async Task<IReadOnlyList<TestResult>> GetResultHistoryForCandidateAsync(int externalUserId, int positionId)
     {
         var latest = await GetLatestResultForCandidateAsync(externalUserId, positionId);
-        if (latest is null)
-        {
-            return [];
-        }
-
-        return [latest];
+        return latest is null ? [] : [latest];
     }
 }
