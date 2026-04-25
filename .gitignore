@@ -42,3 +42,4 @@ matchmaking/appsettings.json
 .claude
 *.claude
 matchmaking/.claude
+/CLAUDE.md
