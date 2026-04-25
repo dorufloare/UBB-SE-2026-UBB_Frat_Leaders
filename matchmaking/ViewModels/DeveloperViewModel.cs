@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using matchmaking.Domain.Enums;
 using matchmaking.Domain.Session;
 using matchmaking.Services;
@@ -67,8 +66,7 @@ public class DeveloperViewModel : ObservableObject
         var developerId = _sessionContext.CurrentDeveloperId
             ?? throw new InvalidOperationException("No developer session is active.");
 
-        var existing = _developerService.GetInteractions()
-            .FirstOrDefault(i => i.DeveloperId == developerId && i.PostId == postId);
+        var existing = FindInteractionForPost(_developerService.GetInteractions(), developerId, postId);
 
         if (existing == null)
         {
@@ -92,8 +90,7 @@ public class DeveloperViewModel : ObservableObject
         var developerId = _sessionContext.CurrentDeveloperId
             ?? throw new InvalidOperationException("No developer session is active.");
 
-        var existing = _developerService.GetInteractions()
-            .FirstOrDefault(i => i.DeveloperId == developerId && i.PostId == postId);
+        var existing = FindInteractionForPost(_developerService.GetInteractions(), developerId, postId);
 
         if (existing == null)
         {
@@ -117,23 +114,68 @@ public class DeveloperViewModel : ObservableObject
         var posts = _developerService.GetPosts();
         var interactions = _developerService.GetInteractions();
 
-        var developerNames = posts
-            .Select(p => p.DeveloperId)
-            .Distinct()
-            .ToDictionary(
-                id => id,
-                id => _developerService.GetDeveloperById(id)?.Name ?? $"Developer #{id}");
+        var developerNames = BuildDeveloperNames(posts);
 
         var currentDeveloperId = _sessionContext.CurrentDeveloperId ?? 0;
 
         Posts.Clear();
         foreach (var post in posts)
         {
-            var postInteractions = interactions.Where(i => i.PostId == post.PostId);
+            var postInteractions = GetInteractionsByPostId(interactions, post.PostId);
             var authorName = developerNames[post.DeveloperId];
             Posts.Add(new PostCardViewModel(post, postInteractions, authorName, currentDeveloperId, HandleLikePost, HandleDislikePost));
         }
     }
 
     public void Refresh() => RefreshPosts();
+
+    private Domain.Entities.Interaction? FindInteractionForPost(
+        System.Collections.Generic.IReadOnlyList<Domain.Entities.Interaction> interactions,
+        int developerId,
+        int postId)
+    {
+        foreach (var interaction in interactions)
+        {
+            if (interaction.DeveloperId == developerId && interaction.PostId == postId)
+            {
+                return interaction;
+            }
+        }
+
+        return null;
+    }
+
+    private System.Collections.Generic.Dictionary<int, string> BuildDeveloperNames(
+        System.Collections.Generic.IReadOnlyList<Domain.Entities.Post> posts)
+    {
+        var names = new System.Collections.Generic.Dictionary<int, string>();
+        foreach (var post in posts)
+        {
+            if (names.ContainsKey(post.DeveloperId))
+            {
+                continue;
+            }
+
+            names[post.DeveloperId] = _developerService.GetDeveloperById(post.DeveloperId)?.Name
+                ?? $"Developer #{post.DeveloperId}";
+        }
+
+        return names;
+    }
+
+    private static System.Collections.Generic.IEnumerable<Domain.Entities.Interaction> GetInteractionsByPostId(
+        System.Collections.Generic.IReadOnlyList<Domain.Entities.Interaction> interactions,
+        int postId)
+    {
+        var result = new System.Collections.Generic.List<Domain.Entities.Interaction>();
+        foreach (var interaction in interactions)
+        {
+            if (interaction.PostId == postId)
+            {
+                result.Add(interaction);
+            }
+        }
+
+        return result;
+    }
 }

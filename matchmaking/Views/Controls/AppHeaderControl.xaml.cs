@@ -23,11 +23,20 @@ public sealed partial class AppHeaderControl : UserControl
     {
         if (args.NewValue is ShellViewModel vm)
         {
-            vm.PropertyChanged += (_, e) =>
-            {
-                if (e.PropertyName == nameof(ShellViewModel.ActivePage))
-                    UpdateActiveButton(vm.ActivePage);
-            };
+            vm.PropertyChanged += OnShellViewModelPropertyChanged;
+            UpdateActiveButton(vm.ActivePage);
+        }
+    }
+
+    private void OnShellViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(ShellViewModel.ActivePage))
+        {
+            return;
+        }
+
+        if (DataContext is ShellViewModel vm)
+        {
             UpdateActiveButton(vm.ActivePage);
         }
     }

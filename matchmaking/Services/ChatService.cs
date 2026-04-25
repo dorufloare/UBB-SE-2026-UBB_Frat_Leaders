@@ -42,16 +42,12 @@ public class ChatService : IChatService
 
     public Chat? FindOrCreateUserCompanyChat(int userId, int companyId, int? jobId = null)
     {
-        var blockedConversation = _chatRepository
-            .GetByUserId(userId)
-            .FirstOrDefault(chat =>
-                chat.CompanyId == companyId
-                && chat.IsBlocked
-                && chat.BlockedByUserId != userId);
-
-        if (blockedConversation is not null)
+        foreach (var chat in _chatRepository.GetByUserId(userId))
         {
-            return null;
+            if (IsBlockedCompanyChat(chat, companyId, userId))
+            {
+                return null;
+            }
         }
 
         var existingChat = _chatRepository.GetByUserAndCompany(userId, companyId, jobId);
@@ -60,7 +56,7 @@ public class ChatService : IChatService
             return existingChat;
         }
 
-        var chat = new Chat
+        var newChat = new Chat
         {
             UserId = userId,
             CompanyId = companyId,
@@ -69,8 +65,8 @@ public class ChatService : IChatService
             IsBlocked = false
         };
 
-        _chatRepository.Add(chat);
-        return chat;
+        _chatRepository.Add(newChat);
+        return newChat;
     }
 
     public Chat? FindOrCreateUserUserChat(int userId, int secondUserId)
@@ -81,19 +77,15 @@ public class ChatService : IChatService
             return existingChat;
         }
 
-        var blockedConversation = _chatRepository
-            .GetByUserId(userId)
-            .FirstOrDefault(chat =>
-                (chat.UserId == secondUserId || chat.SecondUserId == secondUserId)
-                && chat.IsBlocked
-                && chat.BlockedByUserId != userId);
-
-        if (blockedConversation is not null)
+        foreach (var chat in _chatRepository.GetByUserId(userId))
         {
-            return null;
+            if (IsBlockedUserChat(chat, secondUserId, userId))
+            {
+                return null;
+            }
         }
 
-        var chat = new Chat
+        var newChat = new Chat
         {
             UserId = userId,
             CompanyId = null,
@@ -101,56 +93,46 @@ public class ChatService : IChatService
             JobId = null,
             IsBlocked = false
         };
-        _chatRepository.Add(chat);
-        return chat;
+        _chatRepository.Add(newChat);
+        return newChat;
     }
 
     public List<Chat> GetChatsForUser(int userId)
     {
         var chats = _chatRepository.GetByUserId(userId);
-        var timestamps = _chatRepository.GetLatestMessageTimestamps(chats.Select(c => c.ChatId));
+        var timestamps = _chatRepository.GetLatestMessageTimestamps(GetChatIds(chats));
 
-        return chats
-            .Where(c =>
+        var visibleChats = new List<Chat>();
+        foreach (var chat in chats)
+        {
+            if (ShouldIncludeChatForUser(chat, userId, timestamps))
             {
-                if (c.IsBlocked && c.BlockedByUserId != userId)
-                {
-                    return false;
-                }
+                visibleChats.Add(chat);
+            }
+        }
 
-                DateTime? deletedAt = c.UserId == userId
-                    ? c.DeletedAtByUser
-                    : c.DeletedAtBySecondParty;
-
-                return deletedAt is null
-                    || (timestamps.TryGetValue(c.ChatId, out var lastMsg) && lastMsg > deletedAt);
-            })
-            .OrderByDescending(c =>
-                timestamps.TryGetValue(c.ChatId, out var ts) ? ts : (DateTime?)new DateTime(1900, 1, 1))
-            .ThenByDescending(c => c.ChatId)
-            .ToList();
+        var comparer = new ChatTimestampComparer(timestamps);
+        visibleChats.Sort(comparer.Compare);
+        return visibleChats;
     }
 
     public List<Chat> GetChatsForCompany(int companyId)
     {
         var chats = _chatRepository.GetByCompanyId(companyId);
-        var timestamps = _chatRepository.GetLatestMessageTimestamps(chats.Select(c => c.ChatId));
+        var timestamps = _chatRepository.GetLatestMessageTimestamps(GetChatIds(chats));
 
-        return chats
-            .Where(c =>
+        var visibleChats = new List<Chat>();
+        foreach (var chat in chats)
+        {
+            if (ShouldIncludeChatForCompany(chat, companyId, timestamps))
             {
-                if (c.IsBlocked && c.BlockedByUserId != companyId)
-                {
-                    return false;
-                }
+                visibleChats.Add(chat);
+            }
+        }
 
-                return c.DeletedAtBySecondParty is null
-                    || (timestamps.TryGetValue(c.ChatId, out var lastMsg) && lastMsg > c.DeletedAtBySecondParty);
-            })
-            .OrderByDescending(c =>
-                timestamps.TryGetValue(c.ChatId, out var ts) ? ts : (DateTime?)new DateTime(1900, 1, 1))
-            .ThenByDescending(c => c.ChatId)
-            .ToList();
+        var comparer = new ChatTimestampComparer(timestamps);
+        visibleChats.Sort(comparer.Compare);
+        return visibleChats;
     }
 
     public List<Message> GetMessages(int chatId, int callerId)
@@ -172,18 +154,32 @@ public class ChatService : IChatService
         if (string.IsNullOrWhiteSpace(query))
             return new List<Company>();
 
-        return _companyRepository.GetAll()
-            .Where(c => c.CompanyName.Contains(query, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        var companies = new List<Company>();
+        foreach (var company in _companyRepository.GetAll())
+        {
+            if (company.CompanyName.Contains(query, StringComparison.OrdinalIgnoreCase))
+            {
+                companies.Add(company);
+            }
+        }
+
+        return companies;
     }
 
     public List<User> SearchUsers(string query)
     {
         if (string.IsNullOrWhiteSpace(query))
             return new List<User>();
-        return _userRepository.GetAll()
-            .Where(u => u.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        var users = new List<User>();
+        foreach (var user in _userRepository.GetAll())
+        {
+            if (user.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+            {
+                users.Add(user);
+            }
+        }
+
+        return users;
     }
 
     public void SendMessage(int chatId, string content, int senderId, MessageType type)
@@ -304,5 +300,89 @@ public class ChatService : IChatService
         }
     }
 
+    private static IEnumerable<int> GetChatIds(IEnumerable<Chat> chats)
+    {
+        var chatIds = new List<int>();
+        foreach (var chat in chats)
+        {
+            chatIds.Add(chat.ChatId);
+        }
+
+        return chatIds;
+    }
+
+    private static bool IsBlockedCompanyChat(Chat chat, int companyId, int userId)
+    {
+        return chat.CompanyId == companyId
+            && chat.IsBlocked
+            && chat.BlockedByUserId != userId;
+    }
+
+    private static bool IsBlockedUserChat(Chat chat, int secondUserId, int userId)
+    {
+        return (chat.UserId == secondUserId || chat.SecondUserId == secondUserId)
+            && chat.IsBlocked
+            && chat.BlockedByUserId != userId;
+    }
+
+    private static bool ShouldIncludeChatForUser(Chat chat, int userId, IReadOnlyDictionary<int, DateTime?> timestamps)
+    {
+        if (chat.IsBlocked && chat.BlockedByUserId != userId)
+        {
+            return false;
+        }
+
+        DateTime? deletedAt = chat.UserId == userId
+            ? chat.DeletedAtByUser
+            : chat.DeletedAtBySecondParty;
+
+        return deletedAt is null
+            || (timestamps.TryGetValue(chat.ChatId, out var lastMessageTimestamp) && lastMessageTimestamp > deletedAt);
+    }
+
+    private static bool ShouldIncludeChatForCompany(Chat chat, int companyId, IReadOnlyDictionary<int, DateTime?> timestamps)
+    {
+        if (chat.IsBlocked && chat.BlockedByUserId != companyId)
+        {
+            return false;
+        }
+
+        return chat.DeletedAtBySecondParty is null
+            || (timestamps.TryGetValue(chat.ChatId, out var lastMessageTimestamp) && lastMessageTimestamp > chat.DeletedAtBySecondParty);
+    }
+
+    private static DateTime ResolveChatTimestamp(int chatId, IReadOnlyDictionary<int, DateTime?> timestamps)
+    {
+        if (timestamps.TryGetValue(chatId, out var timestamp) && timestamp.HasValue)
+        {
+            return timestamp.Value;
+        }
+
+        return new DateTime(1900, 1, 1);
+    }
+
+    private sealed class ChatTimestampComparer
+    {
+        private readonly IReadOnlyDictionary<int, DateTime?> timestamps;
+
+        public ChatTimestampComparer(IReadOnlyDictionary<int, DateTime?> timestamps)
+        {
+            this.timestamps = timestamps;
+        }
+
+        public int Compare(Chat left, Chat right)
+        {
+            var leftTimestamp = ResolveChatTimestamp(left.ChatId, timestamps);
+            var rightTimestamp = ResolveChatTimestamp(right.ChatId, timestamps);
+
+            var timestampComparison = rightTimestamp.CompareTo(leftTimestamp);
+            if (timestampComparison != 0)
+            {
+                return timestampComparison;
+            }
+
+            return right.ChatId.CompareTo(left.ChatId);
+        }
+    }
 
 }

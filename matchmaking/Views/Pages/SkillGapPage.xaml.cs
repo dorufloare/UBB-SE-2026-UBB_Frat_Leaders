@@ -15,7 +15,7 @@ public sealed partial class SkillGapPage : Page
         _vm         = new SkillGapViewModel();
         DataContext = _vm;
 
-        Loaded += (_, _) => _ = _vm.LoadData();
+        Loaded += OnLoaded;
     }
 
     private void BackToStatus_Click(object sender, RoutedEventArgs e)
@@ -26,4 +26,9 @@ public sealed partial class SkillGapPage : Page
 
     private void RefreshButton_Click(object sender, RoutedEventArgs e)
         => _vm.Refresh();
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        _ = _vm.LoadData();
+    }
 }

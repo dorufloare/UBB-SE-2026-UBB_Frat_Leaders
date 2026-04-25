@@ -21,13 +21,24 @@ public class CompanyRepository : ICompanyRepository
         new () { CompanyId = 10, CompanyName = "CodeBridge", LogoText = "CB", Email = "careers@codebridge.com", Phone = "0311000010" }
     ];
 
-    public Company? GetById(int companyId) => companies.FirstOrDefault(c => c.CompanyId == companyId);
+    public Company? GetById(int companyId)
+    {
+        foreach (var company in companies)
+        {
+            if (company.CompanyId == companyId)
+            {
+                return company;
+            }
+        }
+
+        return null;
+    }
 
     public IReadOnlyList<Company> GetAll() => companies.ToList();
 
     public void Add(Company company)
     {
-        if (companies.Any(c => c.CompanyId == company.CompanyId))
+        if (HasCompanyId(company.CompanyId))
         {
             throw new InvalidOperationException($"Company with id {company.CompanyId} already exists.");
         }
@@ -48,5 +59,18 @@ public class CompanyRepository : ICompanyRepository
     {
         var existing = GetById(companyId) ?? throw new KeyNotFoundException($"Company with id {companyId} was not found.");
         companies.Remove(existing);
+    }
+
+    private bool HasCompanyId(int companyId)
+    {
+        foreach (var company in companies)
+        {
+            if (company.CompanyId == companyId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

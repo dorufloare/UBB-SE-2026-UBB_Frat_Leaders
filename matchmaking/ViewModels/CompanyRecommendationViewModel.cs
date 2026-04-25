@@ -45,11 +45,11 @@ public class CompanyRecommendationViewModel : ObservableObject
         _matchService = matchService;
         _session = session;
 
-        _advanceCommand = new RelayCommand(AdvanceApplicant, () => HasApplicant && !IsLoading);
-        _skipCommand = new RelayCommand(SkipApplicant, () => HasApplicant && !IsLoading);
-        _undoCommand = new RelayCommand(UndoLastAction, () => CanUndo && !IsLoading);
+        _advanceCommand = new RelayCommand(AdvanceApplicant, CanAdvanceOrSkip);
+        _skipCommand = new RelayCommand(SkipApplicant, CanAdvanceOrSkip);
+        _undoCommand = new RelayCommand(UndoLastAction, CanUndoAction);
         _refreshCommand = new RelayCommand(LoadApplicants);
-        _expandCommand = new RelayCommand(ExpandCard, () => HasApplicant);
+        _expandCommand = new RelayCommand(ExpandCard, CanExpandCard);
         _collapseCommand = new RelayCommand(CollapseCard);
     }
 
@@ -173,11 +173,7 @@ public class CompanyRecommendationViewModel : ObservableObject
                 return new List<SkillDisplay>();
             }
 
-            return CurrentApplicant.UserSkills
-                .OrderByDescending(s => s.Score)
-                .Take(5)
-                .Select(s => new SkillDisplay { Name = s.SkillName, Score = s.Score })
-                .ToList();
+            return BuildTopSkills(CurrentApplicant.UserSkills, 5);
         }
     }
 
@@ -203,10 +199,7 @@ public class CompanyRecommendationViewModel : ObservableObject
                 return new List<SkillDisplay>();
             }
 
-            return CurrentApplicant.UserSkills
-                .OrderByDescending(s => s.Score)
-                .Select(s => new SkillDisplay { Name = s.SkillName, Score = s.Score })
-                .ToList();
+            return BuildTopSkills(CurrentApplicant.UserSkills, null);
         }
     }
 
@@ -458,6 +451,42 @@ public class CompanyRecommendationViewModel : ObservableObject
         }
 
         return phone[..2] + new string('*', phone.Length - 5) + phone[^3..];
+    }
+
+    private bool CanAdvanceOrSkip()
+    {
+        return HasApplicant && !IsLoading;
+    }
+
+    private bool CanUndoAction()
+    {
+        return CanUndo && !IsLoading;
+    }
+
+    private bool CanExpandCard()
+    {
+        return HasApplicant;
+    }
+
+    private static IReadOnlyList<SkillDisplay> BuildTopSkills(IReadOnlyList<Domain.Entities.Skill> skills, int? takeCount)
+    {
+        var ordered = new List<Domain.Entities.Skill>(skills);
+        ordered.Sort(CompareSkillsByScoreDescending);
+
+        var result = new List<SkillDisplay>();
+        var limit = takeCount ?? ordered.Count;
+        for (var index = 0; index < ordered.Count && index < limit; index++)
+        {
+            var skill = ordered[index];
+            result.Add(new SkillDisplay { Name = skill.SkillName, Score = skill.Score });
+        }
+
+        return result;
+    }
+
+    private static int CompareSkillsByScoreDescending(Domain.Entities.Skill left, Domain.Entities.Skill right)
+    {
+        return right.Score.CompareTo(left.Score);
     }
 }
 

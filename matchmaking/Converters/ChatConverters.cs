@@ -370,14 +370,17 @@ public class ChatAvatarCornerRadiusConverter : IValueConverter
 
 public class ChatAvatarBgConverter : IValueConverter
 {
+    private const string DefaultAvatarBackgroundColor = "#FFE8EEF8";
+    private const string CompanyAvatarBackgroundColor = "#FFF3F4F6";
+
     public object Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Chat chat)
         {
-            return "#FFE8EEF8";
+            return DefaultAvatarBackgroundColor;
         }
 
-        return chat.CompanyId.HasValue ? "#FFF3F4F6" : "#FFE8EEF8";
+        return chat.CompanyId.HasValue ? CompanyAvatarBackgroundColor : DefaultAvatarBackgroundColor;
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, string language)
@@ -388,14 +391,17 @@ public class ChatAvatarBgConverter : IValueConverter
 
 public class ChatAvatarFgConverter : IValueConverter
 {
+    private const string DefaultAvatarForegroundColor = "#FF0F4FAD";
+    private const string CompanyAvatarForegroundColor = "#FF374151";
+
     public object Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Chat chat)
         {
-            return "#FF0F4FAD";
+            return DefaultAvatarForegroundColor;
         }
 
-        return chat.CompanyId.HasValue ? "#FF374151" : "#FF0F4FAD";
+        return chat.CompanyId.HasValue ? CompanyAvatarForegroundColor : DefaultAvatarForegroundColor;
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, string language)

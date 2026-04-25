@@ -103,10 +103,10 @@ public class UserStatusViewModel : ObservableObject
         {
             var userId = App.Session.CurrentUserId ?? DefaultCurrentUserId;
 
-            var applications = await Task.Run(() => _userStatusService.GetApplicationsForUser(userId));
-            var summary = await Task.Run(() => _skillGapService.GetSummary(userId));
-            var missingSkills = await Task.Run(() => _skillGapService.GetMissingSkills(userId));
-            var underscoredSkills = await Task.Run(() => _skillGapService.GetUnderscoredSkills(userId));
+            var applications = await Task.Run(GetApplicationsForCurrentUser);
+            var summary = await Task.Run(GetSkillGapSummaryForCurrentUser);
+            var missingSkills = await Task.Run(GetMissingSkillsForCurrentUser);
+            var underscoredSkills = await Task.Run(GetUnderscoredSkillsForCurrentUser);
 
             AppliedJobs.Clear();
             foreach (var application in applications)
@@ -175,13 +175,7 @@ public class UserStatusViewModel : ObservableObject
         CurrentFilter = filter;
         FilteredJobs.Clear();
 
-        var filteredApplications = filter switch
-        {
-            "Applied" => AppliedJobs.Where(a => a.Status == MatchStatus.Applied),
-            "Accepted" => AppliedJobs.Where(a => a.Status == MatchStatus.Accepted),
-            "Rejected" => AppliedJobs.Where(a => a.Status == MatchStatus.Rejected),
-            _ => AppliedJobs.AsEnumerable()
-        };
+        var filteredApplications = GetFilteredApplications(filter);
 
         foreach (var application in filteredApplications)
         {
@@ -213,5 +207,63 @@ public class UserStatusViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(HasUnderscoredSkills));
         OnPropertyChanged(nameof(HasSidebarMissingSkills));
+    }
+
+    private System.Collections.Generic.IReadOnlyList<ApplicationCardModel> GetApplicationsForCurrentUser()
+    {
+        var userId = App.Session.CurrentUserId ?? DefaultCurrentUserId;
+        return _userStatusService.GetApplicationsForUser(userId);
+    }
+
+    private SkillGapSummaryModel GetSkillGapSummaryForCurrentUser()
+    {
+        var userId = App.Session.CurrentUserId ?? DefaultCurrentUserId;
+        return _skillGapService.GetSummary(userId);
+    }
+
+    private System.Collections.Generic.IReadOnlyList<MissingSkillModel> GetMissingSkillsForCurrentUser()
+    {
+        var userId = App.Session.CurrentUserId ?? DefaultCurrentUserId;
+        return _skillGapService.GetMissingSkills(userId);
+    }
+
+    private System.Collections.Generic.IReadOnlyList<UnderscoredSkillModel> GetUnderscoredSkillsForCurrentUser()
+    {
+        var userId = App.Session.CurrentUserId ?? DefaultCurrentUserId;
+        return _skillGapService.GetUnderscoredSkills(userId);
+    }
+
+    private System.Collections.Generic.IEnumerable<ApplicationCardModel> GetFilteredApplications(string filter)
+    {
+        if (filter == "Applied")
+        {
+            return GetApplicationsByStatus(MatchStatus.Applied);
+        }
+
+        if (filter == "Accepted")
+        {
+            return GetApplicationsByStatus(MatchStatus.Accepted);
+        }
+
+        if (filter == "Rejected")
+        {
+            return GetApplicationsByStatus(MatchStatus.Rejected);
+        }
+
+        return AppliedJobs;
+    }
+
+    private System.Collections.Generic.IEnumerable<ApplicationCardModel> GetApplicationsByStatus(MatchStatus status)
+    {
+        var result = new System.Collections.Generic.List<ApplicationCardModel>();
+        foreach (var application in AppliedJobs)
+        {
+            if (application.Status == status)
+            {
+                result.Add(application);
+            }
+        }
+
+        return result;
     }
 }
