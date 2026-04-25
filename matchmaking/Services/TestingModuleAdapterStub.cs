@@ -16,7 +16,7 @@ public class TestingModuleAdapterStub : ITestingModuleAdapter
 
     public Task<TestResult?> GetLatestResultForCandidateAsync(int externalUserId, int positionId)
     {
-        var now = DateTime.UtcNow;
+        var currentUtcDateTime = DateTime.UtcNow;
         var testId = positionId * 10 + 1;
 
         var result = new TestResult
@@ -33,7 +33,7 @@ public class TestingModuleAdapterStub : ITestingModuleAdapter
                 TestId = testId,
                 Title = $"Position {positionId} Technical Test",
                 Category = "Technical",
-                CreatedAt = now.AddDays(-14)
+                CreatedAt = currentUtcDateTime.AddDays(-14)
             },
             Attempt = new TestAttemptRecord
             {
@@ -42,8 +42,8 @@ public class TestingModuleAdapterStub : ITestingModuleAdapter
                 ExternalUserId = externalUserId,
                 Score = 82.5m,
                 Status = "completed",
-                StartedAt = now.AddDays(-2).AddMinutes(-45),
-                CompletedAt = now.AddDays(-2),
+                StartedAt = currentUtcDateTime.AddDays(-2).AddMinutes(-45),
+                CompletedAt = currentUtcDateTime.AddDays(-2),
                 AnswersFilePath = $"attempts/{externalUserId}/{testId}/answers.json"
             },
             InterviewSession = new InterviewSessionRecord
@@ -52,7 +52,7 @@ public class TestingModuleAdapterStub : ITestingModuleAdapter
                 PositionId = positionId,
                 ExternalUserId = externalUserId,
                 InterviewerId = 10001,
-                DateStart = now.AddDays(1),
+                DateStart = currentUtcDateTime.AddDays(1),
                 Video = "https://example.test/interview/room",
                 Status = "scheduled",
                 Score = 0m

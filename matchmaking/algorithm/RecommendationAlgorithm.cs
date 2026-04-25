@@ -229,10 +229,10 @@ public class RecommendationAlgorithm
         {
             var targetScore = requiredSkill.Score;
 
-            var userScore = userScoreBySkillId.TryGetValue(requiredSkill.SkillId, out var byId)
-                ? byId
-                : userScoreBySkillName.TryGetValue(requiredSkill.SkillName, out var byName)
-                    ? byName
+            var userScore = userScoreBySkillId.TryGetValue(requiredSkill.SkillId, out var skillScoreFoundById)
+                ? skillScoreFoundById
+                : userScoreBySkillName.TryGetValue(requiredSkill.SkillName, out var skillScoreFoundByName)
+                    ? skillScoreFoundByName
                     : 0.0;
 
             var difference = userScore - targetScore;
@@ -451,11 +451,11 @@ public class RecommendationAlgorithm
         }
 
         var characters = text.ToLowerInvariant().ToCharArray();
-        for (var i = 0; i < characters.Length; i++)
+        for (var characterIndex = 0; characterIndex < characters.Length; characterIndex++)
         {
-            if (!char.IsLetterOrDigit(characters[i]) && !char.IsWhiteSpace(characters[i]))
+            if (!char.IsLetterOrDigit(characters[characterIndex]) && !char.IsWhiteSpace(characters[characterIndex]))
             {
-                characters[i] = ' ';
+                characters[characterIndex] = ' ';
             }
         }
 

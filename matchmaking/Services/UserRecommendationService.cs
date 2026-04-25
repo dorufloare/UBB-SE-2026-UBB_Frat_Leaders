@@ -50,8 +50,8 @@ public sealed class UserRecommendationService
             return null;
         }
 
-        var (job, score) = ranked[0];
-        return BuildCardWithShownRecord(userId, job, score);
+        var (topRankedJob, score) = ranked[0];
+        return BuildCardWithShownRecord(userId, topRankedJob, score);
     }
 
     public JobRecommendationResult? RecalculateTopCardIgnoringCooldown(int userId, UserMatchmakingFilters filters)
@@ -75,15 +75,15 @@ public sealed class UserRecommendationService
         var userSkills = skillRepository.GetByUserId(userId).ToList();
 
         var ranked = new List<(Job Job, double Score)>();
-        foreach (var job in jobs)
+        foreach (var currentJob in jobs)
         {
-            if (matchService.GetByUserIdAndJobId(userId, job.JobId) is not null)
+            if (matchService.GetByUserIdAndJobId(userId, currentJob.JobId) is not null)
             {
                 continue;
             }
 
-            var score = ComputeCompatibilityScore(user, job, userSkills, userId);
-            ranked.Add((job, score));
+            var score = ComputeCompatibilityScore(user, currentJob, userSkills, userId);
+            ranked.Add((currentJob, score));
         }
 
         return ranked.OrderByDescending(x => x.Score).ToList();
@@ -114,20 +114,20 @@ public sealed class UserRecommendationService
         var userSkills = skillRepository.GetByUserId(userId).ToList();
 
         var ranked = new List<(Job Job, double Score)>();
-        foreach (var job in jobs)
+        foreach (var currentJob in jobs)
         {
-            if (matchService.GetByUserIdAndJobId(userId, job.JobId) is not null)
+            if (matchService.GetByUserIdAndJobId(userId, currentJob.JobId) is not null)
             {
                 continue;
             }
 
-            if (cooldownService.IsOnCooldown(userId, job.JobId, DateTime.UtcNow))
+            if (cooldownService.IsOnCooldown(userId, currentJob.JobId, DateTime.UtcNow))
             {
                 continue;
             }
 
-            var score = ComputeCompatibilityScore(user, job, userSkills, userId);
-            ranked.Add((job, score));
+            var score = ComputeCompatibilityScore(user, currentJob, userSkills, userId);
+            ranked.Add((currentJob, score));
         }
 
         return ranked.OrderByDescending(x => x.Score).ToList();
@@ -135,14 +135,14 @@ public sealed class UserRecommendationService
 
     private JobRecommendationResult BuildCardWithShownRecord(int userId, Job job, double score)
     {
-        var displayRec = new Recommendation
+        var displayRecommendation = new Recommendation
         {
             UserId = userId,
             JobId = job.JobId,
             Timestamp = DateTime.UtcNow
         };
 
-        var displayId = recommendationRepository.InsertReturningId(displayRec);
+        var displayId = recommendationRepository.InsertReturningId(displayRecommendation);
         return CreateCard(job, score, displayId);
     }
 
@@ -170,42 +170,42 @@ public sealed class UserRecommendationService
 
     public int ApplyLike(int userId, JobRecommendationResult card)
     {
-        var job = card.Job;
-        if (matchService.GetByUserIdAndJobId(userId, job.JobId) is not null)
+        var targetJob = card.Job;
+        if (matchService.GetByUserIdAndJobId(userId, targetJob.JobId) is not null)
         {
             throw new InvalidOperationException("Already applied to this job.");
         }
 
-        return matchService.CreatePendingApplication(userId, job.JobId);
+        return matchService.CreatePendingApplication(userId, targetJob.JobId);
     }
 
     public int ApplyDismiss(int userId, JobRecommendationResult card)
     {
-        var rec = new Recommendation
+        var dismissedRecommendation = new Recommendation
         {
             UserId = userId,
             JobId = card.Job.JobId,
             Timestamp = DateTime.UtcNow
         };
 
-        return recommendationRepository.InsertReturningId(rec);
+        return recommendationRepository.InsertReturningId(dismissedRecommendation);
     }
 
     public void UndoLike(int matchId, int? displayRecommendationId)
     {
         matchService.RemoveApplication(matchId);
-        if (displayRecommendationId is { } rid)
+        if (displayRecommendationId is { } resolvedDisplayRecommendationId)
         {
-            recommendationRepository.Remove(rid);
+            recommendationRepository.Remove(resolvedDisplayRecommendationId);
         }
     }
 
     public void UndoDismiss(int dismissRecommendationId, int? displayRecommendationId)
     {
         recommendationRepository.Remove(dismissRecommendationId);
-        if (displayRecommendationId is { } did && did != dismissRecommendationId)
+        if (displayRecommendationId is { } resolvedDisplayRecommendationId && resolvedDisplayRecommendationId != dismissRecommendationId)
         {
-            recommendationRepository.Remove(did);
+            recommendationRepository.Remove(resolvedDisplayRecommendationId);
         }
     }
 
