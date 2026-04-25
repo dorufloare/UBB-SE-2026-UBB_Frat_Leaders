@@ -135,13 +135,13 @@ public sealed class MatchServiceStateTransitionTests
     [Fact]
     public async Task GetByCompanyIdAsync_WhenCompanyHasJobs_ReturnsOnlyMatchingJobsSortedByTimestamp()
     {
-        var now = DateTime.UtcNow;
+        var currentUtcTime = DateTime.UtcNow;
         var matchingOlder = TestDataFactory.CreateMatch(matchId: 1, userId: 1, jobId: 100, status: MatchStatus.Applied);
-        matchingOlder.Timestamp = now.AddMinutes(-20);
+        matchingOlder.Timestamp = currentUtcTime.AddMinutes(-20);
         var matchingNewer = TestDataFactory.CreateMatch(matchId: 2, userId: 2, jobId: 101, status: MatchStatus.Advanced);
-        matchingNewer.Timestamp = now.AddMinutes(-5);
+        matchingNewer.Timestamp = currentUtcTime.AddMinutes(-5);
         var otherCompany = TestDataFactory.CreateMatch(matchId: 3, userId: 3, jobId: 999, status: MatchStatus.Applied);
-        otherCompany.Timestamp = now.AddMinutes(-1);
+        otherCompany.Timestamp = currentUtcTime.AddMinutes(-1);
 
         var repository = new FakeMatchRepository(new[] { matchingOlder, matchingNewer, otherCompany });
         IReadOnlyList<Job> jobs = new[] { TestDataFactory.CreateJob(jobId: 100, companyId: 1), TestDataFactory.CreateJob(jobId: 101, companyId: 1) };

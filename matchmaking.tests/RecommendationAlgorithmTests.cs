@@ -281,10 +281,10 @@ public sealed class RecommendationAlgorithmTests
 
         method.Should().NotBeNull();
 
-        var low = (double)method!.Invoke(null, new object?[] { -5.0, 0.0, 100.0 })!;
+        var clampedLowValue = (double)method!.Invoke(null, new object?[] { -5.0, 0.0, 100.0 })!;
         var high = (double)method.Invoke(null, new object?[] { 105.0, 0.0, 100.0 })!;
 
-        low.Should().Be(0.0);
+        clampedLowValue.Should().Be(0.0);
         high.Should().Be(100.0);
     }
 
