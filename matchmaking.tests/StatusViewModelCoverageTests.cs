@@ -107,12 +107,13 @@ public sealed class StatusViewModelCoverageTests
         session.LoginAsCompany(company.CompanyId);
 
         var jobRepository = new FakeJobRepository(new[] { job });
+        var skill = TestDataFactory.CreateSkill(user.UserId, 1, "C#", 70);
         var viewModel = new CompanyStatusViewModel(
             new CompanyStatusService(
                 new MatchService(new FakeMatchRepository(new[] { match }), new JobService(jobRepository)),
-                new UserService(new UserRepository()),
+                new UserService(new FakeUserRepository(new[] { user })),
                 new JobService(jobRepository),
-                new SkillService(new SkillRepository())),
+                new SkillService(new FakeSkillRepository(new[] { skill }))),
             new MatchService(new FakeMatchRepository(new[] { match }), new JobService(jobRepository)),
             new FakeTestingModuleAdapter(),
             session);

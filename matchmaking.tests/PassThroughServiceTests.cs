@@ -5,7 +5,7 @@ public sealed class PassThroughServiceTests
     [Fact]
     public void CompanyService_WhenAllMethodsAreInvoked_DelegatesToRepository()
     {
-        var repository = new CompanyRepository();
+        var repository = new CompanyRepository([]);
         var service = new CompanyService(repository);
         var company = TestDataFactory.CreateCompany(companyId: 501);
         company.CompanyName = "Acme";
@@ -25,7 +25,7 @@ public sealed class PassThroughServiceTests
     [Fact]
     public void UserService_WhenAllMethodsAreInvoked_DelegatesToRepository()
     {
-        var repository = new UserRepository();
+        var repository = new UserRepository([]);
         var service = new UserService(repository);
         var user = TestDataFactory.CreateUser(userId: 601);
         user.Name = "Alex";
@@ -45,7 +45,7 @@ public sealed class PassThroughServiceTests
     [Fact]
     public void JobService_WhenAllMethodsAreInvoked_DelegatesToRepository()
     {
-        var repository = new JobRepository();
+        var repository = new JobRepository([]);
         var service = new JobService(repository);
         var job = TestDataFactory.CreateJob(jobId: 701, companyId: 77);
         job.JobTitle = "Backend";
@@ -66,7 +66,7 @@ public sealed class PassThroughServiceTests
     [Fact]
     public void JobSkillService_WhenAllMethodsAreInvoked_DelegatesToRepository()
     {
-        var repository = new JobSkillRepository();
+        var repository = new JobSkillRepository([]);
         var service = new JobSkillService(repository);
         var jobSkill = TestDataFactory.CreateJobSkill(jobId: 801, skillId: 11, skillName: "C#", score: 70);
 
@@ -86,7 +86,7 @@ public sealed class PassThroughServiceTests
     [Fact]
     public void SkillService_WhenAllMethodsAreInvoked_DelegatesToRepository()
     {
-        var repository = new SkillRepository();
+        var repository = new SkillRepository([]);
         var service = new SkillService(repository);
         var skill = TestDataFactory.CreateSkill(userId: 901, skillId: 42, skillName: "SQL", score: 60);
 

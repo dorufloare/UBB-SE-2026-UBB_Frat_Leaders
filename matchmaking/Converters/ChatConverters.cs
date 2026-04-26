@@ -6,32 +6,36 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media.Imaging;
 using matchmaking.Domain.Entities;
 using matchmaking.Domain.Enums;
-using matchmaking.Repositories;
 
 namespace matchmaking.Converters;
 
 internal static class ChatDisplayResolver
 {
-    private static readonly UserRepository UserRepository = new UserRepository();
-    private static readonly CompanyRepository CompanyRepository = new CompanyRepository();
+    private const int MissingSenderId = 0;
+    private const string DefaultChatName = "Chat";
 
     public static string ResolveChatName(Chat chat)
     {
+        if (!string.IsNullOrWhiteSpace(chat.OtherPartyName))
+        {
+            return chat.OtherPartyName;
+        }
+
         var session = App.Session;
         if (session is null)
         {
-            return "Chat";
+            return DefaultChatName;
         }
 
         if (session.CurrentMode == AppMode.CompanyMode)
         {
-            return UserRepository.GetById(chat.UserId)?.Name ?? $"User {chat.UserId}";
+            return $"User {chat.UserId}";
         }
 
         if (chat.CompanyId.HasValue)
         {
             var companyId = chat.CompanyId.Value;
-            return CompanyRepository.GetById(companyId)?.CompanyName ?? $"Company {companyId}";
+            return $"Company {companyId}";
         }
 
         if (chat.SecondUserId.HasValue)
@@ -41,10 +45,10 @@ internal static class ChatDisplayResolver
                 ? chat.SecondUserId.Value
                 : chat.UserId;
 
-            return UserRepository.GetById(otherUserId)?.Name ?? $"User {otherUserId}";
+            return $"User {otherUserId}";
         }
 
-        return "Chat";
+        return DefaultChatName;
     }
 
     public static int GetCurrentSenderId()
@@ -52,12 +56,12 @@ internal static class ChatDisplayResolver
         var session = App.Session;
         if (session is null)
         {
-            return 0;
+            return MissingSenderId;
         }
 
         return session.CurrentMode == AppMode.UserMode
-            ? session.CurrentUserId ?? 0
-            : session.CurrentCompanyId ?? 0;
+            ? session.CurrentUserId ?? MissingSenderId
+            : session.CurrentCompanyId ?? MissingSenderId;
     }
 }
 
@@ -352,14 +356,19 @@ public class IntToVisibilityConverter : IValueConverter
 
 public class ChatAvatarCornerRadiusConverter : IValueConverter
 {
+    private const double CompanyAvatarCornerRadius = 8;
+    private const double CircularAvatarCornerRadius = 999;
+
     public object Convert(object? value, Type targetType, object? parameter, string language)
     {
         if (value is not Chat chat)
         {
-            return new CornerRadius(999);
+            return new CornerRadius(CircularAvatarCornerRadius);
         }
 
-        return chat.CompanyId.HasValue ? new CornerRadius(8) : new CornerRadius(999);
+        return chat.CompanyId.HasValue
+            ? new CornerRadius(CompanyAvatarCornerRadius)
+            : new CornerRadius(CircularAvatarCornerRadius);
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, string language)

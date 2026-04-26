@@ -7,8 +7,21 @@ namespace matchmaking.Repositories;
 
 public class JobRepository : IJobRepository
 {
-    private readonly List<Job> jobs =
-    [
+    private readonly List<Job> jobs;
+
+    public JobRepository()
+        : this(CreateDefaultJobs())
+    {
+    }
+
+    public JobRepository(IEnumerable<Job> initialJobs)
+    {
+        jobs = initialJobs.ToList();
+    }
+
+    private static IEnumerable<Job> CreateDefaultJobs()
+    {
+        return [
         new ()
         {
             JobId = 100,
@@ -196,7 +209,8 @@ public class JobRepository : IJobRepository
             CompanyId = 5,
             PromotionLevel = 5
         }
-    ];
+        ];
+    }
 
     public Job? GetById(int jobId)
     {

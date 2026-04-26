@@ -36,8 +36,8 @@ public class ChatViewModel : ObservableObject
     private readonly IChatService _chatService;
     private readonly IJobService _jobService;
     private readonly SessionContext _sessionContext;
-    private readonly UserRepository _userRepository;
-    private readonly CompanyRepository _companyRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly ICompanyRepository _companyRepository;
     private readonly NavigationService _navigationService;
 
     public bool HasPendingAttachments => false;
@@ -47,8 +47,8 @@ public class ChatViewModel : ObservableObject
         IChatService chatService,
         IJobService jobService,
         SessionContext sessionContext,
-        UserRepository userRepository,
-        CompanyRepository companyRepository,
+        IUserRepository userRepository,
+        ICompanyRepository companyRepository,
         NavigationService navigationService)
     {
         _chatService = chatService;
@@ -247,7 +247,7 @@ public class ChatViewModel : ObservableObject
         Chats.Clear();
         foreach (var chat in chats)
         {
-            PopulateChatPreview(chat);
+            PopulateChatDisplayData(chat);
             Chats.Add(chat);
         }
 
@@ -294,6 +294,7 @@ public class ChatViewModel : ObservableObject
 
     public void SelectChat(Chat chat)
     {
+        PopulateChatDisplayName(chat);
         SelectedChat = chat;
 
         if (!TryGetCurrentCallerId(out var currentCallerId))
@@ -413,7 +414,7 @@ public class ChatViewModel : ObservableObject
 
         foreach (var chat in latestChats)
         {
-            PopulateChatPreview(chat);
+            PopulateChatDisplayData(chat);
         }
 
         var chatsChanged = MergeChats(latestChats);
@@ -566,6 +567,7 @@ public class ChatViewModel : ObservableObject
                !Nullable.Equals(current.DeletedAtByUser, updated.DeletedAtByUser) ||
                !Nullable.Equals(current.DeletedAtBySecondParty, updated.DeletedAtBySecondParty) ||
                current.UnreadCount != updated.UnreadCount ||
+               !string.Equals(current.OtherPartyName, updated.OtherPartyName, StringComparison.Ordinal) ||
                !string.Equals(current.LastMessage, updated.LastMessage, StringComparison.Ordinal) ||
                !string.Equals(current.LastMessageSnippet, updated.LastMessageSnippet, StringComparison.Ordinal) ||
                !string.Equals(current.LastMessageTime, updated.LastMessageTime, StringComparison.Ordinal);
@@ -593,6 +595,42 @@ public class ChatViewModel : ObservableObject
         }
 
         return false;
+    }
+
+    private void PopulateChatDisplayData(Chat chat)
+    {
+        PopulateChatDisplayName(chat);
+        PopulateChatPreview(chat);
+    }
+
+    private void PopulateChatDisplayName(Chat chat)
+    {
+        chat.OtherPartyName = ResolveOtherPartyName(chat);
+    }
+
+    private string ResolveOtherPartyName(Chat chat)
+    {
+        if (_sessionContext.CurrentMode == AppMode.CompanyMode)
+        {
+            return _userRepository.GetById(chat.UserId)?.Name ?? $"User {chat.UserId}";
+        }
+
+        if (chat.CompanyId is int companyId)
+        {
+            return _companyRepository.GetById(companyId)?.CompanyName ?? $"Company {companyId}";
+        }
+
+        if (chat.SecondUserId is int secondUserId)
+        {
+            var currentUserId = _sessionContext.CurrentUserId;
+            var otherUserId = currentUserId.HasValue && chat.UserId == currentUserId.Value
+                ? secondUserId
+                : chat.UserId;
+
+            return _userRepository.GetById(otherUserId)?.Name ?? $"User {otherUserId}";
+        }
+
+        return "Chat";
     }
 
     private void PopulateChatPreview(Chat chat)
@@ -923,6 +961,8 @@ public class ChatViewModel : ObservableObject
             return;
         }
 
+        PopulateChatDisplayName(chat);
+
         // Remove old instance of the chat if it exists (could be a restored deleted chat)
         var oldChat = FindChatById(Chats, chat.ChatId);
         if (oldChat is not null)
@@ -987,6 +1027,8 @@ public class ChatViewModel : ObservableObject
         {
             return;
         }
+
+        PopulateChatDisplayName(chat);
 
         var oldChat = FindChatById(Chats, chat.ChatId);
         if (oldChat is not null)
