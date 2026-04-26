@@ -14,7 +14,7 @@ public class CompanyRecommendationService : ICompanyRecommendationService
     private readonly IJobService jobService;
     private readonly ISkillService skillService;
     private readonly IJobSkillService jobSkillService;
-    private readonly RecommendationAlgorithm algorithm;
+    private readonly IRecommendationAlgorithm algorithm;
 
     private List<UserApplicationResult> queue = new List<UserApplicationResult>();
     private int currentIndex;
@@ -25,7 +25,7 @@ public class CompanyRecommendationService : ICompanyRecommendationService
         IJobService jobService,
         ISkillService skillService,
         IJobSkillService jobSkillService,
-        RecommendationAlgorithm algorithm)
+        IRecommendationAlgorithm algorithm)
     {
         this.matchService = matchService;
         this.userService = userService;

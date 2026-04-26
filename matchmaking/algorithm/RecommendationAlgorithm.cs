@@ -12,10 +12,20 @@ using Windows.Services.Maps;
 
 namespace matchmaking.algorithm;
 
-public class RecommendationAlgorithm
+public class RecommendationAlgorithm : IRecommendationAlgorithm
 {
-    private const double DefaultWeight = 25.0;
+    private const int ScoreComponentCount = 4;
+    private const int PreferenceCriterionCount = 2;
+    private const int BreakdownScoreDecimalPlaces = 1;
+    private const double ScoreMinimum = 0.0;
+    private const double PercentageScale = 100.0;
+    private const double ScoreMaximum = PercentageScale;
+    private const double DefaultWeight = PercentageScale / ScoreComponentCount;
     private const double DefaultMitigationFactor = 2.0;
+    private const double MinimumMitigationFactor = 1.0;
+    private const double DefaultKeywordValue = 1.0;
+    private const double KeywordSocialSignalScale = 0.1;
+    private const double MaximumKeywordValue = 5.0;
 
     private readonly bool hasCachedInteractionParameters;
     private readonly double cachedSkillWeight;
@@ -54,7 +64,7 @@ public class RecommendationAlgorithm
         hasCachedInteractionParameters = true;
     }
 
-    private static List<JobSkill> TransformSkillsToJobSkills(Job job, List<Skill> jobSkills)
+    private static List<JobSkill> TransformSkillsToJobSkills(Job job, IReadOnlyList<Skill> jobSkills)
     {
         List<JobSkill> jobSkillList = new List<JobSkill>();
         foreach (var jobSkill in jobSkills)
@@ -71,7 +81,7 @@ public class RecommendationAlgorithm
         return jobSkillList;
     }
 
-    public double CalculateCompatibilityScore(User user, Job job, List<Skill> userSkills, List<Skill> jobSkills)
+    public double CalculateCompatibilityScore(User user, Job job, IReadOnlyList<Skill> userSkills, IReadOnlyList<Skill> jobSkills)
     {
         var mappedJobSkills = TransformSkillsToJobSkills(job, jobSkills);
 
@@ -116,7 +126,7 @@ public class RecommendationAlgorithm
             keywordSignalByKeyword);
     }
 
-    public CompatibilityBreakdown CalculateScoreBreakdown(User user, Job job, List<Skill> userSkills, List<Skill> jobSkills)
+    public CompatibilityBreakdown CalculateScoreBreakdown(User user, Job job, IReadOnlyList<Skill> userSkills, IReadOnlyList<Skill> jobSkills)
     {
         var mappedJobSkills = TransformSkillsToJobSkills(job, jobSkills);
 
@@ -150,18 +160,23 @@ public class RecommendationAlgorithm
         var preferenceScore = CalculatePreferenceScore(user, job);
         var promotionScore = CalculatePromotionScore(job);
 
-        var finalScore = ((skillScore * skillWeight) +
-                          (keywordScore * resumeWeight) +
-                          (preferenceScore * preferenceWeight) +
-                          (promotionScore * promotionWeight)) / 100;
+        var finalScore = CalculateWeightedScore(
+            skillScore,
+            keywordScore,
+            preferenceScore,
+            promotionScore,
+            skillWeight,
+            resumeWeight,
+            preferenceWeight,
+            promotionWeight);
 
         return new CompatibilityBreakdown
         {
-            SkillScore = Math.Round(skillScore, 1),
-            KeywordScore = Math.Round(keywordScore, 1),
-            PreferenceScore = Math.Round(preferenceScore, 1),
-            PromotionScore = Math.Round(promotionScore, 1),
-            OverallScore = Clamp(Math.Round(finalScore, 1), 0.0, 100.0)
+            SkillScore = Math.Round(skillScore, BreakdownScoreDecimalPlaces),
+            KeywordScore = Math.Round(keywordScore, BreakdownScoreDecimalPlaces),
+            PreferenceScore = Math.Round(preferenceScore, BreakdownScoreDecimalPlaces),
+            PromotionScore = Math.Round(promotionScore, BreakdownScoreDecimalPlaces),
+            OverallScore = Clamp(Math.Round(finalScore, BreakdownScoreDecimalPlaces), ScoreMinimum, ScoreMaximum)
         };
     }
 
@@ -201,12 +216,33 @@ public class RecommendationAlgorithm
         var preferenceScore = CalculatePreferenceScore(user, job);
         var promotionScore = CalculatePromotionScore(job);
 
-        var finalScore = ((skillScore * skillWeight) +
-                          (keywordScore * resumeWeight) +
-                          (preferenceScore * preferenceWeight) +
-                          (promotionScore * promotionWeight)) / 100;
+        var finalScore = CalculateWeightedScore(
+            skillScore,
+            keywordScore,
+            preferenceScore,
+            promotionScore,
+            skillWeight,
+            resumeWeight,
+            preferenceWeight,
+            promotionWeight);
 
-        return Clamp(finalScore, 0.0, 100.0);
+        return Clamp(finalScore, ScoreMinimum, ScoreMaximum);
+    }
+
+    private static double CalculateWeightedScore(
+        double skillScore,
+        double keywordScore,
+        double preferenceScore,
+        double promotionScore,
+        double skillWeight,
+        double resumeWeight,
+        double preferenceWeight,
+        double promotionWeight)
+    {
+        return ((skillScore * skillWeight) +
+                (keywordScore * resumeWeight) +
+                (preferenceScore * preferenceWeight) +
+                (promotionScore * promotionWeight)) / PercentageScale;
     }
 
     private static Dictionary<int, double> TransformUserSkillsToDictionaryOfIdAndScore(IReadOnlyList<Skill> userSkills)
@@ -238,14 +274,14 @@ public class RecommendationAlgorithm
     {
         if (jobSkills.Count == 0)
         {
-            return 0;
+            return ScoreMinimum;
         }
 
         var userScoreBySkillId = TransformUserSkillsToDictionaryOfIdAndScore(userSkills);
 
         var userScoreBySkillName = TransformUserSkillsToDictionaryOfSkillNameAndScore(userSkills);
 
-        var penaltySum = 0.0;
+        var penaltySum = ScoreMinimum;
 
         foreach (var requiredSkill in jobSkills)
         {
@@ -255,7 +291,7 @@ public class RecommendationAlgorithm
                 ? skillScoreFoundById
                 : userScoreBySkillName.TryGetValue(requiredSkill.SkillName, out var skillScoreFoundByName)
                     ? skillScoreFoundByName
-                    : 0.0;
+                    : ScoreMinimum;
 
             var difference = userScore - targetScore;
             var asymmetricPenalty = difference > 0
@@ -266,9 +302,9 @@ public class RecommendationAlgorithm
         }
 
         var averagePenalty = penaltySum / jobSkills.Count;
-        var score = 100.0 - averagePenalty;
+        var score = ScoreMaximum - averagePenalty;
 
-        return Math.Max(0.0, score);
+        return Math.Max(ScoreMinimum, score);
     }
 
     private static double CalculateKeywordScore(
@@ -283,7 +319,7 @@ public class RecommendationAlgorithm
         union.UnionWith(jobTerms);
         if (union.Count == 0)
         {
-            return 0;
+            return ScoreMinimum;
         }
 
         var intersection = new HashSet<string>(userTerms, StringComparer.Ordinal);
@@ -294,11 +330,11 @@ public class RecommendationAlgorithm
 
         if (unionScore <= 0)
         {
-            return 0;
+            return ScoreMinimum;
         }
 
         var ratio = intersectionScore / unionScore;
-        return Clamp(ratio * 100.0, 0.0, 100.0);
+        return Clamp(ratio * PercentageScale, ScoreMinimum, ScoreMaximum);
     }
 
     private static IReadOnlyDictionary<string, int> BuildKeywordSignalByKeyword(
@@ -345,12 +381,12 @@ public class RecommendationAlgorithm
             matches++;
         }
 
-        return (matches / 2.0) * 100.0;
+        return (matches / (double)PreferenceCriterionCount) * PercentageScale;
     }
 
     private static double CalculatePromotionScore(Job job)
     {
-        return Clamp(job.PromotionLevel, 0.0, 100.0);
+        return Clamp(job.PromotionLevel, ScoreMinimum, ScoreMaximum);
     }
 
     private static (double SkillWeight, double ResumeWeight, double PreferenceWeight, double PromotionWeight, double MitigationFactor)
@@ -370,17 +406,17 @@ public class RecommendationAlgorithm
             rawResumeWeight = DefaultWeight;
             rawPreferenceWeight = DefaultWeight;
             rawPromotionWeight = DefaultWeight;
-            weightSum = 100.0;
+            weightSum = PercentageScale;
         }
 
         var mitigationFactor = ResolveWeightedParameter(posts, feedbackByPostId, PostParameterType.MitigationFactor, DefaultMitigationFactor);
-        mitigationFactor = Math.Max(1.0, mitigationFactor);
+        mitigationFactor = Math.Max(MinimumMitigationFactor, mitigationFactor);
 
         return (
-            rawSkillWeight * 100.0 / weightSum,
-            rawResumeWeight * 100.0 / weightSum,
-            rawPreferenceWeight * 100.0 / weightSum,
-            rawPromotionWeight * 100.0 / weightSum,
+            rawSkillWeight * PercentageScale / weightSum,
+            rawResumeWeight * PercentageScale / weightSum,
+            rawPreferenceWeight * PercentageScale / weightSum,
+            rawPromotionWeight * PercentageScale / weightSum,
             mitigationFactor);
     }
 
@@ -391,7 +427,7 @@ public class RecommendationAlgorithm
         double defaultValue)
     {
         var proposedAny = false;
-        var weightedSum = 0.0;
+        var weightedSum = ScoreMinimum;
 
         foreach (var post in posts)
         {
@@ -447,13 +483,13 @@ public class RecommendationAlgorithm
 
         if (string.IsNullOrWhiteSpace(normalizedKeyword))
         {
-            return 1.0;
+            return DefaultKeywordValue;
         }
 
         keywordSignalByKeyword.TryGetValue(normalizedKeyword, out var socialSignal);
 
-        var rawValue = 1.0 + (0.1 * socialSignal);
-        return Math.Min(5.0, Math.Abs(rawValue));
+        var rawValue = DefaultKeywordValue + (KeywordSocialSignalScale * socialSignal);
+        return Math.Min(MaximumKeywordValue, Math.Abs(rawValue));
     }
 
     private static double SumKeywordValues(

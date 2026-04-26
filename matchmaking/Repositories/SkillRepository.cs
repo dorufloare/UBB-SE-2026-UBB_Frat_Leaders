@@ -7,8 +7,21 @@ namespace matchmaking.Repositories;
 
 public class SkillRepository : ISkillRepository
 {
-    private readonly List<Skill> skills =
-    [
+    private readonly List<Skill> skills;
+
+    public SkillRepository()
+        : this(CreateDefaultSkills())
+    {
+    }
+
+    public SkillRepository(IEnumerable<Skill> initialSkills)
+    {
+        skills = initialSkills.ToList();
+    }
+
+    private static IEnumerable<Skill> CreateDefaultSkills()
+    {
+        return [
         new () { UserId = 1, SkillId = 1, SkillName = "C#", Score = 75 },
         new () { UserId = 1, SkillId = 2, SkillName = "React", Score = 82 },
         new () { UserId = 2, SkillId = 1, SkillName = "C#", Score = 88 },
@@ -61,7 +74,8 @@ public class SkillRepository : ISkillRepository
         new () { UserId = 20, SkillId = 32, SkillName = "AWS", Score = 88 },
         new () { UserId = 20, SkillId = 6, SkillName = "Docker", Score = 82 },
         new () { UserId = 20, SkillId = 7, SkillName = "Kubernetes", Score = 80 }
-    ];
+        ];
+    }
 
     public Skill? GetById(int userId, int skillId)
     {
