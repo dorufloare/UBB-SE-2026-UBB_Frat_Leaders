@@ -7,7 +7,7 @@ using matchmaking.DTOs;
 
 namespace matchmaking.Services;
 
-public class CompanyRecommendationService
+public class CompanyRecommendationService : ICompanyRecommendationService
 {
     private readonly MatchService matchService;
     private readonly IUserService userService;

@@ -8,7 +8,7 @@ using matchmaking.Repositories;
 
 namespace matchmaking.Services;
 
-public sealed class UserRecommendationService
+public sealed class UserRecommendationService : IUserRecommendationService
 {
     private readonly IUserRepository userRepository;
     private readonly IJobRepository jobRepository;

@@ -8,7 +8,7 @@ using matchmaking.Repositories;
 
 namespace matchmaking.Services;
 
-public class MatchService
+public class MatchService : IMatchService
 {
     private readonly IMatchRepository matchRepository;
     private readonly IJobService jobService;

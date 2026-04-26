@@ -5,7 +5,7 @@ using matchmaking.Repositories;
 
 namespace matchmaking.Services;
 
-public class SkillGapService
+public class SkillGapService : ISkillGapService
 {
     private readonly IUserStatusMatchRepository matchRepository;
     private readonly IJobSkillService jobSkillService;

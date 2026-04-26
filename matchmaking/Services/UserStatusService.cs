@@ -5,7 +5,7 @@ using matchmaking.Repositories;
 
 namespace matchmaking.Services;
 
-public class UserStatusService
+public class UserStatusService : IUserStatusService
 {
     private readonly IUserStatusMatchRepository matchRepository;
     private readonly IJobService jobService;

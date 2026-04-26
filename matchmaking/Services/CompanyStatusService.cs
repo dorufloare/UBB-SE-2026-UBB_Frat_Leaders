@@ -7,7 +7,7 @@ using matchmaking.DTOs;
 
 namespace matchmaking.Services;
 
-public class CompanyStatusService
+public class CompanyStatusService : ICompanyStatusService
 {
     private readonly MatchService matchService;
     private readonly IUserService userService;
