@@ -198,16 +198,38 @@ public class JobRepository : IJobRepository
         }
     ];
 
-    public Job? GetById(int jobId) => jobs.FirstOrDefault(j => j.JobId == jobId);
+    public Job? GetById(int jobId)
+    {
+        foreach (var job in jobs)
+        {
+            if (job.JobId == jobId)
+            {
+                return job;
+            }
+        }
+
+        return null;
+    }
 
     public IReadOnlyList<Job> GetAll() => jobs.ToList();
 
-    public IReadOnlyList<Job> GetByCompanyId(int companyId) =>
-        jobs.Where(j => j.CompanyId == companyId).ToList();
+    public IReadOnlyList<Job> GetByCompanyId(int companyId)
+    {
+        var result = new List<Job>();
+        foreach (var job in jobs)
+        {
+            if (job.CompanyId == companyId)
+            {
+                result.Add(job);
+            }
+        }
+
+        return result;
+    }
 
     public void Add(Job job)
     {
-        if (jobs.Any(j => j.JobId == job.JobId))
+        if (HasJobId(job.JobId))
         {
             throw new InvalidOperationException($"Job with id {job.JobId} already exists.");
         }
@@ -230,5 +252,18 @@ public class JobRepository : IJobRepository
     {
         var existing = GetById(jobId) ?? throw new KeyNotFoundException($"Job with id {jobId} was not found.");
         jobs.Remove(existing);
+    }
+
+    private bool HasJobId(int jobId)
+    {
+        foreach (var job in jobs)
+        {
+            if (job.JobId == jobId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

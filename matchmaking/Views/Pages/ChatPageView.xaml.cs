@@ -390,11 +390,7 @@ public sealed partial class ChatPageView : Page
 
         _isScrollToLatestQueued = true;
 
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            _isScrollToLatestQueued = false;
-            ScrollToLatestMessage();
-        });
+        DispatcherQueue.TryEnqueue(HandleQueuedScrollToLatestMessage);
     }
 
     private void ScrollToLatestMessage()
@@ -404,5 +400,11 @@ public sealed partial class ChatPageView : Page
 
         var lastMessage = MessageList.Items[MessageList.Items.Count - 1];
         MessageList.ScrollIntoView(lastMessage);
+    }
+
+    private void HandleQueuedScrollToLatestMessage()
+    {
+        _isScrollToLatestQueued = false;
+        ScrollToLatestMessage();
     }
 }

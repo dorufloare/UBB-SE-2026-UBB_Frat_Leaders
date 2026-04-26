@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using matchmaking.Domain.Entities;
@@ -46,7 +45,7 @@ public class CompanyStatusViewModel : ObservableObject
         _testingModuleAdapter = testingModuleAdapter;
         _session = session;
 
-        _refreshCommand = new RelayCommand(async () => await RefreshAsync(), () => !IsLoading);
+        _refreshCommand = new RelayCommand(ExecuteRefreshCommand, CanExecuteRefreshCommand);
     }
 
     public ObservableCollection<UserApplicationResult> Applications { get; } = new ObservableCollection<UserApplicationResult>();
@@ -458,5 +457,15 @@ public class CompanyStatusViewModel : ObservableObject
         }
 
         return phone[..2] + new string('*', phone.Length - 5) + phone[^3..];
+    }
+
+    private bool CanExecuteRefreshCommand()
+    {
+        return !IsLoading;
+    }
+
+    private void ExecuteRefreshCommand()
+    {
+        _ = RefreshAsync();
     }
 }

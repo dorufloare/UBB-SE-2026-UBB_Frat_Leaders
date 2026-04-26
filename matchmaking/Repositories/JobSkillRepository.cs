@@ -31,17 +31,38 @@ public class JobSkillRepository : IJobSkillRepository
         new () { JobId = 10, SkillId = 6, SkillName = "Docker", Score = 73 }
     ];
 
-    public JobSkill? GetById(int jobId, int skillId) =>
-        jobSkills.FirstOrDefault(js => js.JobId == jobId && js.SkillId == skillId);
+    public JobSkill? GetById(int jobId, int skillId)
+    {
+        foreach (var jobSkill in jobSkills)
+        {
+            if (jobSkill.JobId == jobId && jobSkill.SkillId == skillId)
+            {
+                return jobSkill;
+            }
+        }
+
+        return null;
+    }
 
     public IReadOnlyList<JobSkill> GetAll() => jobSkills.ToList();
 
-    public IReadOnlyList<JobSkill> GetByJobId(int jobId) =>
-        jobSkills.Where(js => js.JobId == jobId).ToList();
+    public IReadOnlyList<JobSkill> GetByJobId(int jobId)
+    {
+        var result = new List<JobSkill>();
+        foreach (var jobSkill in jobSkills)
+        {
+            if (jobSkill.JobId == jobId)
+            {
+                result.Add(jobSkill);
+            }
+        }
+
+        return result;
+    }
 
     public void Add(JobSkill jobSkill)
     {
-        if (jobSkills.Any(js => js.JobId == jobSkill.JobId && js.SkillId == jobSkill.SkillId))
+        if (ContainsJobSkill(jobSkill.JobId, jobSkill.SkillId))
         {
             throw new InvalidOperationException($"JobSkill ({jobSkill.JobId}, {jobSkill.SkillId}) already exists.");
         }
@@ -62,5 +83,18 @@ public class JobSkillRepository : IJobSkillRepository
         var existing = GetById(jobId, skillId)
             ?? throw new KeyNotFoundException($"JobSkill ({jobId}, {skillId}) was not found.");
         jobSkills.Remove(existing);
+    }
+
+    private bool ContainsJobSkill(int jobId, int skillId)
+    {
+        foreach (var jobSkill in jobSkills)
+        {
+            if (jobSkill.JobId == jobId && jobSkill.SkillId == skillId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

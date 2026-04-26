@@ -13,6 +13,13 @@ namespace matchmaking.Views.Pages;
 
 public sealed partial class UserStatusPage : Page
 {
+    private static readonly SolidColorBrush ActiveFilterBackgroundBrush = new SolidColorBrush(Color.FromArgb(255, 30, 30, 30));
+    private static readonly SolidColorBrush ActiveFilterForegroundBrush = new SolidColorBrush(Colors.White);
+    private static readonly SolidColorBrush ActiveFilterBorderBrush = new SolidColorBrush(Color.FromArgb(255, 30, 30, 30));
+    private static readonly SolidColorBrush InactiveFilterBackgroundBrush = new SolidColorBrush(Colors.White);
+    private static readonly SolidColorBrush InactiveFilterForegroundBrush = new SolidColorBrush(Colors.Black);
+    private static readonly SolidColorBrush InactiveFilterBorderBrush = new SolidColorBrush(Colors.Black);
+
     private readonly UserStatusViewModel _userStatusViewModel;
 
     public UserStatusPage()
@@ -48,15 +55,15 @@ public sealed partial class UserStatusPage : Page
         {
             if (filterButton == activeBtn)
             {
-                filterButton.Background = new SolidColorBrush(Color.FromArgb(255, 30, 30, 30));
-                filterButton.Foreground = new SolidColorBrush(Colors.White);
-                filterButton.BorderBrush = new SolidColorBrush(Color.FromArgb(255, 30, 30, 30));
+                filterButton.Background = ActiveFilterBackgroundBrush;
+                filterButton.Foreground = ActiveFilterForegroundBrush;
+                filterButton.BorderBrush = ActiveFilterBorderBrush;
             }
             else
             {
-                filterButton.Background = new SolidColorBrush(Colors.White);
-                filterButton.Foreground = new SolidColorBrush(Colors.Black);
-                filterButton.BorderBrush = new SolidColorBrush(Colors.Black);
+                filterButton.Background = InactiveFilterBackgroundBrush;
+                filterButton.Foreground = InactiveFilterForegroundBrush;
+                filterButton.BorderBrush = InactiveFilterBorderBrush;
             }
         }
     }

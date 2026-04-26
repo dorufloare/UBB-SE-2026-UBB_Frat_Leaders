@@ -31,13 +31,24 @@ public class UserRepository : IUserRepository
         new () { UserId = 20, Name = "Vlad Petrescu", Location = "Cluj-Napoca", PreferredLocation = "Cluj-Napoca", Email = "vlad.petrescu@mail.com", Phone = "0700000020", YearsOfExperience = 7, Education = "MSc Cloud Computing", Resume = "Cloud architect with AWS and Azure certifications", PreferredEmploymentType = "Remote" }
     ];
 
-    public User? GetById(int userId) => users.FirstOrDefault(u => u.UserId == userId);
+    public User? GetById(int userId)
+    {
+        foreach (var user in users)
+        {
+            if (user.UserId == userId)
+            {
+                return user;
+            }
+        }
+
+        return null;
+    }
 
     public IReadOnlyList<User> GetAll() => users.ToList();
 
     public void Add(User user)
     {
-        if (users.Any(u => u.UserId == user.UserId))
+        if (HasUserId(user.UserId))
         {
             throw new InvalidOperationException($"User with id {user.UserId} already exists.");
         }
@@ -63,5 +74,18 @@ public class UserRepository : IUserRepository
     {
         var existing = GetById(userId) ?? throw new KeyNotFoundException($"User with id {userId} was not found.");
         users.Remove(existing);
+    }
+
+    private bool HasUserId(int userId)
+    {
+        foreach (var user in users)
+        {
+            if (user.UserId == userId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

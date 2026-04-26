@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using matchmaking.Domain.Entities;
 using matchmaking.Domain.Enums;
 using matchmaking.DTOs;
 using matchmaking.Repositories;
+using Microsoft.UI.Xaml.Media;
+using Windows.Services.Maps;
 
 namespace matchmaking.algorithm;
 
@@ -51,17 +54,26 @@ public class RecommendationAlgorithm
         hasCachedInteractionParameters = true;
     }
 
-    public double CalculateCompatibilityScore(User user, Job job, List<Skill> userSkills, List<Skill> jobSkills)
+    private static List<JobSkill> TransformSkillsToJobSkills(Job job, List<Skill> jobSkills)
     {
-        var mappedJobSkills = jobSkills
-            .Select(s => new JobSkill
+        List<JobSkill> jobSkillList = new List<JobSkill>();
+        foreach (var jobSkill in jobSkills)
+        {
+            jobSkillList.Add(new JobSkill
             {
                 JobId = job.JobId,
-                SkillId = s.SkillId,
-                SkillName = s.SkillName,
-                Score = s.Score
-            })
-            .ToList();
+                SkillId = jobSkill.SkillId,
+                SkillName = jobSkill.SkillName,
+                Score = jobSkill.Score,
+            });
+        }
+
+        return jobSkillList;
+    }
+
+    public double CalculateCompatibilityScore(User user, Job job, List<Skill> userSkills, List<Skill> jobSkills)
+    {
+        var mappedJobSkills = TransformSkillsToJobSkills(job, jobSkills);
 
         if (hasCachedInteractionParameters)
         {
@@ -106,15 +118,7 @@ public class RecommendationAlgorithm
 
     public CompatibilityBreakdown CalculateScoreBreakdown(User user, Job job, List<Skill> userSkills, List<Skill> jobSkills)
     {
-        var mappedJobSkills = jobSkills
-            .Select(s => new JobSkill
-            {
-                JobId = job.JobId,
-                SkillId = s.SkillId,
-                SkillName = s.SkillName,
-                Score = s.Score
-            })
-            .ToList();
+        var mappedJobSkills = TransformSkillsToJobSkills(job, jobSkills);
 
         return CalculateBreakdownCore(
             user,
@@ -149,7 +153,7 @@ public class RecommendationAlgorithm
         var finalScore = ((skillScore * skillWeight) +
                           (keywordScore * resumeWeight) +
                           (preferenceScore * preferenceWeight) +
-                          (promotionScore * promotionWeight)) / 100.0;
+                          (promotionScore * promotionWeight)) / 100;
 
         return new CompatibilityBreakdown
         {
@@ -200,9 +204,31 @@ public class RecommendationAlgorithm
         var finalScore = ((skillScore * skillWeight) +
                           (keywordScore * resumeWeight) +
                           (preferenceScore * preferenceWeight) +
-                          (promotionScore * promotionWeight)) / 100.0;
+                          (promotionScore * promotionWeight)) / 100;
 
         return Clamp(finalScore, 0.0, 100.0);
+    }
+
+    private static Dictionary<int, double> TransformUserSkillsToDictionaryOfIdAndScore(IReadOnlyList<Skill> userSkills)
+    {
+        Dictionary<int, double> dictionaryOfIdAndScore = new Dictionary<int, double>();
+        foreach (var userSkill in userSkills)
+        {
+            dictionaryOfIdAndScore[userSkill.SkillId] = userSkill.Score;
+        }
+
+        return dictionaryOfIdAndScore;
+    }
+
+    private static Dictionary<string, double> TransformUserSkillsToDictionaryOfSkillNameAndScore(IReadOnlyList<Skill> userSkills)
+    {
+        Dictionary<string, double> dictionaryOfSkillNameAndScore = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+        foreach (var userSkill in userSkills)
+        {
+            dictionaryOfSkillNameAndScore[userSkill.SkillName] = userSkill.Score;
+        }
+
+        return dictionaryOfSkillNameAndScore;
     }
 
     private static double CalculateSkillScore(
@@ -215,13 +241,9 @@ public class RecommendationAlgorithm
             return 0;
         }
 
-        var userScoreBySkillId = userSkills
-            .GroupBy(s => s.SkillId)
-            .ToDictionary(g => g.Key, g => (double)g.Last().Score);
+        var userScoreBySkillId = TransformUserSkillsToDictionaryOfIdAndScore(userSkills);
 
-        var userScoreBySkillName = userSkills
-            .GroupBy(s => s.SkillName, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => (double)g.Last().Score, StringComparer.OrdinalIgnoreCase);
+        var userScoreBySkillName = TransformUserSkillsToDictionaryOfSkillNameAndScore(userSkills);
 
         var penaltySum = 0.0;
 
@@ -267,8 +289,8 @@ public class RecommendationAlgorithm
         var intersection = new HashSet<string>(userTerms, StringComparer.Ordinal);
         intersection.IntersectWith(jobTerms);
 
-        var intersectionScore = intersection.Sum(keyword => KeywordValue(keyword, keywordSignalByKeyword));
-        var unionScore = union.Sum(keyword => KeywordValue(keyword, keywordSignalByKeyword));
+        var intersectionScore = SumKeywordValues(intersection, keywordSignalByKeyword);
+        var unionScore = SumKeywordValues(union, keywordSignalByKeyword);
 
         if (unionScore <= 0)
         {
@@ -434,13 +456,35 @@ public class RecommendationAlgorithm
         return Math.Min(5.0, Math.Abs(rawValue));
     }
 
+    private static double SumKeywordValues(
+        IEnumerable<string> keywords,
+        IReadOnlyDictionary<string, int> keywordSignalByKeyword)
+    {
+        var sum = 0d;
+        foreach (var keyword in keywords)
+        {
+            sum += KeywordValue(keyword, keywordSignalByKeyword);
+        }
+
+        return sum;
+    }
+
+    private static HashSet<string> GetUniqueTokensFromString(string text)
+    {
+        var tokens = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            tokens.Add(word);
+        }
+
+        return tokens;
+    }
+
     private static HashSet<string> TokenizeDistinct(string text)
     {
         var normalized = NormalizeText(text);
 
-        return normalized
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToHashSet(StringComparer.Ordinal);
+        return GetUniqueTokensFromString(normalized);
     }
 
     private static string NormalizeText(string text)

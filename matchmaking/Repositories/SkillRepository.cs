@@ -63,24 +63,59 @@ public class SkillRepository : ISkillRepository
         new () { UserId = 20, SkillId = 7, SkillName = "Kubernetes", Score = 80 }
     ];
 
-    public Skill? GetById(int userId, int skillId) =>
-        skills.FirstOrDefault(s => s.UserId == userId && s.SkillId == skillId);
+    public Skill? GetById(int userId, int skillId)
+    {
+        foreach (var skill in skills)
+        {
+            if (skill.UserId == userId && skill.SkillId == skillId)
+            {
+                return skill;
+            }
+        }
+
+        return null;
+    }
 
     public IReadOnlyList<Skill> GetAll() => skills.ToList();
 
-    public IReadOnlyList<Skill> GetByUserId(int userId) =>
-        skills.Where(s => s.UserId == userId).ToList();
+    public IReadOnlyList<Skill> GetByUserId(int userId)
+    {
+        var result = new List<Skill>();
+        foreach (var skill in skills)
+        {
+            if (skill.UserId == userId)
+            {
+                result.Add(skill);
+            }
+        }
 
-    public IReadOnlyList<(int SkillId, string Name)> GetDistinctSkillCatalog() =>
-        skills
-            .GroupBy(s => s.SkillId)
-            .Select(g => (SkillId: g.Key, Name: g.First().SkillName))
-            .OrderBy(t => t.Name)
-            .ToList();
+        return result;
+    }
+
+    public IReadOnlyList<(int SkillId, string Name)> GetDistinctSkillCatalog()
+    {
+        var catalogBySkillId = new Dictionary<int, string>();
+        foreach (var skill in skills)
+        {
+            if (!catalogBySkillId.ContainsKey(skill.SkillId))
+            {
+                catalogBySkillId[skill.SkillId] = skill.SkillName;
+            }
+        }
+
+        var result = new List<(int SkillId, string Name)>();
+        foreach (var entry in catalogBySkillId)
+        {
+            result.Add((entry.Key, entry.Value));
+        }
+
+        result.Sort(CompareSkillCatalogEntriesByName);
+        return result;
+    }
 
     public void Add(Skill skill)
     {
-        if (skills.Any(s => s.UserId == skill.UserId && s.SkillId == skill.SkillId))
+        if (ContainsSkill(skill.UserId, skill.SkillId))
         {
             throw new InvalidOperationException($"Skill ({skill.UserId}, {skill.SkillId}) already exists.");
         }
@@ -101,5 +136,23 @@ public class SkillRepository : ISkillRepository
         var existing = GetById(userId, skillId)
             ?? throw new KeyNotFoundException($"Skill ({userId}, {skillId}) was not found.");
         skills.Remove(existing);
+    }
+
+    private static int CompareSkillCatalogEntriesByName((int SkillId, string Name) left, (int SkillId, string Name) right)
+    {
+        return string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool ContainsSkill(int userId, int skillId)
+    {
+        foreach (var skill in skills)
+        {
+            if (skill.UserId == userId && skill.SkillId == skillId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
