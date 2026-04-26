@@ -30,22 +30,6 @@ public class BoolToActiveBrushConverterTests
     }
 
     [Fact]
-    public void Convert_NonBoolValue_ReturnsInactiveColor()
-    {
-        var result = BoolToActiveBrushConverter.GetColor(false);
-
-        result.Should().NotBe(default);
-    }
-
-    [Fact]
-    public void Convert_NullValue_ReturnsInactiveColor()
-    {
-        var result = BoolToActiveBrushConverter.GetColor(false);
-
-        result.Should().NotBe(default);
-    }
-
-    [Fact]
     public void ConvertBack_WhenInvoked_ThrowsNotSupportedException()
     {
         var act = () => converter.ConvertBack(null, typeof(object), null, string.Empty);

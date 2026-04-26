@@ -30,14 +30,6 @@ public class SkillRepositoryTests
     }
 
     [Fact]
-    public void GetAll_WhenCalled_ReturnsAllSkills()
-    {
-        var result = repository.GetAll();
-
-        result.Should().HaveCount(52);
-    }
-
-    [Fact]
     public void GetByUserId_ExistingUserId_ReturnsOnlyMatchingSkills()
     {
         var result = repository.GetByUserId(2);

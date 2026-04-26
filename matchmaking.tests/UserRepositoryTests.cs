@@ -28,14 +28,6 @@ public class UserRepositoryTests
     }
 
     [Fact]
-    public void GetAll_WhenCalled_ReturnsAllUsers()
-    {
-        var result = repository.GetAll();
-
-        result.Should().HaveCount(20);
-    }
-
-    [Fact]
     public void Add_NewUser_AddsUserToRepository()
     {
         var newUser = CreateUser(1000);

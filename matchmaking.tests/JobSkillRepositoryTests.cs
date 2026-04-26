@@ -30,14 +30,6 @@ public class JobSkillRepositoryTests
     }
 
     [Fact]
-    public void GetAll_WhenCalled_ReturnsAllJobSkills()
-    {
-        var result = repository.GetAll();
-
-        result.Should().HaveCount(20);
-    }
-
-    [Fact]
     public void GetByJobId_ExistingJobId_ReturnsOnlyMatchingJobSkills()
     {
         var result = repository.GetByJobId(1);

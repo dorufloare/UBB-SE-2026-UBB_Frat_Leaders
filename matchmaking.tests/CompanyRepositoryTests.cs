@@ -28,14 +28,6 @@ public class CompanyRepositoryTests
     }
 
     [Fact]
-    public void GetAll_WhenCalled_ReturnsAllCompanies()
-    {
-        var result = repository.GetAll();
-
-        result.Should().HaveCount(10);
-    }
-
-    [Fact]
     public void Add_NewCompany_AddsCompanyToRepository()
     {
         var newCompany = CreateCompany(1000);

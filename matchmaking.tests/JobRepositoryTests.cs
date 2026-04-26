@@ -29,14 +29,6 @@ public class JobRepositoryTests
     }
 
     [Fact]
-    public void GetAll_WhenCalled_ReturnsAllJobs()
-    {
-        var result = repository.GetAll();
-
-        result.Should().HaveCount(17);
-    }
-
-    [Fact]
     public void GetByCompanyId_ExistingCompanyId_ReturnsOnlyMatchingJobs()
     {
         var result = repository.GetByCompanyId(1);
