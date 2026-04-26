@@ -158,6 +158,10 @@ public sealed class StatusServiceCoverageTests
         public LocalDeveloperRepository(IReadOnlyList<Developer> developers) => this.developers = developers;
 
         public Developer? GetById(int developerId) => developers.FirstOrDefault(item => item.DeveloperId == developerId);
+        public IReadOnlyList<Developer> GetAll() => developers;
+        public void Add(Developer developer) { }
+        public void Update(Developer developer) { }
+        public void Remove(int developerId) { }
     }
 
     private sealed class LocalPostRepository : IPostRepository
@@ -166,8 +170,12 @@ public sealed class StatusServiceCoverageTests
 
         public LocalPostRepository(IReadOnlyList<Post> posts) => this.posts = posts.ToList();
 
+        public Post? GetById(int postId) => posts.FirstOrDefault(item => item.PostId == postId);
         public IReadOnlyList<Post> GetAll() => posts;
+        public IReadOnlyList<Post> GetByDeveloperId(int developerId) => posts.Where(item => item.DeveloperId == developerId).ToList();
         public void Add(Post post) => posts.Add(post);
+        public void Update(Post post) { }
+        public void Remove(int postId) { }
     }
 
     private sealed class LocalInteractionRepository : IInteractionRepository

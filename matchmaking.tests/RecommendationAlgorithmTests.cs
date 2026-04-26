@@ -310,8 +310,18 @@ public sealed class RecommendationAlgorithmTests
             this.posts = posts;
         }
 
+        public Post? GetById(int postId) => posts.FirstOrDefault(item => item.PostId == postId);
         public IReadOnlyList<Post> GetAll() => posts;
+        public IReadOnlyList<Post> GetByDeveloperId(int developerId) => posts.Where(item => item.DeveloperId == developerId).ToList();
         public void Add(Post post)
+        {
+        }
+
+        public void Update(Post post)
+        {
+        }
+
+        public void Remove(int postId)
         {
         }
     }
