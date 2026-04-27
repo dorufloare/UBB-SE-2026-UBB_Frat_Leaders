@@ -30,9 +30,17 @@ public sealed partial class UserStatusPage : Page
         };
     }
 
+<<<<<<< Updated upstream
   
+=======
+    private async void OnLoaded(object sender, RoutedEventArgs eventArgs)
+    {
+        SetActiveFilter(FilterAll);
+        await _userStatusViewModel.LoadMatches();
+    }
+>>>>>>> Stashed changes
 
-    private void Filter_Click(object sender, RoutedEventArgs e)
+    private void Filter_Click(object sender, RoutedEventArgs eventArgs)
     {
         if (sender is not Button btn) return;
         SetActiveFilter(btn);
@@ -58,17 +66,22 @@ public sealed partial class UserStatusPage : Page
         }
     }
 
+<<<<<<< Updated upstream
   
 
     private async void ViewJobDetails_Click(object sender, RoutedEventArgs e)
+=======
+    private async void ViewJobDetails_Click(object sender, RoutedEventArgs eventArgs)
+>>>>>>> Stashed changes
     {
         if (sender is Button { Tag: ApplicationCardModel model })
             await ShowJobDetailsAsync(model);
     }
 
-    private void ViewSkillGap_Click(object sender, RoutedEventArgs e)
+    private void ViewSkillGap_Click(object sender, RoutedEventArgs eventArgs)
         => Frame.Navigate(typeof(SkillGapPage));
 
+<<<<<<< Updated upstream
   
 
     private void SkillInsightsButton_Click(object sender, RoutedEventArgs e)
@@ -80,6 +93,15 @@ public sealed partial class UserStatusPage : Page
    
 
     private async Task ShowJobDetailsAsync(ApplicationCardModel model)
+=======
+    private void SkillInsightsButton_Click(object sender, RoutedEventArgs eventArgs)
+        => Frame.Navigate(typeof(SkillGapPage));
+
+    private void RefreshButton_Click(object sender, RoutedEventArgs eventArgs)
+        => _userStatusViewModel.Refresh();
+
+    private void GoToRecommendationsButton_Click(object sender, RoutedEventArgs eventArgs)
+>>>>>>> Stashed changes
     {
         var jobSkills = _vm.GetJobSkills(model.JobId);
 

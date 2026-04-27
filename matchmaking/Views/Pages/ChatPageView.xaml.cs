@@ -72,47 +72,66 @@ public sealed partial class ChatPageView : Page
         base.OnNavigatedFrom(e);
     }
 
+<<<<<<< Updated upstream
     private void RefreshTimer_Tick(object? sender, object e)
+=======
+    private void OnUserProfileRequested(int userId)
+    {
+        Frame.Navigate(typeof(UserProfilePage), userId);
+    }
+
+    private void OnCompanyProfileRequested(int companyId)
+    {
+        Frame.Navigate(typeof(CompanyProfilePage), companyId);
+    }
+
+    private void OnJobPostRequested(int jobId)
+    {
+        Frame.Navigate(typeof(JobPostPage), jobId);
+    }
+
+    private void RefreshTimer_Tick(object? sender, object eventArgs)
+>>>>>>> Stashed changes
     {
         _viewModel.RefreshInboxAndSelectedChat();
     }
 
-    private void UsersTab_Click(object sender, RoutedEventArgs e)
+    private void UsersTab_Click(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.SwitchTab("Users");
     }
 
-    private void CompanyTab_Click(object sender, RoutedEventArgs e)
+    private void CompanyTab_Click(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.SwitchTab("Company");
     }
 
-    private void ConversationList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void ConversationList_SelectionChanged(object sender, SelectionChangedEventArgs eventArgs)
     {
-        if (e.AddedItems.Count > 0 && e.AddedItems[0] is Domain.Entities.Chat chat)
+        if (eventArgs.AddedItems.Count > 0 && eventArgs.AddedItems[0] is Domain.Entities.Chat chat)
         {
             _viewModel.SelectChat(chat);
             QueueScrollToLatestMessage();
         }
     }
 
-    private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs eventArgs)
     {
-        if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+        if (eventArgs.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
         {
             _viewModel.SearchContacts();
         }
     }
 
-    private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+    private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs eventArgs)
     {
     }
 
-    private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs eventArgs)
     {
-        if (args.ChosenSuggestion is not null)
+        if (eventArgs.ChosenSuggestion is not null)
         {
-            if (args.ChosenSuggestion is Company company && _viewModel.IsUserMode)
+            if (eventArgs.ChosenSuggestion is Company company && _viewModel.IsUserMode)
             {
                 var selectedJobId = await PromptForOptionalJobSelectionAsync(company.CompanyId);
                 if (selectedJobId == int.MinValue)
@@ -124,28 +143,28 @@ public sealed partial class ChatPageView : Page
                 return;
             }
 
-            _viewModel.StartChat(args.ChosenSuggestion);
+            _viewModel.StartChat(eventArgs.ChosenSuggestion);
             return;
         }
 
         _viewModel.SearchContacts();
     }
 
-    private void MessageInput_KeyDown(object sender, KeyRoutedEventArgs e)
+    private void MessageInput_KeyDown(object sender, KeyRoutedEventArgs eventArgs)
     {
-        if (e.Key == Windows.System.VirtualKey.Enter)
+        if (eventArgs.Key == Windows.System.VirtualKey.Enter)
         {
             _viewModel.SendMessage();
-            e.Handled = true;
+            eventArgs.Handled = true;
         }
     }
 
-    private void HandleSendButtonClick(object sender, RoutedEventArgs e)
+    private void HandleSendButtonClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.SendMessage();
     }
 
-    private async void HandleAttachmentButtonClick(object sender, RoutedEventArgs e)
+    private async void HandleAttachmentButtonClick(object sender, RoutedEventArgs eventArgs)
     {
         var picker = new FileOpenPicker();
         picker.FileTypeFilter.Add(".jpg");
@@ -169,32 +188,32 @@ public sealed partial class ChatPageView : Page
         _viewModel.HandleAttachmentSelected(file.Path, extension);
     }
 
-    private void HandleGoToProfileClick(object sender, RoutedEventArgs e)
+    private void HandleGoToProfileClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.GoToProfile();
     }
 
-    private void HandleGoToCompanyProfileClick(object sender, RoutedEventArgs e)
+    private void HandleGoToCompanyProfileClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.GoToCompanyProfile();
     }
 
-    private void HandleGoToJobPostClick(object sender, RoutedEventArgs e)
+    private void HandleGoToJobPostClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.GoToJobPost();
     }
 
-    private void HandleBlockButtonClick(object sender, RoutedEventArgs e)
+    private void HandleBlockButtonClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.BlockUser();
     }
 
-    private void HandleUnblockButtonClick(object sender, RoutedEventArgs e)
+    private void HandleUnblockButtonClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.UnblockUser();
     }
 
-    private async void HandleDeleteChatButtonClick(object sender, RoutedEventArgs e)
+    private async void HandleDeleteChatButtonClick(object sender, RoutedEventArgs eventArgs)
     {
         var dialog = new ContentDialog
         {
@@ -288,15 +307,20 @@ public sealed partial class ChatPageView : Page
         return false;
     }
 
-    private async void MessageList_ItemClick(object sender, ItemClickEventArgs e)
+    private async void MessageList_ItemClick(object sender, ItemClickEventArgs eventArgs)
     {
+<<<<<<< Updated upstream
         if (e.ClickedItem is not Message message)
+=======
+        if (eventArgs.ClickedItem is not Message message)
+        {
+>>>>>>> Stashed changes
             return;
 
         await DownloadAttachmentAsync(message);
     }
 
-    private async void AttachmentMessage_Click(object sender, RoutedEventArgs e)
+    private async void AttachmentMessage_Click(object sender, RoutedEventArgs eventArgs)
     {
         if (sender is not Button { Tag: Message message })
             return;
@@ -342,17 +366,17 @@ public sealed partial class ChatPageView : Page
 
             File.Copy(sourcePath, file.Path, overwrite: true);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            _viewModel.ErrorMessage = ex.Message;
+            _viewModel.ErrorMessage = exception.Message;
         }
     }
 
-    private void Messages_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void Messages_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs eventArgs)
     {
-        if (e.Action == NotifyCollectionChangedAction.Add ||
-            e.Action == NotifyCollectionChangedAction.Reset ||
-            e.Action == NotifyCollectionChangedAction.Replace)
+        if (eventArgs.Action == NotifyCollectionChangedAction.Add ||
+            eventArgs.Action == NotifyCollectionChangedAction.Reset ||
+            eventArgs.Action == NotifyCollectionChangedAction.Replace)
         {
             QueueScrollToLatestMessage();
         }

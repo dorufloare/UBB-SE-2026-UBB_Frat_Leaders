@@ -71,10 +71,10 @@ namespace matchmaking
                     ? string.Empty
                     : "Database ping returned an unexpected value.";
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 IsDatabaseConnectionAvailable = false;
-                DatabaseConnectionError = ex.Message;
+                DatabaseConnectionError = exception.Message;
             }
 
             return IsDatabaseConnectionAvailable;
@@ -84,7 +84,7 @@ namespace matchmaking
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs launchEventArgs)
         {
             _window = new MainWindow();
             MainWindow = _window;

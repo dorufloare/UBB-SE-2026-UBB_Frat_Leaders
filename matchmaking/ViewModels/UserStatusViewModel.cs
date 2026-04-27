@@ -188,7 +188,7 @@ public class UserStatusViewModel : ObservableObject
 
    
 
-    private void OnSidebarCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void OnSidebarCollectionChanged(object? sender, NotifyCollectionChangedEventArgs eventArgs)
     {
         OnPropertyChanged(nameof(HasUnderscoredSkills));
         OnPropertyChanged(nameof(HasSidebarMissingSkills));

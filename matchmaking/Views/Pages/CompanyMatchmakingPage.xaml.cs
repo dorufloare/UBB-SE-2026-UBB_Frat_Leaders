@@ -48,43 +48,51 @@ public sealed partial class CompanyMatchmakingPage : Page
         Loaded += OnLoadedAsync;
     }
 
-    private void OnLoadedAsync(object sender, RoutedEventArgs e)
+    private void OnLoadedAsync(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.LoadApplicants();
         UpdateView();
     }
 
+<<<<<<< Updated upstream
     private void OnAdvanceClick(object sender, RoutedEventArgs e)
+=======
+    private async void OnAdvanceClick(object sender, RoutedEventArgs eventArgs)
+>>>>>>> Stashed changes
     {
         _viewModel.AdvanceApplicant();
         UpdateView();
     }
 
+<<<<<<< Updated upstream
     private void OnSkipClick(object sender, RoutedEventArgs e)
+=======
+    private async void OnSkipClick(object sender, RoutedEventArgs eventArgs)
+>>>>>>> Stashed changes
     {
         _viewModel.SkipApplicant();
         UpdateView();
     }
 
-    private void OnUndoClick(object sender, RoutedEventArgs e)
+    private void OnUndoClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.UndoLastAction();
         UpdateView();
     }
 
-    private void OnExpandClick(object sender, RoutedEventArgs e)
+    private void OnExpandClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.ExpandCard();
         UpdateView();
     }
 
-    private void OnCollapseClick(object sender, RoutedEventArgs e)
+    private void OnCollapseClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.CollapseCard();
         UpdateView();
     }
 
-    private void OnRefreshClick(object sender, RoutedEventArgs e)
+    private void OnRefreshClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.LoadApplicants();
         UpdateView();

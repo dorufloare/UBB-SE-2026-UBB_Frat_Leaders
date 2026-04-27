@@ -26,6 +26,7 @@ public class ChatService
     private readonly CompanyRepository _companyRepository;
 
     public ChatService(
+<<<<<<< Updated upstream
         SqlChatRepository chatRepo,
         SqlMessageRepository messageRepo,
         UserRepository userRepo,
@@ -35,6 +36,19 @@ public class ChatService
         _messageRepository = messageRepo;
         _userRepository = userRepo;
         _companyRepository = companyRepo;
+=======
+        IChatRepository chatRepository,
+        IMessageRepository messageRepository,
+        IUserRepository userRepository,
+        ICompanyRepository companyRepository,
+        Func<string>? attachmentRootPathProvider = null)
+    {
+        _chatRepository = chatRepository;
+        _messageRepository = messageRepository;
+        _userRepository = userRepository;
+        _companyRepository = companyRepository;
+        _attachmentRootPathProvider = attachmentRootPathProvider ?? GetDefaultAttachmentRootPath;
+>>>>>>> Stashed changes
     }
 
     public Chat FindOrCreateUserCompanyChat(int userId, int companyId, int? jobId = null)

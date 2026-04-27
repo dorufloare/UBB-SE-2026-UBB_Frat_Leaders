@@ -122,9 +122,13 @@ public class SkillGapViewModel : ObservableObject
         _ = LoadData();
     }
 
+<<<<<<< Updated upstream
   
 
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+=======
+    private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs eventArgs)
+>>>>>>> Stashed changes
     {
         OnPropertyChanged(nameof(HasSkillsToImprove));
         OnPropertyChanged(nameof(HasMissingSkills));
