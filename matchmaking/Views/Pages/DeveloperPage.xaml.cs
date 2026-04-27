@@ -35,7 +35,7 @@ public sealed partial class DeveloperPage : Page
         Unloaded += OnUnloaded;
     }
 
-    private async void NewPostButton_Click(object sender, RoutedEventArgs e)
+    private async void NewPostButton_Click(object sender, RoutedEventArgs eventArgs)
     {
         _parameterComboBox = new ComboBox
         {
@@ -83,12 +83,12 @@ public sealed partial class DeveloperPage : Page
         await dialog.ShowAsync();
     }
 
-    private void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    private void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs eventArgs)
     {
         if (_parameterComboBox.SelectedItem is not ComboBoxItem selectedItem)
         {
             ShowDialogError("Please select a parameter or keyword type.");
-            args.Cancel = true;
+            eventArgs.Cancel = true;
             return;
         }
 
@@ -100,7 +100,7 @@ public sealed partial class DeveloperPage : Page
         if (error != null)
         {
             ShowDialogError(error);
-            args.Cancel = true;
+            eventArgs.Cancel = true;
             return;
         }
 
@@ -108,17 +108,17 @@ public sealed partial class DeveloperPage : Page
         developerViewModel.AddDeveloperPost(tag, rawValue);
     }
 
-    private void OnRefreshTimerTick(object? sender, object e)
+    private void OnRefreshTimerTick(object? sender, object eventArgs)
     {
         ((DeveloperViewModel)DataContext).RefreshPosts();
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
+    private void OnLoaded(object sender, RoutedEventArgs eventArgs)
     {
         _refreshTimer.Start();
     }
 
-    private void OnUnloaded(object sender, RoutedEventArgs e)
+    private void OnUnloaded(object sender, RoutedEventArgs eventArgs)
     {
         _refreshTimer.Stop();
     }

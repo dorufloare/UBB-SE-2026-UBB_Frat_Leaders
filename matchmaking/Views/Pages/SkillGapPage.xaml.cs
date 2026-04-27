@@ -18,7 +18,7 @@ public sealed partial class SkillGapPage : Page
         Loaded += OnLoaded;
     }
 
-    private void BackToStatus_Click(object sender, RoutedEventArgs e)
+    private void BackToStatus_Click(object sender, RoutedEventArgs eventArgs)
     {
         if (Frame.CanGoBack)
         {
@@ -26,10 +26,10 @@ public sealed partial class SkillGapPage : Page
         }
     }
 
-    private void RefreshButton_Click(object sender, RoutedEventArgs e)
+    private void RefreshButton_Click(object sender, RoutedEventArgs eventArgs)
         => _vm.Refresh();
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
+    private void OnLoaded(object sender, RoutedEventArgs eventArgs)
     {
         _ = _vm.LoadData();
     }

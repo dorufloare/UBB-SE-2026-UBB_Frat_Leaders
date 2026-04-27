@@ -41,7 +41,7 @@ public sealed partial class UserStatusJobDetailPage : Page
         SkillList.ItemsSource = skillLabels;
     }
 
-    private void Close_Click(object sender, RoutedEventArgs e)
+    private void Close_Click(object sender, RoutedEventArgs eventArgs)
     {
         if (Frame.CanGoBack)
         {

@@ -370,19 +370,19 @@ public sealed class UserRecommendationViewModelTests
         var user = TestDataFactory.CreateUser();
         var session = new SessionContext();
         session.LoginAsUser(user.UserId);
-        var throwingRepo = new ThrowingRecommendationRepository(throwOnInsert: true, throwOnRemove: true, allowFirstInsert: false);
+        var throwingRepository = new ThrowingRecommendationRepository(throwOnInsert: true, throwOnRemove: true, allowFirstInsert: false);
         var job = TestDataFactory.CreateJob();
-        var jobRepo = new FakeJobRepository(new[] { job });
+        var jobRepository = new FakeJobRepository(new[] { job });
         var viewModel = CreateViewModelWithCustomService(
             new UserRecommendationService(
                 new FakeUserRepository(new[] { user }),
-                jobRepo,
+                jobRepository,
                 new FakeSkillRepository(new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 90) }),
                 new FakeJobSkillRepository(new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 80) }),
                 new FakeCompanyRepository(new[] { TestDataFactory.CreateCompany(job.CompanyId) }),
-                new MatchService(new FakeMatchRepository(Array.Empty<Match>()), new JobService(jobRepo)),
-                throwingRepo,
-                new CooldownService(throwingRepo, TimeSpan.FromHours(1)),
+                new MatchService(new FakeMatchRepository(Array.Empty<Match>()), new JobService(jobRepository)),
+                throwingRepository,
+                new CooldownService(throwingRepository, TimeSpan.FromHours(1)),
                 new RecommendationAlgorithm()),
             session);
 
@@ -425,18 +425,18 @@ public sealed class UserRecommendationViewModelTests
         var job = TestDataFactory.CreateJob();
         var session = new SessionContext();
         session.LoginAsUser(user.UserId);
-        var repo = new ThrowingRecommendationRepository(throwOnInsert: true, throwOnRemove: false, allowFirstInsert: true);
-        var jobRepo = new FakeJobRepository(new[] { job });
+        var throwingRepository = new ThrowingRecommendationRepository(throwOnInsert: true, throwOnRemove: false, allowFirstInsert: true);
+        var jobRepository = new FakeJobRepository(new[] { job });
         var viewModel = CreateViewModelWithCustomService(
             new UserRecommendationService(
                 new FakeUserRepository(new[] { user }),
-                jobRepo,
+                jobRepository,
                 new FakeSkillRepository(new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 90) }),
                 new FakeJobSkillRepository(new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 80) }),
                 new FakeCompanyRepository(new[] { TestDataFactory.CreateCompany(job.CompanyId) }),
-                new MatchService(new FakeMatchRepository(Array.Empty<Match>()), new JobService(jobRepo)),
-                repo,
-                new CooldownService(repo, TimeSpan.FromHours(1)),
+                new MatchService(new FakeMatchRepository(Array.Empty<Match>()), new JobService(jobRepository)),
+                throwingRepository,
+                new CooldownService(throwingRepository, TimeSpan.FromHours(1)),
                 new RecommendationAlgorithm()),
             session);
 
@@ -454,18 +454,18 @@ public sealed class UserRecommendationViewModelTests
         var job = TestDataFactory.CreateJob();
         var session = new SessionContext();
         session.LoginAsUser(user.UserId);
-        var repo = new ThrowingRecommendationRepository(throwOnInsert: false, throwOnRemove: true, allowFirstInsert: false);
-        var jobRepo = new FakeJobRepository(new[] { job });
+        var throwingRepository = new ThrowingRecommendationRepository(throwOnInsert: false, throwOnRemove: true, allowFirstInsert: false);
+        var jobRepository = new FakeJobRepository(new[] { job });
         var viewModel = CreateViewModelWithCustomService(
             new UserRecommendationService(
                 new FakeUserRepository(new[] { user }),
-                jobRepo,
+                jobRepository,
                 new FakeSkillRepository(new[] { TestDataFactory.CreateSkill(user.UserId, 1, "C#", 90) }),
                 new FakeJobSkillRepository(new[] { TestDataFactory.CreateJobSkill(job.JobId, 1, "C#", 80) }),
                 new FakeCompanyRepository(new[] { TestDataFactory.CreateCompany(job.CompanyId) }),
-                new MatchService(new FakeMatchRepository(Array.Empty<Match>()), new JobService(jobRepo)),
-                repo,
-                new CooldownService(repo, TimeSpan.FromHours(1)),
+                new MatchService(new FakeMatchRepository(Array.Empty<Match>()), new JobService(jobRepository)),
+                throwingRepository,
+                new CooldownService(throwingRepository, TimeSpan.FromHours(1)),
                 new RecommendationAlgorithm()),
             session);
 

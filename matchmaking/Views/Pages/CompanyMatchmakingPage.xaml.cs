@@ -54,13 +54,13 @@ public sealed partial class CompanyMatchmakingPage : Page
         Loaded += OnLoadedAsync;
     }
 
-    private void OnLoadedAsync(object sender, RoutedEventArgs e)
+    private void OnLoadedAsync(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.LoadApplicants();
         UpdateView();
     }
 
-    private async void OnAdvanceClick(object sender, RoutedEventArgs e)
+    private async void OnAdvanceClick(object sender, RoutedEventArgs eventArgs)
     {
         await AnimateCurrentCardAsync(moveRight: true);
         _viewModel.AdvanceApplicant();
@@ -68,7 +68,7 @@ public sealed partial class CompanyMatchmakingPage : Page
         UpdateView();
     }
 
-    private async void OnSkipClick(object sender, RoutedEventArgs e)
+    private async void OnSkipClick(object sender, RoutedEventArgs eventArgs)
     {
         await AnimateCurrentCardAsync(moveRight: false);
         _viewModel.SkipApplicant();
@@ -76,25 +76,25 @@ public sealed partial class CompanyMatchmakingPage : Page
         UpdateView();
     }
 
-    private void OnUndoClick(object sender, RoutedEventArgs e)
+    private void OnUndoClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.UndoLastAction();
         UpdateView();
     }
 
-    private void OnExpandClick(object sender, RoutedEventArgs e)
+    private void OnExpandClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.ExpandCard();
         UpdateView();
     }
 
-    private void OnCollapseClick(object sender, RoutedEventArgs e)
+    private void OnCollapseClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.CollapseCard();
         UpdateView();
     }
 
-    private void OnRefreshClick(object sender, RoutedEventArgs e)
+    private void OnRefreshClick(object sender, RoutedEventArgs eventArgs)
     {
         _viewModel.LoadApplicants();
         UpdateView();

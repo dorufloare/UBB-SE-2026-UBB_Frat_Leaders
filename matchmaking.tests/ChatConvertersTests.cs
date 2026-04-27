@@ -756,9 +756,9 @@ public class ChatNameConverterTests
     [Fact]
     public void Convert_ObjectWithNameProperty_ReturnsNameValue()
     {
-        var obj = new { Name = "Test Name" };
+        var anonymousObject = new { Name = "Test Name" };
 
-        var result = converter.Convert(obj, typeof(string), null, string.Empty);
+        var result = converter.Convert(anonymousObject, typeof(string), null, string.Empty);
 
         result.Should().Be("Test Name");
     }

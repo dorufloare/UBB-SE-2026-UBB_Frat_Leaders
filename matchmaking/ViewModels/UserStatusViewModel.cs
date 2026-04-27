@@ -203,7 +203,7 @@ public class UserStatusViewModel : ObservableObject
         return _jobSkillService.GetByJobId(jobId);
     }
 
-    private void OnSidebarCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void OnSidebarCollectionChanged(object? sender, NotifyCollectionChangedEventArgs eventArgs)
     {
         OnPropertyChanged(nameof(HasUnderscoredSkills));
         OnPropertyChanged(nameof(HasSidebarMissingSkills));

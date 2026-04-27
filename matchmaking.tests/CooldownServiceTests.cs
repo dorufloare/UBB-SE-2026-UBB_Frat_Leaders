@@ -77,7 +77,7 @@ public sealed class CooldownServiceTests
             this.recommendations = recommendations;
         }
 
-        public Recommendation? GetById(int recommendationId) => recommendations.FirstOrDefault(r => r.RecommendationId == recommendationId);
+        public Recommendation? GetById(int recommendationId) => recommendations.FirstOrDefault(recommendation => recommendation.RecommendationId == recommendationId);
         public IReadOnlyList<Recommendation> GetAll() => recommendations;
         public void Add(Recommendation recommendation)
         {
@@ -91,7 +91,7 @@ public sealed class CooldownServiceTests
         {
         }
 
-        public Recommendation? GetLatestByUserIdAndJobId(int userId, int jobId) => recommendations.Where(r => r.UserId == userId && r.JobId == jobId).OrderByDescending(r => r.Timestamp).FirstOrDefault();
+        public Recommendation? GetLatestByUserIdAndJobId(int userId, int jobId) => recommendations.Where(recommendation => recommendation.UserId == userId && recommendation.JobId == jobId).OrderByDescending(recommendation => recommendation.Timestamp).FirstOrDefault();
         public int InsertReturningId(Recommendation recommendation) => 1;
     }
 }

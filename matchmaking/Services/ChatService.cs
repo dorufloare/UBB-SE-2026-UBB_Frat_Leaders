@@ -27,16 +27,16 @@ public class ChatService : IChatService
     private readonly Func<string> _attachmentRootPathProvider;
 
     public ChatService(
-        IChatRepository chatRepo,
-        IMessageRepository messageRepo,
-        IUserRepository userRepo,
-        ICompanyRepository companyRepo,
+        IChatRepository chatRepository,
+        IMessageRepository messageRepository,
+        IUserRepository userRepository,
+        ICompanyRepository companyRepository,
         Func<string>? attachmentRootPathProvider = null)
     {
-        _chatRepository = chatRepo;
-        _messageRepository = messageRepo;
-        _userRepository = userRepo;
-        _companyRepository = companyRepo;
+        _chatRepository = chatRepository;
+        _messageRepository = messageRepository;
+        _userRepository = userRepository;
+        _companyRepository = companyRepository;
         _attachmentRootPathProvider = attachmentRootPathProvider ?? GetDefaultAttachmentRootPath;
     }
 

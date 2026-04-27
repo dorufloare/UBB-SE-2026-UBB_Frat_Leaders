@@ -23,7 +23,7 @@ public sealed partial class CompanyProfilePage : Page
         _viewModel.Load(e.Parameter is int companyId ? companyId : 0);
     }
 
-    private void Back_Click(object sender, RoutedEventArgs e)
+    private void Back_Click(object sender, RoutedEventArgs eventArgs)
     {
         if (Frame.CanGoBack)
         {

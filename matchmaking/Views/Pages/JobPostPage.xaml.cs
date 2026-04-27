@@ -23,7 +23,7 @@ public sealed partial class JobPostPage : Page
         _viewModel.Load(e.Parameter is int jobId ? jobId : 0);
     }
 
-    private void Back_Click(object sender, RoutedEventArgs e)
+    private void Back_Click(object sender, RoutedEventArgs eventArgs)
     {
         if (Frame.CanGoBack)
         {

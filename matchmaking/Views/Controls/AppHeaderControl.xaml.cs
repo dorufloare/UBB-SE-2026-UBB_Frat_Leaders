@@ -19,25 +19,25 @@ public sealed partial class AppHeaderControl : UserControl
         DataContextChanged += OnDataContextChanged;
     }
 
-    private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+    private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs eventArgs)
     {
-        if (args.NewValue is ShellViewModel vm)
+        if (eventArgs.NewValue is ShellViewModel viewModel)
         {
-            vm.PropertyChanged += OnShellViewModelPropertyChanged;
-            UpdateActiveButton(vm.ActivePage);
+            viewModel.PropertyChanged += OnShellViewModelPropertyChanged;
+            UpdateActiveButton(viewModel.ActivePage);
         }
     }
 
-    private void OnShellViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnShellViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs eventArgs)
     {
-        if (e.PropertyName != nameof(ShellViewModel.ActivePage))
+        if (eventArgs.PropertyName != nameof(ShellViewModel.ActivePage))
         {
             return;
         }
 
-        if (DataContext is ShellViewModel vm)
+        if (DataContext is ShellViewModel viewModel)
         {
-            UpdateActiveButton(vm.ActivePage);
+            UpdateActiveButton(viewModel.ActivePage);
         }
     }
 
@@ -53,27 +53,27 @@ public sealed partial class AppHeaderControl : UserControl
     }
 
     private static void SetButtonState(
-        Button btn, bool isActive,
+        Button button, bool isActive,
         SolidColorBrush white, SolidColorBrush black, SolidColorBrush transparent)
     {
-        btn.Background = isActive ? white : transparent;
-        btn.Foreground = isActive ? black : white;
-        btn.FontWeight = isActive
+        button.Background = isActive ? white : transparent;
+        button.Foreground = isActive ? black : white;
+        button.FontWeight = isActive
             ? Microsoft.UI.Text.FontWeights.SemiBold
             : Microsoft.UI.Text.FontWeights.Normal;
     }
 
-    private void Recommendations_Click(object sender, RoutedEventArgs e)
+    private void Recommendations_Click(object sender, RoutedEventArgs eventArgs)
     {
         RecommendationsRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    private void MyStatus_Click(object sender, RoutedEventArgs e)
+    private void MyStatus_Click(object sender, RoutedEventArgs eventArgs)
     {
         MyStatusRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    private void Chat_Click(object sender, RoutedEventArgs e)
+    private void Chat_Click(object sender, RoutedEventArgs eventArgs)
     {
         ChatRequested?.Invoke(this, EventArgs.Empty);
     }

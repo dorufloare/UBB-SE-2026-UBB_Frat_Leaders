@@ -44,7 +44,7 @@ public sealed partial class CompanyStatusPage : Page
         Loaded += OnLoadedAsync;
     }
 
-    private async void OnLoadedAsync(object sender, RoutedEventArgs e)
+    private async void OnLoadedAsync(object sender, RoutedEventArgs eventArgs)
     {
         if (App.Session.CurrentMode != AppMode.CompanyMode || App.Session.CurrentCompanyId is null)
         {
@@ -79,7 +79,7 @@ public sealed partial class CompanyStatusPage : Page
         }
     }
 
-    private async void OnReviewApplicantClick(object sender, RoutedEventArgs e)
+    private async void OnReviewApplicantClick(object sender, RoutedEventArgs eventArgs)
     {
         if (sender is not Button reviewButton)
         {
@@ -102,7 +102,7 @@ public sealed partial class CompanyStatusPage : Page
         ResetValidationVisuals();
     }
 
-    private async void OnSubmitDecisionClickAsync(object sender, RoutedEventArgs e)
+    private async void OnSubmitDecisionClickAsync(object sender, RoutedEventArgs eventArgs)
     {
         ResetValidationVisuals();
 
@@ -124,7 +124,7 @@ public sealed partial class CompanyStatusPage : Page
         ShowApplicantList();
     }
 
-    private async void OnCancelEvaluationClickAsync(object sender, RoutedEventArgs e)
+    private async void OnCancelEvaluationClickAsync(object sender, RoutedEventArgs eventArgs)
     {
         var confirmed = await ShowConfirmationAsync(
             "Cancel Evaluation",

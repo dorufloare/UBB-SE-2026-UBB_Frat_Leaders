@@ -81,11 +81,11 @@ public class SkillRepositoryTests
         var result = repository.GetDistinctSkillCatalog();
 
         result.Should().HaveCount(2);
-        result.Select(s => s.SkillId).Distinct().Count().Should().Be(result.Count);
+        result.Select(skill => skill.SkillId).Distinct().Count().Should().Be(result.Count);
         result.Should().Contain(item => item.SkillId == 1000 && item.Name == "Zeta Test Skill");
         result.Should().Contain(item => item.SkillId == 1001 && item.Name == "Alpha Test Skill");
 
-        var orderedByName = result.OrderBy(s => s.Name).ToList();
+        var orderedByName = result.OrderBy(skill => skill.Name).ToList();
         result.Should().Equal(orderedByName);
     }
 

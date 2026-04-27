@@ -32,13 +32,13 @@ public sealed partial class UserStatusPage : Page
         Loaded += OnLoaded;
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+    private async void OnLoaded(object sender, RoutedEventArgs eventArgs)
     {
         SetActiveFilter(FilterAll);
         await _userStatusViewModel.LoadMatches();
     }
 
-    private void Filter_Click(object sender, RoutedEventArgs e)
+    private void Filter_Click(object sender, RoutedEventArgs eventArgs)
     {
         if (sender is not Button filterButton)
         {
@@ -68,7 +68,8 @@ public sealed partial class UserStatusPage : Page
         }
     }
 
-    private async void ViewJobDetails_Click(object sender, RoutedEventArgs e)
+
+    private async void ViewJobDetails_Click(object sender, RoutedEventArgs eventArgs)
     {
         if (sender is Button { Tag: ApplicationCardModel model })
         {
@@ -82,16 +83,17 @@ public sealed partial class UserStatusPage : Page
         }
     }
 
-    private void ViewSkillGap_Click(object sender, RoutedEventArgs e)
+    private void ViewSkillGap_Click(object sender, RoutedEventArgs eventArgs)
         => Frame.Navigate(typeof(SkillGapPage));
 
-    private void SkillInsightsButton_Click(object sender, RoutedEventArgs e)
+
+    private void SkillInsightsButton_Click(object sender, RoutedEventArgs eventArgs)
         => Frame.Navigate(typeof(SkillGapPage));
 
-    private void RefreshButton_Click(object sender, RoutedEventArgs e)
+    private void RefreshButton_Click(object sender, RoutedEventArgs eventArgs)
         => _userStatusViewModel.Refresh();
 
-    private void GoToRecommendationsButton_Click(object sender, RoutedEventArgs e)
+    private void GoToRecommendationsButton_Click(object sender, RoutedEventArgs eventArgs)
     {
         Frame?.Navigate(typeof(UserRecommendationPageView));
     }

@@ -138,12 +138,12 @@ public sealed partial class ShellView : UserControl
         return true;
     }
 
-    private void OnRecommendationsRequested(object? sender, EventArgs e)
+    private void OnRecommendationsRequested(object? sender, EventArgs eventArgs)
         => NavigateToRecommendations();
 
-    private void OnMyStatusRequested(object? sender, EventArgs e)
+    private void OnMyStatusRequested(object? sender, EventArgs eventArgs)
         => NavigateToMyStatus();
 
-    private void OnChatRequested(object? sender, EventArgs e)
+    private void OnChatRequested(object? sender, EventArgs eventArgs)
         => NavigateToChat();
 }
