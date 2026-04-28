@@ -133,7 +133,6 @@ public class SkillGapViewModel : ObservableObject
         _ = LoadData();
     }
 
-
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs eventArgs)
     {
         OnPropertyChanged(nameof(HasSkillsToImprove));

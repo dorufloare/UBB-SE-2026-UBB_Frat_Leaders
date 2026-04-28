@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Page
     x:Class="matchmaking.Views.Pages.ChatPageView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:matchmaking.Domain.Enums"
     mc:Ignorable="d"
-    Background="{StaticResource ChatColorWhite}">
+    Background="#FFFFFF">
 
     <Page.Resources>
         <SolidColorBrush x:Key="ChatColorWhite" Color="#FFFFFF" />
@@ -226,7 +226,7 @@
 
     
     <Grid ColumnDefinitions="288,*"
-          Background="{StaticResource ChatColorWhite}"
+          Background="#FFFFFF"
           RequestedTheme="Light">
 
         <Grid Grid.Column="0"
@@ -241,7 +241,7 @@
 
             
             <Border Grid.Row="0"
-                    Background="{StaticResource ChatColorWhite}"
+                    Background="#FFFFFF"
                     BorderBrush="{StaticResource ChatColorBorderLight}"
                     BorderThickness="0,0,0,0.5"
                     Padding="16,18,16,12">
@@ -279,13 +279,13 @@
 
             
             <Border Grid.Row="1"
-                    Background="{StaticResource ChatColorWhite}"
+                    Background="#FFFFFF"
                     BorderBrush="{StaticResource ChatColorBorderLight}"
                     BorderThickness="0,0,0,0.5"
                     Padding="12,10">
                 <AutoSuggestBox x:Name="SearchBox"
                                 Text="{Binding SearchQuery, Mode=TwoWay}"
-                                PlaceholderText="Search conversations…"
+                                PlaceholderText="Search conversationsâ€¦"
                                 QueryIcon="Find"
                                 TextChanged="SearchBox_TextChanged"
                                 SuggestionChosen="SearchBox_SuggestionChosen"
@@ -404,7 +404,7 @@
        
         <Grid Grid.Column="1"
               RowDefinitions="Auto,*,Auto,Auto"
-              Background="{StaticResource ChatColorWhite}">
+              Background="#FFFFFF">
 
             
             <StackPanel Grid.Row="0" Grid.RowSpan="4"
@@ -429,7 +429,7 @@
             
             <Border Grid.Row="0"
                     Visibility="{Binding SelectedChat, Converter={StaticResource ObjectToVisibilityConverter}}"
-                    Background="{StaticResource ChatColorWhite}"
+                    Background="#FFFFFF"
                     BorderBrush="{StaticResource ChatColorBorderLight}"
                     BorderThickness="0,0,0,0.5"
                     Padding="20,14">
@@ -626,7 +626,7 @@
                                 </Border>
 
                                 <StackPanel Spacing="3">
-                                    <Border Background="{StaticResource ChatColorWhite}"
+                                    <Border Background="#FFFFFF"
                                             BorderBrush="{StaticResource ChatColorBorderLight}"
                                             BorderThickness="0.5"
                                             CornerRadius="14,14,14,4"
@@ -640,7 +640,7 @@
                                                    LineHeight="20" />
                                     </Border>
 
-                                    <Border Background="{StaticResource ChatColorWhite}"
+                                    <Border Background="#FFFFFF"
                                             BorderBrush="{StaticResource ChatColorBorderLight}"
                                             BorderThickness="0.5"
                                             CornerRadius="14,14,14,4"
@@ -769,7 +769,7 @@
           
             <Border Grid.Row="2"
                     Visibility="{Binding SelectedChat, Converter={StaticResource ObjectToVisibilityConverter}}"
-                    Background="{StaticResource ChatColorWhite}"
+                    Background="#FFFFFF"
                     BorderBrush="{StaticResource ChatColorBorderLight}"
                     BorderThickness="0,0.5,0,0"
                     Padding="16,12,16,14">
@@ -800,7 +800,7 @@
                         <TextBox Grid.Column="1"
                                  x:Name="MessageInput"
                                  Style="{StaticResource ComposeInputStyle}"
-                                 PlaceholderText="Type a message…"
+                                 PlaceholderText="Type a messageâ€¦"
                                  Text="{Binding MessageText, Mode=TwoWay}"
                                  KeyDown="MessageInput_KeyDown"
                                  IsEnabled="{Binding SelectedChat.IsBlocked, Converter={StaticResource InverseBoolConverter}}" />

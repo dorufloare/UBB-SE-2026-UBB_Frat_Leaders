@@ -68,7 +68,6 @@ public sealed partial class UserStatusPage : Page
         }
     }
 
-
     private async void ViewJobDetails_Click(object sender, RoutedEventArgs eventArgs)
     {
         if (sender is Button { Tag: ApplicationCardModel model })
@@ -85,7 +84,6 @@ public sealed partial class UserStatusPage : Page
 
     private void ViewSkillGap_Click(object sender, RoutedEventArgs eventArgs)
         => Frame.Navigate(typeof(SkillGapPage));
-
 
     private void SkillInsightsButton_Click(object sender, RoutedEventArgs eventArgs)
         => Frame.Navigate(typeof(SkillGapPage));

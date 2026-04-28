@@ -244,20 +244,27 @@ public class ChatViewModel : ObservableObject
             return;
         }
 
-        var chats = _sessionContext.CurrentMode == AppMode.UserMode
-            ? _chatService.GetChatsForUser(callerId)
-            : _chatService.GetChatsForCompany(callerId);
-
-        Chats.Clear();
-        foreach (var chat in chats)
+        try
         {
-            PopulateChatDisplayData(chat);
-            Chats.Add(chat);
+            var chats = _sessionContext.CurrentMode == AppMode.UserMode
+                ? _chatService.GetChatsForUser(callerId)
+                : _chatService.GetChatsForCompany(callerId);
+
+            Chats.Clear();
+            foreach (var chat in chats)
+            {
+                PopulateChatDisplayData(chat);
+                Chats.Add(chat);
+            }
+
+            if (_sessionContext.CurrentMode == AppMode.UserMode)
+            {
+                ApplyTabFilter();
+            }
         }
-
-        if (_sessionContext.CurrentMode == AppMode.UserMode)
+        catch (Exception exception)
         {
-            ApplyTabFilter();
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -308,38 +315,45 @@ public class ChatViewModel : ObservableObject
             return;
         }
 
-        var messages = _chatService.GetMessages(SelectedChat.ChatId, currentCallerId);
-
-        _chatService.MarkMessageAsRead(SelectedChat.ChatId, currentCallerId);
-
-        for (var messageIndex = 0; messageIndex < messages.Count; messageIndex++)
+        try
         {
-            if (messages[messageIndex].SenderId != currentCallerId)
+            var messages = _chatService.GetMessages(SelectedChat.ChatId, currentCallerId);
+
+            _chatService.MarkMessageAsRead(SelectedChat.ChatId, currentCallerId);
+
+            for (var messageIndex = 0; messageIndex < messages.Count; messageIndex++)
             {
-                messages[messageIndex].IsRead = true;
+                if (messages[messageIndex].SenderId != currentCallerId)
+                {
+                    messages[messageIndex].IsRead = true;
+                }
             }
-        }
 
-        ApplyReadReceiptVisibility(messages);
-        Messages.Clear();
-        foreach (var message in messages)
+            ApplyReadReceiptVisibility(messages);
+            Messages.Clear();
+            foreach (var message in messages)
+            {
+                message.SenderInitials = ResolveSenderInitials(message.SenderId);
+                Messages.Add(message);
+            }
+
+            UpdateChatPreviewFromMessages(SelectedChat, messages, currentCallerId);
+
+            if (SelectedChat.JobId.HasValue)
+            {
+                LinkedJob = _jobService.GetById(SelectedChat.JobId.Value);
+            }
+            else
+            {
+                LinkedJob = null;
+            }
+
+            UpdateVisibility();
+        }
+        catch (Exception exception)
         {
-            message.SenderInitials = ResolveSenderInitials(message.SenderId);
-            Messages.Add(message);
+            ErrorMessage = exception.Message;
         }
-
-        UpdateChatPreviewFromMessages(SelectedChat, messages, currentCallerId);
-
-        if (SelectedChat.JobId.HasValue)
-        {
-            LinkedJob = _jobService.GetById(SelectedChat.JobId.Value);
-        }
-        else
-        {
-            LinkedJob = null;
-        }
-
-        UpdateVisibility();
     }
 
     public void SendMessage()
@@ -424,81 +438,88 @@ public class ChatViewModel : ObservableObject
             return;
         }
 
-        var latestChats = _sessionContext.CurrentMode == AppMode.UserMode
-            ? _chatService.GetChatsForUser(currentCallerId)
-            : _chatService.GetChatsForCompany(currentCallerId);
-
-        foreach (var chat in latestChats)
+        try
         {
-            PopulateChatDisplayData(chat);
-        }
+            var latestChats = _sessionContext.CurrentMode == AppMode.UserMode
+                ? _chatService.GetChatsForUser(currentCallerId)
+                : _chatService.GetChatsForCompany(currentCallerId);
 
-        var chatsChanged = MergeChats(latestChats);
-
-        if (_sessionContext.CurrentMode == AppMode.UserMode && chatsChanged)
-        {
-            ApplyTabFilter();
-        }
-
-        if (!selectedChatId.HasValue)
-        {
-            return;
-        }
-
-        var refreshedSelectedChat = FindChatById(Chats, selectedChatId.Value);
-        if (refreshedSelectedChat is null)
-        {
-            SelectedChat = null;
-            Messages.Clear();
-            UpdateVisibility();
-            return;
-        }
-
-        if (SelectedChat?.ChatId != refreshedSelectedChat.ChatId || !ReferenceEquals(SelectedChat, refreshedSelectedChat))
-        {
-            SelectedChat = refreshedSelectedChat;
-        }
-
-        var latestMessages = _chatService.GetMessages(refreshedSelectedChat.ChatId, currentCallerId);
-
-        var hasUnreadFromOtherParty = HasUnreadFromOtherParty(latestMessages, currentCallerId);
-        if (hasUnreadFromOtherParty)
-        {
-            _chatService.MarkMessageAsRead(refreshedSelectedChat.ChatId, currentCallerId);
-
-            for (var latestMessageIndex = 0; latestMessageIndex < latestMessages.Count; latestMessageIndex++)
+            foreach (var chat in latestChats)
             {
-                if (latestMessages[latestMessageIndex].SenderId != currentCallerId)
+                PopulateChatDisplayData(chat);
+            }
+
+            var chatsChanged = MergeChats(latestChats);
+
+            if (_sessionContext.CurrentMode == AppMode.UserMode && chatsChanged)
+            {
+                ApplyTabFilter();
+            }
+
+            if (!selectedChatId.HasValue)
+            {
+                return;
+            }
+
+            var refreshedSelectedChat = FindChatById(Chats, selectedChatId.Value);
+            if (refreshedSelectedChat is null)
+            {
+                SelectedChat = null;
+                Messages.Clear();
+                UpdateVisibility();
+                return;
+            }
+
+            if (SelectedChat?.ChatId != refreshedSelectedChat.ChatId || !ReferenceEquals(SelectedChat, refreshedSelectedChat))
+            {
+                SelectedChat = refreshedSelectedChat;
+            }
+
+            var latestMessages = _chatService.GetMessages(refreshedSelectedChat.ChatId, currentCallerId);
+
+            var hasUnreadFromOtherParty = HasUnreadFromOtherParty(latestMessages, currentCallerId);
+            if (hasUnreadFromOtherParty)
+            {
+                _chatService.MarkMessageAsRead(refreshedSelectedChat.ChatId, currentCallerId);
+
+                for (var latestMessageIndex = 0; latestMessageIndex < latestMessages.Count; latestMessageIndex++)
                 {
-                    latestMessages[latestMessageIndex].IsRead = true;
+                    if (latestMessages[latestMessageIndex].SenderId != currentCallerId)
+                    {
+                        latestMessages[latestMessageIndex].IsRead = true;
+                    }
                 }
             }
-        }
 
-        ApplyReadReceiptVisibility(latestMessages);
+            ApplyReadReceiptVisibility(latestMessages);
 
-        if (HaveMessagesChanged(latestMessages))
-        {
-            Messages.Clear();
-            foreach (var message in latestMessages)
+            if (HaveMessagesChanged(latestMessages))
             {
-                message.SenderInitials = ResolveSenderInitials(message.SenderId);
-                Messages.Add(message);
+                Messages.Clear();
+                foreach (var message in latestMessages)
+                {
+                    message.SenderInitials = ResolveSenderInitials(message.SenderId);
+                    Messages.Add(message);
+                }
             }
+
+            UpdateChatPreviewFromMessages(refreshedSelectedChat, latestMessages, currentCallerId);
+
+            if (SelectedChat.JobId.HasValue)
+            {
+                LinkedJob = _jobService.GetById(SelectedChat.JobId.Value);
+            }
+            else
+            {
+                LinkedJob = null;
+            }
+
+            UpdateVisibility();
         }
-
-        UpdateChatPreviewFromMessages(refreshedSelectedChat, latestMessages, currentCallerId);
-
-        if (SelectedChat.JobId.HasValue)
+        catch (Exception exception)
         {
-            LinkedJob = _jobService.GetById(SelectedChat.JobId.Value);
+            ErrorMessage = exception.Message;
         }
-        else
-        {
-            LinkedJob = null;
-        }
-
-        UpdateVisibility();
     }
 
     private void ApplyReadReceiptVisibility(IReadOnlyList<Message> messages)
@@ -662,8 +683,15 @@ public class ChatViewModel : ObservableObject
             return;
         }
 
-        var messages = _chatService.GetMessages(chat.ChatId, currentCallerId);
-        UpdateChatPreviewFromMessages(chat, messages, currentCallerId);
+        try
+        {
+            var messages = _chatService.GetMessages(chat.ChatId, currentCallerId);
+            UpdateChatPreviewFromMessages(chat, messages, currentCallerId);
+        }
+        catch (Exception exception)
+        {
+            ErrorMessage = exception.Message;
+        }
     }
 
     private static void UpdateChatPreviewFromMessages(Chat chat, IReadOnlyList<Message> messages, int currentCallerId)
